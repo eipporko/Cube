@@ -1,48 +1,65 @@
+#include <iostream>
+#include <GL/glew.h>
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
-#include <GLUT/glew.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
 #elif
 #include <GL/glut.h>
-#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
- 
-void draw(void) {
-     
+
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
+
+void draw(void)
+{
 	// Black background
-	glClearColor(0.0f,0.0f,0.0f,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    //Draw i
+	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //Draw
     glFlush();
  
 }
- 
-//Main program
- 
-int main(int argc, char **argv) {
- 
+
+void init(int argc, char **argv)
+{
+    //Glu Init
     glutInit(&argc, argv);
-     
-	/*Setting up  The Display
-	/    -RGB color model + Alpha Channel = GLUT_RGBA
-	/    -RGB color model + Alpha Channel = GLUT_RGBA
-	*/
-    glutInitDisplayMode(GLUT_RGBA|GLUT_SINGLE);
-     
-    //Configure Window Postion
-    glutInitWindowPosition(50, 25);
-     
-    //Configure Window Size
-    glutInitWindowSize(480,480);
-
+    //RGBA Color and Single Buffer
+    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE | GLUT_DEPTH);
+    
+    //Center Window
+    glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - WINDOW_WIDTH)/2,
+                           (glutGet(GLUT_SCREEN_HEIGHT) - WINDOW_HEIGHT)/2);
+    
+    //Window Size
+    glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
+    
     //Create Window
-    glutCreateWindow("Hello OpenGL");
-
-     
+    glutCreateWindow("CUBE");
+    
+    //Glew Init
+    GLenum err = glewInit();
+    if (GLEW_OK != err)
+    {
+        /* Problem: glewInit failed, something is seriously wrong. */
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+    }
+    
     //Call to the drawing function
     glutDisplayFunc(draw);
-     
-	// Loop require by OpenGL
+    
+    // Loop require by OpenGL
     glutMainLoop();
+
+}
+
+int main(int argc, char **argv)
+{
+    init(argc,argv);
     return 0;
 }

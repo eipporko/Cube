@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 2.8)
 # Project Name
-PROJECT(HW_OPENGL)
+PROJECT(CUBE)
+
+#########################################################
+# FIND GLEW
+#########################################################
+find_package(GLEW REQUIRED)
+include_directories(${GLEW_INCLUDE_DIRS})
+link_directories(${GLEW_LIBRARY_DIRS})
+add_definitions(${GLEW_DEFINITIONS})
+if(NOT GLEW_FOUND)
+    message(ERROR " GLEW not found!")
+endif(NOT GLEW_FOUND)
 
 #########################################################
 # FIND GLUT
@@ -25,14 +36,14 @@ endif(NOT OPENGL_FOUND)
 #########################################################
 # Include Files
 #########################################################
-add_executable(test main.cpp)
+add_executable(cube main.cpp)
 
 ########################################################
 # Linking & stuff
 #########################################################
 
 
-  # create the program "test"
-  target_link_libraries(test ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} )
+  # create the program “cube”
+  target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY})
 
 
