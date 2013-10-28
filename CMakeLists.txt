@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 # Project Name
 PROJECT(CUBE)
 
+message(STATUS "CUBE_SOURCE_DIR : ${CUBE_SOURCE_DIR}")
+
 #########################################################
 # FIND GLEW
 #########################################################
@@ -12,7 +14,6 @@ add_definitions(${GLEW_DEFINITIONS})
 if(NOT GLEW_FOUND)
     message(ERROR " GLEW not found!")
 endif(NOT GLEW_FOUND)
-
 #########################################################
 # FIND GLUT
 #########################################################
@@ -42,8 +43,8 @@ add_executable(cube main.cpp)
 # Linking & stuff
 #########################################################
 
-
-  # create the program “cube”
-  target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CUBE_SOURCE_DIR})
+# create the program “cube”
+target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY})
 
 
