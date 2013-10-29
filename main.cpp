@@ -23,7 +23,10 @@ GLuint projMatrixLoc, viewMatrixLoc;
 
 // storage for Matrices
 float projMatrix[16];
-float viewMatrix[16];
+float viewMatrix[] = {  1.0f, 0.0f, 0.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 1.0f, 0.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f };
 
 GLint program;
 
@@ -221,14 +224,14 @@ GLint initShaders()
 	glBindAttribLocation(p,0, "in_Position");
 	glBindAttribLocation(p,1, "in_Color");
     
-    projMatrixLoc = glGetUniformLocation(p, "projMatrix");
-    viewMatrixLoc = glGetUniformLocation(p, "viewMatrix");
-    
 	glAttachShader(p,v);
 	glAttachShader(p,f);
 	
 	glLinkProgram(p);
 	glUseProgram(p);
+    
+    projMatrixLoc = glGetUniformLocation(p, "projMatrix");
+    viewMatrixLoc = glGetUniformLocation(p, "viewMatrix");
     
 	delete [] vs; // dont forget to free allocated memory
 	delete [] fs; // we allocated this in the loadFile function...
@@ -253,9 +256,8 @@ void reshape(int w, int h)
 void setCamera()
 {
     //Do Things
-    
 
-    glUniformMatrix4fv(projMatrixLoc,  1, false, projMatrix);
+    //glUniformMatrix4fv(projMatrixLoc,  1, false, projMatrix);
     glUniformMatrix4fv(viewMatrixLoc,  1, false, viewMatrix);
 }
 
@@ -266,7 +268,7 @@ void display()
 	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    //setCamera();
+    setCamera();
     
     glBindVertexArray(vao);	// First VAO
 	glDrawArrays(GL_TRIANGLES, 0, 36);	// draw first object
