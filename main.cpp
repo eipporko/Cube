@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <math.h>
 #include <GL/glew.h>
 
 #ifdef __APPLE__
@@ -11,6 +12,7 @@
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
+#define M_PI 3.14159265358979323846
 
 
 using namespace std;
@@ -23,10 +25,7 @@ GLuint projMatrixLoc, viewMatrixLoc;
 
 // storage for Matrices
 float projMatrix[16];
-float viewMatrix[] = {  1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 1.0f, 0.0f,
-                        0.0f, 0.0f, 0.0f, 1.0f };
+float viewMatrix[16];
 
 GLint program;
 
@@ -67,6 +66,116 @@ GLfloat colors[]    = {  0, 0, 1,   0, 0, 1,   0, 0, 1,  //Top (blue)
                          1, 1, 0,   1, 1, 0,   1, 1, 0,  //Back (yellow)
                          1, 1, 0,   1, 1, 0,   1, 1, 0 };
 
+
+void crossProduct(float *a, float *b, float *res)
+{
+    res[0] = a[1] * b[2] - b[1] * a[2];
+    res[1] = a[2] * b[0] - b[2] * a[0];
+    res[2] = a[0] * b[1] - b[0] * a[1];
+}
+
+void normalize(float *a)
+{
+    float mag = sqrt(a[0] * a [0] + a[1] * a[1] + a[2] * a[2]);
+    
+    a[0] /=  mag;
+    a[1] /=  mag;
+    a[2] /=  mag;
+}
+
+void setIdentityMatrix(float *mat, int size)
+{
+    for (int i = 0; i < size * size; i++)
+        mat[i] = 0.0f;
+        
+    for (int i = 0; i < size; i++)
+        mat[i + i * size] = 1.0f;
+}
+
+void multMatrix(float *a, float *b)
+{
+    float res[16];
+    
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            res[j*4 + i] = 0.0f;
+            for (int k = 0; k < 4; k++) {
+                res[j*4 + i] += a[k*4 + i] * b[j*4 + k];
+            }
+        }
+    }
+    
+    memcpy(a, res, 16 * sizeof(float));
+}
+
+void setTranslationMatrix(float *mat, float x, float y, float z)
+{
+    setIdentityMatrix(mat, 4);
+    
+    mat[12] = x;
+    mat[13] = y;
+    mat[14] = z;
+}
+
+void buildProjectionMatrix(float fov, float ratio, float nearP, float farP)
+{
+    float f = 1.0f / tan (fov * (M_PI / 360.0));
+    
+    setIdentityMatrix(projMatrix, 4);
+    
+    projMatrix[0] = f / ratio;
+    projMatrix[1 * 4 + 1] = f;
+    projMatrix[2 * 4 + 2] = (farP + nearP) / (nearP - farP);
+    projMatrix[3 * 4 + 2] = (2.0f * farP * nearP) / (nearP - farP);
+    projMatrix[2 * 4 + 3] = -1.0f;
+    projMatrix[3 * 4 + 3] = 0.0f;
+}
+
+void setCamera(float posX, float posY, float posZ,
+               float lookAtX, float lookAtY, float lookAtZ)
+{
+    float right[3];
+    
+    float up[] = {0.0f, 1.0f, 0.0f};
+    float dir[] = {lookAtX - posX, lookAtY - posY, lookAtZ - posZ};
+    normalize(dir);
+    
+    crossProduct(dir, up, right);
+    normalize(right);
+    
+    crossProduct(right, dir, up);
+    normalize(up);
+    
+    float aux[16];
+    
+    viewMatrix[0] = right[0];
+    viewMatrix[4] = right[1];
+    viewMatrix[8] = right[2];
+    viewMatrix[12] = 0.0f;
+    
+    viewMatrix[1] = up[0];
+    viewMatrix[5] = up[1];
+    viewMatrix[9] = up[2];
+    viewMatrix[13] = 0.0f;
+    
+    viewMatrix[2] = -dir[0];
+    viewMatrix[6] = -dir[1];
+    viewMatrix[10] = -dir[2];
+    viewMatrix[14] = 0.0f;
+    
+    viewMatrix[3] = 0.0f;
+    viewMatrix[7] = 0.0f;
+    viewMatrix[11] = 0.0f;
+    viewMatrix[15] = 1.0f;
+    
+    setTranslationMatrix(aux, -posX, -posY, -posZ);
+    
+    multMatrix(viewMatrix, aux);
+    
+    glUniformMatrix4fv(projMatrixLoc,  1, false, projMatrix);
+    glUniformMatrix4fv(viewMatrixLoc,  1, false, viewMatrix);
+    
+}
 
 char* loadFile(string fname, GLint &fSize)
 {
@@ -248,8 +357,17 @@ void idle(void)
 
 void reshape(int w, int h)
 {
+    float ratio;
+    
+    if (h == 0)
+        h = 1;
+    
     // set viewport to be the entire window
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    
+    ratio = (1.0f * w) / h;
+    buildProjectionMatrix(53.13f, ratio, 1.0, 30.0f);
+    
 }
 
 
@@ -268,7 +386,7 @@ void display()
 	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    setCamera();
+    setCamera(3,2,-7,0,0,0);
     
     glBindVertexArray(vao);	// First VAO
 	glDrawArrays(GL_TRIANGLES, 0, 36);	// draw first object
