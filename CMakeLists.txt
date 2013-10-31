@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8)
 # Project Name
 PROJECT(CUBE)
 
-message(STATUS "CUBE_SOURCE_DIR : ${CUBE_SOURCE_DIR}")
-
 #########################################################
 # FIND GLEW
 #########################################################
@@ -34,17 +32,7 @@ add_definitions(${OpenGL_DEFINITIONS})
 if(NOT OPENGL_FOUND)
     message(ERROR " OPENGL not found!")
 endif(NOT OPENGL_FOUND)
-#########################################################
-# Include Files
-#########################################################
-add_executable(cube main.cpp)
 
-########################################################
-# Linking & stuff
-#########################################################
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CUBE_SOURCE_DIR})
-# create the program “cube”
-target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY})
-
+add_subdirectory(src)
 

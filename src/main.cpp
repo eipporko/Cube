@@ -4,6 +4,10 @@
 #include <math.h>
 #include <GL/glew.h>
 
+#include "glm/glm.hpp"
+#include "glm/gtx/transform.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #elif
@@ -12,11 +16,14 @@
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
-#define M_PI 3.14159265358979323846
+
+#define CAMERA_DISTANCE 7.0
+#define CAMERA_RPP (2*M_PI)/1000.0 //2*PI radians = 1000px
+
+#define SGN(x)   (((x)<0) ? (-1) : (1))
 
 
 using namespace std;
-
 
 //Globals
 GLuint vao, vbo[2];
@@ -28,6 +35,9 @@ float projMatrix[16];
 float viewMatrix[16];
 
 GLint program;
+
+GLfloat cameraX=0, cameraY=0, cameraZ=CAMERA_DISTANCE;
+int lastMouseX = NULL, lastMouseY = NULL;
 
 GLfloat vertices[]  = { -1, 1, 1,  -1, 1,-1,   1, 1, 1,  //Top
                          1, 1, 1,  -1, 1,-1,   1, 1,-1,
@@ -74,6 +84,7 @@ void crossProduct(float *a, float *b, float *res)
     res[2] = a[0] * b[1] - b[0] * a[1];
 }
 
+
 void normalize(float *a)
 {
     float mag = sqrt(a[0] * a [0] + a[1] * a[1] + a[2] * a[2]);
@@ -83,6 +94,7 @@ void normalize(float *a)
     a[2] /=  mag;
 }
 
+
 void setIdentityMatrix(float *mat, int size)
 {
     for (int i = 0; i < size * size; i++)
@@ -91,6 +103,7 @@ void setIdentityMatrix(float *mat, int size)
     for (int i = 0; i < size; i++)
         mat[i + i * size] = 1.0f;
 }
+
 
 void multMatrix(float *a, float *b)
 {
@@ -108,6 +121,7 @@ void multMatrix(float *a, float *b)
     memcpy(a, res, 16 * sizeof(float));
 }
 
+
 void setTranslationMatrix(float *mat, float x, float y, float z)
 {
     setIdentityMatrix(mat, 4);
@@ -116,6 +130,7 @@ void setTranslationMatrix(float *mat, float x, float y, float z)
     mat[13] = y;
     mat[14] = z;
 }
+
 
 void buildProjectionMatrix(float fov, float ratio, float nearP, float farP)
 {
@@ -130,6 +145,7 @@ void buildProjectionMatrix(float fov, float ratio, float nearP, float farP)
     projMatrix[2 * 4 + 3] = -1.0f;
     projMatrix[3 * 4 + 3] = 0.0f;
 }
+
 
 void setCamera(float posX, float posY, float posZ,
                float lookAtX, float lookAtY, float lookAtZ)
@@ -176,6 +192,7 @@ void setCamera(float posX, float posY, float posZ,
     glUniformMatrix4fv(viewMatrixLoc,  1, false, viewMatrix);
     
 }
+
 
 char* loadFile(string fname, GLint &fSize)
 {
@@ -284,13 +301,6 @@ void initVAO()
 
 GLint initShaders()
 {
-    //DEBUG
-    char *path=NULL;
-    size_t size;
-    path=getcwd(path,size);
-    cout << "current Path" << path << endl;
-    //DEBUG
-    
     GLuint p, f, v;
     
 	char *vs,*fs;
@@ -301,8 +311,8 @@ GLint initShaders()
 	// load shaders & get length of each
 	GLint vlen;
 	GLint flen;
-	vs = loadFile("../../vertexShader.glsl",vlen);
-	fs = loadFile("../../fragmentShader.glsl",flen);
+	vs = loadFile("../src/vertexShader.glsl",vlen);
+	fs = loadFile("../src/fragmentShader.glsl",flen);
 	
 	const char * vv = vs;
 	const char * ff = fs;
@@ -371,22 +381,13 @@ void reshape(int w, int h)
 }
 
 
-void setCamera()
-{
-    //Do Things
-
-    //glUniformMatrix4fv(projMatrixLoc,  1, false, projMatrix);
-    glUniformMatrix4fv(viewMatrixLoc,  1, false, viewMatrix);
-}
-
-
 void display()
 {
 	//RGB(86,136,199)
 	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    setCamera(3,2,-7,0,0,0);
+    setCamera(cameraX,cameraY,cameraZ,0,0,0);
     
     glBindVertexArray(vao);	// First VAO
 	glDrawArrays(GL_TRIANGLES, 0, 36);	// draw first object
@@ -397,9 +398,39 @@ void display()
     
 }
 
+void mouseCallback(int btn, int state, int x, int y)
+{
+	if(btn==GLUT_LEFT_BUTTON && state==GLUT_UP) //this is only for left up button events
+        lastMouseX = NULL;
+}
+
+void mouseMotion(int x, int y)
+{
+    static float phi;
+    static float theta;
+    
+    if (lastMouseX != NULL) {
+        float xDesp = (lastMouseX - x) * CAMERA_RPP;
+        float yDesp = (y - lastMouseY) * CAMERA_RPP;
+        
+        phi += fmod(xDesp,M_PI);
+        theta += fmod(yDesp,2*M_PI);
+        
+        cameraX = CAMERA_DISTANCE*cos(theta)*sin(phi); //http://en.wikipedia.org/wiki/Spherical_coordinates
+        cameraY = CAMERA_DISTANCE*sin(theta)*cos(phi);
+        cameraZ = CAMERA_DISTANCE*cos(theta);
+        
+        cout << "(" << cameraX << "," << cameraY << "," << cameraZ << ")" << endl;
+    
+    }
+    
+    lastMouseX = x;
+    lastMouseY = y;
+}
 
 int main(int argc, char **argv)
 {
+
     //Glu Init
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -428,6 +459,8 @@ int main(int argc, char **argv)
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(idle);
+    glutMouseFunc(mouseCallback);
+    glutMotionFunc(mouseMotion);
         
     glutMainLoop();
 
