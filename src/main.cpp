@@ -7,6 +7,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -18,27 +20,28 @@
 #define WINDOW_HEIGHT 480
 
 #define CAMERA_DISTANCE 7.0
-#define CAMERA_RPP (2*M_PI)/1000.0 //2*PI radians = 1000px
+#define CAMERA_DPP 360.0/1000.0 //360º = 1000px
 
 #define SGN(x)   (((x)<0) ? (-1) : (1))
 
 
 using namespace std;
 
-//Globals
+
+
 GLuint vao, vbo[2];
+GLint projMatrixLoc, viewMatrixLoc; //uniform locations
+glm::mat4 projMatrix, viewMatrix; //transformation matrix
 
-GLuint projMatrixLoc, viewMatrixLoc;
+GLint program; //shader program
 
-// storage for Matrices
-float projMatrix[16];
-float viewMatrix[16];
+glm::vec3 cameraEye = glm::vec3(0, 0, -CAMERA_DISTANCE);
+glm::vec3 cameraUp = glm::vec3(0,1,0);
 
-GLint program;
+int lastMouseX = NULL, lastMouseY = NULL; //last mouse position pressed;
 
-GLfloat cameraX=0, cameraY=0, cameraZ=CAMERA_DISTANCE;
-int lastMouseX = NULL, lastMouseY = NULL;
 
+//Cube vertices and color description
 GLfloat vertices[]  = { -1, 1, 1,  -1, 1,-1,   1, 1, 1,  //Top
                          1, 1, 1,  -1, 1,-1,   1, 1,-1,
     
@@ -56,8 +59,7 @@ GLfloat vertices[]  = { -1, 1, 1,  -1, 1,-1,   1, 1, 1,  //Top
     
                         -1, 1, 1,   1, 1 ,1,   1,-1, 1,  //Back
                          1,-1, 1,  -1,-1, 1,  -1, 1, 1 };
-    
-// color array
+
 GLfloat colors[]    = {  0, 0, 1,   0, 0, 1,   0, 0, 1,  //Top (blue)
                          0, 0, 1,   0, 0, 1,   0, 0, 1,
     
@@ -75,123 +77,6 @@ GLfloat colors[]    = {  0, 0, 1,   0, 0, 1,   0, 0, 1,  //Top (blue)
     
                          1, 1, 0,   1, 1, 0,   1, 1, 0,  //Back (yellow)
                          1, 1, 0,   1, 1, 0,   1, 1, 0 };
-
-
-void crossProduct(float *a, float *b, float *res)
-{
-    res[0] = a[1] * b[2] - b[1] * a[2];
-    res[1] = a[2] * b[0] - b[2] * a[0];
-    res[2] = a[0] * b[1] - b[0] * a[1];
-}
-
-
-void normalize(float *a)
-{
-    float mag = sqrt(a[0] * a [0] + a[1] * a[1] + a[2] * a[2]);
-    
-    a[0] /=  mag;
-    a[1] /=  mag;
-    a[2] /=  mag;
-}
-
-
-void setIdentityMatrix(float *mat, int size)
-{
-    for (int i = 0; i < size * size; i++)
-        mat[i] = 0.0f;
-        
-    for (int i = 0; i < size; i++)
-        mat[i + i * size] = 1.0f;
-}
-
-
-void multMatrix(float *a, float *b)
-{
-    float res[16];
-    
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            res[j*4 + i] = 0.0f;
-            for (int k = 0; k < 4; k++) {
-                res[j*4 + i] += a[k*4 + i] * b[j*4 + k];
-            }
-        }
-    }
-    
-    memcpy(a, res, 16 * sizeof(float));
-}
-
-
-void setTranslationMatrix(float *mat, float x, float y, float z)
-{
-    setIdentityMatrix(mat, 4);
-    
-    mat[12] = x;
-    mat[13] = y;
-    mat[14] = z;
-}
-
-
-void buildProjectionMatrix(float fov, float ratio, float nearP, float farP)
-{
-    float f = 1.0f / tan (fov * (M_PI / 360.0));
-    
-    setIdentityMatrix(projMatrix, 4);
-    
-    projMatrix[0] = f / ratio;
-    projMatrix[1 * 4 + 1] = f;
-    projMatrix[2 * 4 + 2] = (farP + nearP) / (nearP - farP);
-    projMatrix[3 * 4 + 2] = (2.0f * farP * nearP) / (nearP - farP);
-    projMatrix[2 * 4 + 3] = -1.0f;
-    projMatrix[3 * 4 + 3] = 0.0f;
-}
-
-
-void setCamera(float posX, float posY, float posZ,
-               float lookAtX, float lookAtY, float lookAtZ)
-{
-    float right[3];
-    
-    float up[] = {0.0f, 1.0f, 0.0f};
-    float dir[] = {lookAtX - posX, lookAtY - posY, lookAtZ - posZ};
-    normalize(dir);
-    
-    crossProduct(dir, up, right);
-    normalize(right);
-    
-    crossProduct(right, dir, up);
-    normalize(up);
-    
-    float aux[16];
-    
-    viewMatrix[0] = right[0];
-    viewMatrix[4] = right[1];
-    viewMatrix[8] = right[2];
-    viewMatrix[12] = 0.0f;
-    
-    viewMatrix[1] = up[0];
-    viewMatrix[5] = up[1];
-    viewMatrix[9] = up[2];
-    viewMatrix[13] = 0.0f;
-    
-    viewMatrix[2] = -dir[0];
-    viewMatrix[6] = -dir[1];
-    viewMatrix[10] = -dir[2];
-    viewMatrix[14] = 0.0f;
-    
-    viewMatrix[3] = 0.0f;
-    viewMatrix[7] = 0.0f;
-    viewMatrix[11] = 0.0f;
-    viewMatrix[15] = 1.0f;
-    
-    setTranslationMatrix(aux, -posX, -posY, -posZ);
-    
-    multMatrix(viewMatrix, aux);
-    
-    glUniformMatrix4fv(projMatrixLoc,  1, false, projMatrix);
-    glUniformMatrix4fv(viewMatrixLoc,  1, false, viewMatrix);
-    
-}
 
 
 char* loadFile(string fname, GLint &fSize)
@@ -376,8 +261,9 @@ void reshape(int w, int h)
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     
     ratio = (1.0f * w) / h;
-    buildProjectionMatrix(53.13f, ratio, 1.0, 30.0f);
+    projMatrix = glm::perspective(53.13f, ratio, 1.0f, 30.0f);
     
+    glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
 }
 
 
@@ -387,7 +273,11 @@ void display()
 	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    setCamera(cameraX,cameraY,cameraZ,0,0,0);
+    viewMatrix = glm::lookAt(cameraEye,
+                             glm::vec3(0,0,0),
+                             cameraUp);
+    
+    glUniformMatrix4fv(viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
     
     glBindVertexArray(vao);	// First VAO
 	glDrawArrays(GL_TRIANGLES, 0, 36);	// draw first object
@@ -398,6 +288,7 @@ void display()
     
 }
 
+
 void mouseCallback(int btn, int state, int x, int y)
 {
 	if(btn==GLUT_LEFT_BUTTON && state==GLUT_UP) //this is only for left up button events
@@ -406,22 +297,13 @@ void mouseCallback(int btn, int state, int x, int y)
 
 void mouseMotion(int x, int y)
 {
-    static float phi;
-    static float theta;
     
     if (lastMouseX != NULL) {
-        float xDesp = (lastMouseX - x) * CAMERA_RPP;
-        float yDesp = (y - lastMouseY) * CAMERA_RPP;
+        float xDesp = (lastMouseX - x) * CAMERA_DPP;
+        float yDesp = (y - lastMouseY) * CAMERA_DPP;
         
-        phi += fmod(xDesp,M_PI);
-        theta += fmod(yDesp,2*M_PI);
-        
-        cameraX = CAMERA_DISTANCE*cos(theta)*sin(phi); //http://en.wikipedia.org/wiki/Spherical_coordinates
-        cameraY = CAMERA_DISTANCE*sin(theta)*cos(phi);
-        cameraZ = CAMERA_DISTANCE*cos(theta);
-        
-        cout << "(" << cameraX << "," << cameraY << "," << cameraZ << ")" << endl;
-    
+        cameraEye = glm::rotateY(glm::rotateX(cameraEye, yDesp),xDesp);
+        cameraUp = glm::rotateY(glm::rotateX(cameraUp, yDesp),xDesp);
     }
     
     lastMouseX = x;
