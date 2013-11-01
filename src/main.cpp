@@ -8,7 +8,6 @@
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "glm/gtx/rotate_vector.hpp"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -20,9 +19,12 @@
 #define WINDOW_HEIGHT 480
 
 #define CAMERA_DISTANCE 7.0
-#define CAMERA_DPP 360.0/1000.0 //360º = 1000px
+#define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
 
 #define SGN(x)   (((x)<0) ? (-1) : (1))
+#define DEG_TO_RAD(x) (x*(M_PI/180.0))
+#define LESS_THAN(x, y) ((x>y) ? (y) : (x))
+#define GREATER_THAN(x, y) ((x < y) ? (y) : (x))
 
 
 using namespace std;
@@ -37,6 +39,7 @@ GLint program; //shader program
 
 glm::vec3 cameraEye = glm::vec3(0, 0, -CAMERA_DISTANCE);
 glm::vec3 cameraUp = glm::vec3(0,1,0);
+float cameraAngleX, cameraAngleY;
 
 int lastMouseX = NULL, lastMouseY = NULL; //last mouse position pressed;
 
@@ -295,20 +298,38 @@ void mouseCallback(int btn, int state, int x, int y)
         lastMouseX = NULL;
 }
 
+
 void mouseMotion(int x, int y)
 {
-    
     if (lastMouseX != NULL) {
-        float xDesp = (lastMouseX - x) * CAMERA_DPP;
-        float yDesp = (y - lastMouseY) * CAMERA_DPP;
+        cameraAngleX += (lastMouseX - x) * CAMERA_RPP;
+        cameraAngleY += (lastMouseY - y) * CAMERA_RPP;
         
-        cameraEye = glm::rotateY(glm::rotateX(cameraEye, yDesp),xDesp);
-        cameraUp = glm::rotateY(glm::rotateX(cameraUp, yDesp),xDesp);
+        //-PI/2 < cameraAngleY < PI/2
+        cameraAngleY = LESS_THAN(cameraAngleY, M_PI/2.0f);
+        cameraAngleY = GREATER_THAN(cameraAngleY, -M_PI/2.0f);
+
+        // Calculate the camera position using the distance and angles
+        cameraEye.x = CAMERA_DISTANCE * -sinf(cameraAngleX) * cosf(cameraAngleY);
+        cameraEye.y = CAMERA_DISTANCE * -sinf(cameraAngleY);
+        cameraEye.z = -CAMERA_DISTANCE * cosf(cameraAngleX) * cosf(cameraAngleY);
     }
     
     lastMouseX = x;
     lastMouseY = y;
 }
+
+
+void keyboard(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+        case 27: //esc
+            exit (0);
+            break;
+    }
+}
+
 
 int main(int argc, char **argv)
 {
@@ -341,6 +362,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(idle);
+    glutKeyboardFunc(keyboard);
     glutMouseFunc(mouseCallback);
     glutMotionFunc(mouseMotion);
         
