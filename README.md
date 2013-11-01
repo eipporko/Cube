@@ -3,7 +3,7 @@
 Test it and you could see an awesome colored cube in your screen.
 Using an incredible 3D technology which will allow you to navigate around the cube!. 
 
-Epic cube it's Epic!
+it's Epic!
 
 ## Controls
 * Mouse: Move Camera
