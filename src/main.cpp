@@ -21,17 +21,18 @@
 #define CAMERA_DISTANCE 7.0
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
 
-#define SGN(x)   (((x)<0) ? (-1) : (1))
-#define DEG_TO_RAD(x) (x*(M_PI/180.0))
-#define LESS_THAN(x, y) ((x>y) ? (y) : (x))
-#define GREATER_THAN(x, y) ((x < y) ? (y) : (x))
+#define BUFFER_OFFSET(bytes) ((GLubyte*) NULL + (bytes))
+#define SGN(x)   (((x) < 0) ? (-1) : (1))
+#define DEG_TO_RAD(x) (x * (M_PI / 180.0))
+#define LESS_THAN(x, limit) ((x > limit) ? (limit) : (x))
+#define GREATER_THAN(x, limit) ((x < limit) ? (limit) : (x))
 
 
 using namespace std;
 
 
 
-GLuint vao, vbo[2];
+GLuint vao, vbo;
 GLint projMatrixLoc, viewMatrixLoc; //uniform locations
 glm::mat4 projMatrix, viewMatrix; //transformation matrix
 
@@ -143,39 +144,43 @@ void initVAO()
     {
         cout << "Video card supports GL_ARB_vertex_buffer_object." << endl;
         
-        /* Allocate and assign a Vertex Array Object to our handle */
+        // Allocate and assign a Vertex Array Object to our handle
         glGenVertexArrays(1, &vao);
         
-        /* Bind our Vertex Array Object as the current used object */
+        // Bind our Vertex Array Object as the current used object
         glBindVertexArray(vao);
         
-        glGenBuffers(2, vbo);
+        // Reserve a name for the buffer object.
+        glGenBuffers(1, &vbo);
         
-        /* Bind our first VBO as being the active buffer and storing vertex attributes (coordinates) */
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+        // Bind it to the GL_ARRAY_BUFFER target.
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         
-        /* Copy the vertex data from vertices to our buffer */
-        /* sizeof(vertices) is the size of the vertices array */
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // Allocate space for it (sizeof(vertices) + sizeof(colors)).
+        glBufferData(GL_ARRAY_BUFFER,
+                     sizeof(vertices) + sizeof(colors),
+                     NULL,
+                     GL_STATIC_DRAW);
         
-        /* Specify that our coordinate data is going into attribute index 0, and contains three floats per vertex */
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        // Put "vertices" at offset zero in the buffer.
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        0,
+                        sizeof(vertices),
+                        vertices);
         
-        /* Enable attribute index 0 as being used */
-        glEnableVertexAttribArray(0);
+        // Put "colors" at an offset in the buffer equal to the filled size of
+        // the buffer so far - i.e., sizeof(positions).
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        sizeof(vertices),
+                        sizeof(colors),
+                        colors);
         
-        /* Bind our second VBO as being the active buffer and storing vertex attributes (colors) */
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+        // Now "positions" is at offset 0 and "colors" is directly after it
+        // in the same buffer.
         
-        /* Copy the color data from colors to our buffer */
-        /* sizeof(colors) is the size of the colors array */
-        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(vertices)));
         
-        /* Specify that our color data is going into attribute index 1, and contains three floats per vertex */
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        
-        /* Enable attribute index 1 as being used */
-        glEnableVertexAttribArray(1);
         
     }
     else
@@ -230,6 +235,9 @@ GLint initShaders()
     
 	glBindAttribLocation(p,0, "in_Position");
 	glBindAttribLocation(p,1, "in_Color");
+    
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
     
 	glAttachShader(p,v);
 	glAttachShader(p,f);
