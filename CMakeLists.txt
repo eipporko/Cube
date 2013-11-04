@@ -35,4 +35,5 @@ endif(NOT OPENGL_FOUND)
 
 
 add_subdirectory(src)
+add_subdirectory(test/test_solid)
 

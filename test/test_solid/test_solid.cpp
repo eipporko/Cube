@@ -4,10 +4,10 @@
 #include <math.h>
 #include <GL/glew.h>
 
-#include "../include/glm/glm.hpp"
-#include "../include/glm/gtx/transform.hpp"
-#include "../include/glm/gtc/matrix_transform.hpp"
-#include "../include/glm/gtc/type_ptr.hpp"
+#include "../../include/glm/glm.hpp"
+#include "../../include/glm/gtx/transform.hpp"
+#include "../../include/glm/gtc/matrix_transform.hpp"
+#include "../../include/glm/gtc/type_ptr.hpp"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -204,8 +204,8 @@ GLint initShaders()
 	// load shaders & get length of each
 	GLint vlen;
 	GLint flen;
-	vs = loadFile("../src/vertexShader.glsl",vlen);
-	fs = loadFile("../src/fragmentShader.glsl",flen);
+	vs = loadFile("../test/test_solid/vertexShader.glsl",vlen);
+	fs = loadFile("../test/test_solid/fragmentShader.glsl",flen);
 	
 	const char * vv = vs;
 	const char * ff = fs;
