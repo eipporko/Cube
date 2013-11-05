@@ -55,3 +55,7 @@ make
 If you have a multi-processor/core system then you can use make -j <numcores> to tell the build system to multiple cores.
 
 
+
+...
+
+`cmake . -G Xcode`
