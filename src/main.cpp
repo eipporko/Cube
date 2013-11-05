@@ -3,11 +3,11 @@
 #include <fstream>
 #include <math.h>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-#include "../include/glm/glm.hpp"
-#include "../include/glm/gtx/transform.hpp"
-#include "../include/glm/gtc/matrix_transform.hpp"
-#include "../include/glm/gtc/type_ptr.hpp"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>

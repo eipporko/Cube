@@ -7,7 +7,7 @@ PROJECT(CUBE)
 #########################################################
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_executable(test_solid test_solid.cpp ../../include/glm/glm.hpp)
+add_executable(test_solid test_solid.cpp)
 
 ########################################################
 # Linking & stuff
