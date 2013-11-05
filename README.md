@@ -26,8 +26,11 @@ In order to build Cube, you need to have:
 (Earlier versions might work OK, but are not tested.)
 
 #### Mac Os X (10.9 or later)
-Mac Os users should install [Macports](http://www.macports.org/). Once Macports is installed, run `sudo port selfupdate` to update macports repositories. Then run `sudo port install glew` and `sudo port install glm` for install the dependencies.
-
+Mac Os users should install the following components:
+* Apple's [Xcode](https://developer.apple.com/technologies/tools/) Developer Tools (version 5.0.1 or later) 
+* Apple's Command Line Developer Tools are found at the [Apple Developer](https://developer.apple.com/downloads/) site, or they can be installed from within Xcode.
+* [Macports](http://www.macports.org/). Once Macports is installed, run `sudo port selfupdate` to update macports repositories. Then run `sudo port install glew` and `sudo port install glm` for install the dependencies.
+* X11????????
 
 How to build
 -------------------------------
