@@ -16,6 +16,7 @@ Controls
 What do you need to build your own Cube
 ----------------------------------------
 In order to build Cube, you need to have:
+* [gcc & g++](http://gcc.gnu.org/) or [Clang](http://clang.llvm.org/) compiling and linking C, C++ (if clang, need at least v5.0, Xcode 5.0.1 on OS X)
 * OpenGL 4 support.
 * [cmake](http://www.cmake.org/) 2.8 or later. 
 * [git](http://git-scm.com/) 1.8.3.4 or later. 
@@ -25,7 +26,7 @@ In order to build Cube, you need to have:
 
 (Earlier versions might work OK, but are not tested.)
 
-#### Mac Os X (10.9 or later)
+### Mac Os X
 Mac Os users should install the following components:
 * Apple's [Xcode](https://developer.apple.com/technologies/tools/) Developer Tools (version 5.0.1 or later) 
 * Apple's Command Line Developer Tools are found at the [Apple Developer](https://developer.apple.com/downloads/) site, or they can be installed from within Xcode.
@@ -59,6 +60,8 @@ If you have a multi-processor/core system then you can use make -j <numcores> to
 
 
 
-...
+Platform-Specific Build Notes
+--------------------------------
 
+### Mac Os X
 `cmake . -G Xcode`
