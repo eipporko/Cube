@@ -16,6 +16,7 @@ Controls
 What do you need to build your own Cube
 ----------------------------------------
 In order to build Cube, you need to have:
+* OpenGL 4 support.
 * [cmake](http://www.cmake.org/) 2.8 or later. 
 * [git](http://git-scm.com/) 1.8.3.4 or later. 
 * [GLEW](http://glew.sourceforge.net/) Library 1.10.0 or later.
