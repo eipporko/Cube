@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <vector>
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -18,7 +20,7 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
-#define POINT_SIZE 1.5
+#define POINT_SIZE 2
 #define POINTS_PER_TRIANGLE 1500
 
 #define CAMERA_DISTANCE 7.0
@@ -33,21 +35,33 @@
 
 using namespace std;
 
-GLuint vao, vbo;
+
+//Projection and View Matrix
 GLint projMatrixLoc, viewMatrixLoc; //uniform locations
-glm::mat4 projMatrix, viewMatrix; //transformation matrix
+glm::mat4 projMatrix, viewMatrix;   //transformation matrix
 
-GLint program; //shader program
 
+//Camera
 glm::vec3 cameraEye = glm::vec3(0, 0, -CAMERA_DISTANCE);
 glm::vec3 cameraUp = glm::vec3(0,1,0);
 float cameraAngleX, cameraAngleY;
 
+//Mouse
 int lastMouseX = NULL, lastMouseY = NULL; //last mouse position pressed;
 
+//VAO Struct Definition
+struct vao {
+    GLuint vaoID, vboID;
+    int numOfVertices = 0;
+    int numOfTriangles = 0;
+    vector<glm::vec3> vertices;
+    vector<glm::vec3> colors;
+    GLenum mode;
+};
 
+struct vao pointCloudCube;
 
-//cube model
+//Cube Description
 //
 //    v1----v3
 //   /|     /|
@@ -108,13 +122,6 @@ glm::vec3 colors[] = {  blue,   //Top
     
                         yellow, //Back
                         yellow, };
-
-
-//clout point
-int numOfPoints = 0;
-glm::vec3 pointCloud[POINTS_PER_TRIANGLE*12];
-glm::vec3 colorCloud[POINTS_PER_TRIANGLE*12];
-
 
 
 char* loadFile(string fname, GLint &fSize)
@@ -197,66 +204,66 @@ glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
-void cubeSampling()
+void sampleCube(struct vao *obj)
 {
+    glm::vec3 aux;
     int line;
     for (int i = 0; i < 12; i++) {
         for (int j = 0; j < POINTS_PER_TRIANGLE; j++) {
             line = i*3;
-            pointCloud[numOfPoints] = pickPoint(vertices[line], vertices[line+1], vertices[line+2]);
-            colorCloud[numOfPoints] = colors[i];
-            
-            numOfPoints++;
+            obj->vertices.push_back(pickPoint(vertices[line], vertices[line+1], vertices[line+2]));
+            obj->colors.push_back(colors[i]);
+            obj->numOfVertices++;
         }
     }
+    
+    obj->mode = GL_POINTS;
 }
 
 
-void initVAO()
+void loadVAO(struct vao *obj)
 {
     
     if (GLEW_ARB_vertex_buffer_object)
     {
         cout << "Video card supports GL_ARB_vertex_buffer_object." << endl;
         
-        cubeSampling();
-        
         // Allocate and assign a Vertex Array Object to our handle
-        glGenVertexArrays(1, &vao);
+        glGenVertexArrays(1, &obj->vaoID);
         
         // Bind our Vertex Array Object as the current used object
-        glBindVertexArray(vao);
+        glBindVertexArray(obj->vaoID);
         
         // Reserve a name for the buffer object.
-        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &obj->vboID);
         
         // Bind it to the GL_ARRAY_BUFFER target.
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, obj->vboID);
         
         // Allocate space for it (sizeof(vertices) + sizeof(colors)).
         glBufferData(GL_ARRAY_BUFFER,
-                     sizeof(pointCloud) + sizeof(colorCloud),
+                     sizeof(glm::vec3)*(obj->vertices.size() + obj->colors.size()),
                      NULL,
                      GL_STATIC_DRAW);
         
         // Put "vertices" at offset zero in the buffer.
         glBufferSubData(GL_ARRAY_BUFFER,
                         0,
-                        sizeof(pointCloud),
-                        pointCloud);
+                        sizeof(glm::vec3)*obj->vertices.size(),
+                        &obj->vertices[0]);
         
         // Put "colors" at an offset in the buffer equal to the filled size of
         // the buffer so far - i.e., sizeof(positions).
         glBufferSubData(GL_ARRAY_BUFFER,
-                        sizeof(pointCloud),
-                        sizeof(colorCloud),
-                        colorCloud);
+                        sizeof(glm::vec3)*obj->vertices.size(),
+                        sizeof(glm::vec3)*obj->colors.size(),
+                        &obj->colors[0]);
         
         // Now "positions" is at offset 0 and "colors" is directly after it
         // in the same buffer.
         
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pointCloud)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*obj->vertices.size()));
         
         
     }
@@ -269,7 +276,7 @@ void initVAO()
 }
 
 
-GLint initShaders()
+void initShaders()
 {
     GLuint p, f, v;
     
@@ -327,8 +334,7 @@ GLint initShaders()
     
 	delete [] vs; // dont forget to free allocated memory
 	delete [] fs; // we allocated this in the loadFile function...
-    
-    return p;
+
 }
 
 
@@ -367,9 +373,9 @@ void display()
     
     glUniformMatrix4fv(viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
     
-    glBindVertexArray(vao);	// First VAO
+    glBindVertexArray(pointCloudCube.vaoID);
     glPointSize(POINT_SIZE);
-	glDrawArrays(GL_POINTS, 0, numOfPoints);	// draw first object
+	glDrawArrays(pointCloudCube.mode, 0, pointCloudCube.numOfVertices);
     
     glBindVertexArray(0);
     
@@ -419,7 +425,6 @@ void keyboard(unsigned char key, int x, int y)
 
 int main(int argc, char **argv)
 {
-
     //Glu Init
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -443,8 +448,11 @@ int main(int argc, char **argv)
     cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
     cout << "GLEW version: " << glewGetString(GLEW_VERSION) << endl;
     
-    initVAO();
-    program = initShaders();
+    
+    sampleCube(&pointCloudCube);
+    loadVAO(&pointCloudCube);
+    
+    initShaders();
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(idle);
