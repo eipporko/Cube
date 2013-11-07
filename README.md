@@ -65,5 +65,5 @@ Platform-Specific Build Notes
 --------------------------------
 
 ### Mac Os X
-If you want to create Xcode project files, only have to run `cmake . -G Xcode`. 
+If you want to create Xcode project files, you only have to run `cmake . -G Xcode`. 
 This approach is highly recommended to do it from an out-of-source build directory. *- explained in 'How to build' step*
