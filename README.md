@@ -33,6 +33,7 @@ Mac Os users should install the following components:
 * [Macports](http://www.macports.org/). Once Macports is installed, run `sudo port selfupdate` to update macports repositories. Then run `sudo port install glew` and `sudo port install glm` for install the dependencies.
 * X11????????
 
+
 How to build
 -------------------------------
 For Linux/Unix/OSX/Mingw/Cygwin the build is straight forward:
@@ -64,4 +65,5 @@ Platform-Specific Build Notes
 --------------------------------
 
 ### Mac Os X
-`cmake . -G Xcode`
+If you want to create Xcode project files, only have to run `cmake . -G Xcode`. 
+This approach is highly recommended to do it from an out-of-source build directory. *- explained in 'How to build' step*
