@@ -64,6 +64,7 @@ struct vao {
 vao* displayVAO = NULL;
 
 //Cube Description
+//TODO: struct vao initilization with this data
 //
 //    v1----v3
 //   /|     /|
@@ -207,6 +208,7 @@ glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
+//TODO: *mesh param... hello?
 vao sampleMesh(vao *mesh)
 {
     vao sampledMesh;
