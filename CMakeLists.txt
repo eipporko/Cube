@@ -57,6 +57,9 @@ if(NOT OPENGL_FOUND)
     message(ERROR " OPENGL not found!")
 endif(NOT OPENGL_FOUND)
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "-Wall -std=gnu++0x")
+endif()
 
 add_subdirectory(src)
 add_subdirectory(test/test_solid)

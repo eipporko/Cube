@@ -13,9 +13,10 @@
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
-#elif
-#include <GL/glut.h>
+#else
+#include <GL/freeglut.h>
 #endif
+
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -23,7 +24,6 @@
 #define POINT_SIZE 2
 #define POINTS_PER_TRIANGLE 1500
 
-#define CAMERA_DISTANCE 7.0
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
 
 #define BUFFER_OFFSET(bytes) ((GLubyte*) NULL + (bytes))
@@ -42,7 +42,8 @@ glm::mat4 projMatrix, viewMatrix;   //transformation matrix
 
 
 //Camera
-glm::vec3 cameraEye = glm::vec3(0, 0, -CAMERA_DISTANCE);
+float cameraDistance = 7.0f;
+glm::vec3 cameraEye = glm::vec3(0, 0, -cameraDistance);
 glm::vec3 cameraUp = glm::vec3(0,1,0);
 float cameraAngleX, cameraAngleY;
 
@@ -59,7 +60,8 @@ struct vao {
     GLenum mode;
 };
 
-struct vao pointCloudCube;
+//Pointer to the VAO to be rendered in display func
+vao* displayVAO = NULL;
 
 //Cube Description
 //
@@ -87,41 +89,43 @@ glm::vec3 red   =   glm::vec3(1,0,0);
 glm::vec3 magenta = glm::vec3(1,0,1);
 glm::vec3 yellow =  glm::vec3(1,1,0);
 
-glm::vec3 vertices[] = {    v1, v2, v3, //Top
-                            v3, v2, v4,
+glm::vec3 vertices[] = {v1, v2, v3, //Top
+                        v3, v2, v4,
     
-                            v4, v2, v6, //Front
-                            v6, v8, v4,
+                        v4, v2, v6, //Front
+                        v6, v8, v4,
 
-                            v4, v8, v3, //Right
-                            v3, v8, v7,
+                        v4, v8, v3, //Right
+                        v3, v8, v7,
 
-                            v7, v8, v5, //Bottom
-                            v5, v8, v6,
+                        v7, v8, v5, //Bottom
+                        v5, v8, v6,
 
-                            v6, v2, v5, //Left
-                            v5, v2, v1,
+                        v6, v2, v5, //Left
+                        v5, v2, v1,
 
-                            v1, v3, v7, //Back
-                            v7, v5, v1};
+                        v1, v3, v7, //Back
+                        v7, v5, v1};
 
-glm::vec3 colors[] = {  blue,   //Top
-                        blue,
+glm::vec3 colors[] = {  blue, blue, blue,   //Top
+                        blue, blue, blue,
     
-                        green,  //Front
-                        green,
+                        green, green, green,  //Front
+                        green, green, green,
     
-                        cyan,   //Right
-                        cyan,
+                        cyan, cyan, cyan,   //Right
+                        cyan, cyan, cyan,
     
-                        red,    //Bottom
-                        red,
+                        red, red, red,    //Bottom
+                        red, red, red,
     
-                        magenta,//Left
-                        magenta,
+                        magenta, magenta, magenta,//Left
+                        magenta, magenta, magenta,
     
-                        yellow, //Back
-                        yellow, };
+                        yellow, yellow, yellow, //Back
+                        yellow, yellow, yellow };
+
+
 
 
 char* loadFile(string fname, GLint &fSize)
@@ -178,7 +182,6 @@ void printShaderInfoLog(GLint shader)
 }
 
 
-
 // http://parametricplayground.blogspot.com.es/2011/02/random-points-distributed-inside.html
 glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 {
@@ -204,20 +207,23 @@ glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
-void sampleCube(struct vao *obj)
+vao sampleMesh(vao *mesh)
 {
-    glm::vec3 aux;
+    vao sampledMesh;
+    
     int line;
     for (int i = 0; i < 12; i++) {
         for (int j = 0; j < POINTS_PER_TRIANGLE; j++) {
             line = i*3;
-            obj->vertices.push_back(pickPoint(vertices[line], vertices[line+1], vertices[line+2]));
-            obj->colors.push_back(colors[i]);
-            obj->numOfVertices++;
+            sampledMesh.vertices.push_back(pickPoint(vertices[line], vertices[line+1], vertices[line+2]));
+            sampledMesh.colors.push_back(colors[line]);
+            sampledMesh.numOfVertices++;
         }
     }
     
-    obj->mode = GL_POINTS;
+    sampledMesh.mode = GL_POINTS;
+    
+    return sampledMesh;
 }
 
 
@@ -264,8 +270,10 @@ void loadVAO(struct vao *obj)
         
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*obj->vertices.size()));
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
         
-        
+        displayVAO = obj;
     }
     else
     {
@@ -320,9 +328,6 @@ void initShaders()
 	glBindAttribLocation(p,0, "in_Position");
 	glBindAttribLocation(p,1, "in_Color");
     
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    
 	glAttachShader(p,v);
 	glAttachShader(p,f);
 	
@@ -373,16 +378,16 @@ void display()
     
     glUniformMatrix4fv(viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
     
-    glBindVertexArray(pointCloudCube.vaoID);
-    glPointSize(POINT_SIZE);
-	glDrawArrays(pointCloudCube.mode, 0, pointCloudCube.numOfVertices);
+    if (displayVAO != NULL) {
+        glBindVertexArray(displayVAO->vaoID);
+        glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+    }
     
     glBindVertexArray(0);
     
     glutSwapBuffers();
     
 }
-
 
 void mouseCallback(int btn, int state, int x, int y)
 {
@@ -402,9 +407,9 @@ void mouseMotion(int x, int y)
         cameraAngleY = GREATER_THAN(cameraAngleY, -M_PI/2.0f);
 
         // Calculate the camera position using the distance and angles
-        cameraEye.x = CAMERA_DISTANCE * -sinf(cameraAngleX) * cosf(cameraAngleY);
-        cameraEye.y = CAMERA_DISTANCE * -sinf(cameraAngleY);
-        cameraEye.z = -CAMERA_DISTANCE * cosf(cameraAngleX) * cosf(cameraAngleY);
+        cameraEye.x = cameraDistance * -sinf(cameraAngleX) * cosf(cameraAngleY);
+        cameraEye.y = cameraDistance * -sinf(cameraAngleY);
+        cameraEye.z = -cameraDistance * cosf(cameraAngleX) * cosf(cameraAngleY);
     }
     
     lastMouseX = x;
@@ -425,8 +430,19 @@ void keyboard(unsigned char key, int x, int y)
 
 int main(int argc, char **argv)
 {
+    
     //Glu Init
     glutInit(&argc, argv);
+    
+    #ifdef __APPLE__
+        glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    #else
+        // Freeglut
+        glutInitContextVersion(3, 2);
+        glutInitContextProfile(GLUT_CORE_PROFILE);
+        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    #endif
+    
     glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
     glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - WINDOW_WIDTH)/2,
@@ -434,6 +450,7 @@ int main(int argc, char **argv)
     glutCreateWindow("CUBE");
     
     glEnable(GL_DEPTH_TEST);
+    glPointSize(POINT_SIZE);
     
     //Glew Init
     glewExperimental = GL_TRUE;
@@ -448,11 +465,12 @@ int main(int argc, char **argv)
     cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
     cout << "GLEW version: " << glewGetString(GLEW_VERSION) << endl;
     
-    
-    sampleCube(&pointCloudCube);
+    vao pointCloudCube;
+    pointCloudCube = sampleMesh(NULL);
     loadVAO(&pointCloudCube);
     
     initShaders();
+    
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(idle);

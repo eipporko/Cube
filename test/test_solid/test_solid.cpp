@@ -10,8 +10,8 @@
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
-#elif
-#include <GL/glut.h>
+#else
+#include <GL/freeglut.h>
 #endif
 
 #define WINDOW_WIDTH 640
@@ -343,7 +343,16 @@ int main(int argc, char **argv)
 
     //Glu Init
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    
+    #ifdef __APPLE__
+        glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    #else
+        // Freeglut
+        glutInitContextVersion(3, 2);
+        glutInitContextProfile(GLUT_CORE_PROFILE);
+        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    #endif
+    
     glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
     glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - WINDOW_WIDTH)/2,
                            (glutGet(GLUT_SCREEN_HEIGHT) - WINDOW_HEIGHT)/2);
