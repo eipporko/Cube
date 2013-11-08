@@ -395,6 +395,7 @@ void mouseCallback(int btn, int state, int x, int y)
 {
 	if(btn==GLUT_LEFT_BUTTON && state==GLUT_UP) //this is only for left up button events
         lastMouseX = NULL;
+
 }
 
 
@@ -445,7 +446,6 @@ int main(int argc, char **argv)
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     #endif
     
-    glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
     glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - WINDOW_WIDTH)/2,
                            (glutGet(GLUT_SCREEN_HEIGHT) - WINDOW_HEIGHT)/2);
