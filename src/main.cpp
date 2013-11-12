@@ -10,7 +10,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -53,18 +52,17 @@ int lastMouseX = NULL, lastMouseY = NULL; //last mouse position pressed;
 //VAO Struct Definition
 struct vao {
     GLuint vaoID, vboID;
-    int numOfVertices = 0;
-    int numOfTriangles = 0;
+    int numOfVertices;
+    int numOfTriangles;
     vector<glm::vec3> vertices;
     vector<glm::vec3> colors;
     GLenum mode;
 };
 
 //Pointer to the VAO to be rendered in display func
-vao* displayVAO = NULL;
+struct vao* displayVAO = NULL;
 
 //Cube Description
-//TODO: struct vao initilization with this data
 //
 //    v1----v3
 //   /|     /|
@@ -126,6 +124,14 @@ glm::vec3 colors[] = {  blue, blue, blue,   //Top
                         yellow, yellow, yellow, //Back
                         yellow, yellow, yellow };
 
+
+struct vao cubeMesh = {
+    .numOfVertices = 36,
+    .numOfTriangles = 12,
+    .vertices = vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
+    .colors = vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
+    .mode = GL_TRIANGLES
+};
 
 
 
@@ -208,17 +214,19 @@ glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
-//TODO: *mesh param... hello?
-vao sampleMesh(vao *mesh)
+struct vao sampleMesh(struct vao *mesh)
 {
-    vao sampledMesh;
+    //Init
+    struct vao sampledMesh;
+    sampledMesh.numOfTriangles = 0;
+    sampledMesh.numOfVertices = 0;
     
     int line;
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < mesh->numOfTriangles; i++) {
         for (int j = 0; j < POINTS_PER_TRIANGLE; j++) {
             line = i*3;
-            sampledMesh.vertices.push_back(pickPoint(vertices[line], vertices[line+1], vertices[line+2]));
-            sampledMesh.colors.push_back(colors[line]);
+            sampledMesh.vertices.push_back(pickPoint(mesh->vertices[line], mesh->vertices[line+1], mesh->vertices[line+2]));
+            sampledMesh.colors.push_back(mesh->colors[line]);
             sampledMesh.numOfVertices++;
         }
     }
@@ -467,10 +475,10 @@ int main(int argc, char **argv)
     cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
     cout << "GLEW version: " << glewGetString(GLEW_VERSION) << endl;
     
-    vao pointCloudCube;
-    pointCloudCube = sampleMesh(NULL);
-    loadVAO(&pointCloudCube);
-    
+    vao sampledCube;
+    sampledCube = sampleMesh(&cubeMesh);
+    loadVAO(&sampledCube);
+
     initShaders();
     
     glutDisplayFunc(display);
