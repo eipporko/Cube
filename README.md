@@ -27,22 +27,20 @@ In order to build Cube, you need to have:
 
 (Earlier versions might work OK, but are not tested.)
 
-### Mac Os X
+### Mac Os X - Only Mavericks
 Mac Os users should install the following components:
 * Apple's [Xcode](https://developer.apple.com/technologies/tools/) Developer Tools (version 5.0.1 or later) 
 * Apple's Command Line Developer Tools are found at the [Apple Developer](https://developer.apple.com/downloads/) site, or they can be installed from within Xcode.
 * [Macports](http://www.macports.org/). Once Macports is installed, run `sudo port selfupdate` to update macports repositories. Then run `sudo port install glew` and `sudo port install glm` for install the dependencies.
-* For install [GLFW](http://www.glfw.org/) run:
-
-```
-git clone https://github.com/glfw/glfw.git
-cd glfw
-mkdir build
-cd build
-cmake .. -DGLFW_BUILD_UNIVERSAL=ON
-make
-sudo make install
-```
+* To compile and install [GLFW](http://www.glfw.org/) libs, you can clone the official [repository](https://github.com/glfw/glfw) and follow the [guide](http://www.glfw.org/docs/latest/compile.html) in the GLFW documentation.
+  
+  ```
+  git clone https://github.com/glfw/glfw.git
+  cd glfw
+  cmake . -DGLFW_BUILD_UNIVERSAL=ON
+  make
+  sudo make install
+  ```
 
 How to build
 -------------------------------
