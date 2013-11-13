@@ -32,7 +32,17 @@ Mac Os users should install the following components:
 * Apple's [Xcode](https://developer.apple.com/technologies/tools/) Developer Tools (version 5.0.1 or later) 
 * Apple's Command Line Developer Tools are found at the [Apple Developer](https://developer.apple.com/downloads/) site, or they can be installed from within Xcode.
 * [Macports](http://www.macports.org/). Once Macports is installed, run `sudo port selfupdate` to update macports repositories. Then run `sudo port install glew` and `sudo port install glm` for install the dependencies.
+* For install [GLFW](http://www.glfw.org/) run:
 
+```
+git clone https://github.com/glfw/glfw.git
+cd glfw
+mkdir build
+cd build
+cmake .. -DGLFW_BUILD_UNIVERSAL=ON
+make
+sudo make install
+```
 
 How to build
 -------------------------------
