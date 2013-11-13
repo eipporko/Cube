@@ -14,7 +14,7 @@ add_executable(cube main.cpp)
 #########################################################
 
 # create the program “cube”
-target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY})
+target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} ${GLFW_LIBRARIES})
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
   set_target_properties( cube PROPERTIES

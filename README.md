@@ -10,6 +10,7 @@ it's Epic!
 Controls
 -------------------------
 * Mouse: Move Camera
+* Scroll: Zoom
 * Esc: Exit
 
 
@@ -20,7 +21,7 @@ In order to build Cube, you need to have:
 * OpenGL 4 support.
 * [cmake](http://www.cmake.org/) 2.8 or later. 
 * [git](http://git-scm.com/) 1.8.3.4 or later. 
-* [GLUT](http://www.opengl.org/resources/libraries/glut/) Toolkit.
+* [GLFW](http://www.glfw.org/) Library 3.0.3 or later.
 * [GLEW](http://glew.sourceforge.net/) Library 1.10.0 or later.
 * [GLM](http://glm.g-truc.net/) Library 0.9.4 or later.
 

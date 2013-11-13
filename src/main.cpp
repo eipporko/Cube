@@ -10,11 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/freeglut.h>
-#endif
+#include <GLFW/glfw3.h>
 
 
 #define WINDOW_WIDTH 640
@@ -47,7 +43,8 @@ glm::vec3 cameraUp = glm::vec3(0,1,0);
 float cameraAngleX, cameraAngleY;
 
 //Mouse
-int lastMouseX = NULL, lastMouseY = NULL; //last mouse position pressed;
+double lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
+bool leftBtnPress = false;
 
 //VAO Struct Definition
 struct vao {
@@ -353,13 +350,7 @@ void initShaders()
 }
 
 
-void idle(void)
-{
-    glutPostRedisplay();
-}
-
-
-void reshape(int w, int h)
+void reshapeCallback(GLFWwindow * window, int w, int h)
 {
     float ratio;
     
@@ -373,6 +364,61 @@ void reshape(int w, int h)
     projMatrix = glm::perspective(53.13f, ratio, 1.0f, 30.0f);
     
     glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
+}
+
+
+void updateCamera()
+{
+    // Calculate the camera position using the distance and angles
+    cameraEye.x = cameraDistance * -sinf(cameraAngleX) * cosf(cameraAngleY);
+    cameraEye.y = cameraDistance * -sinf(cameraAngleY);
+    cameraEye.z = -cameraDistance * cosf(cameraAngleX) * cosf(cameraAngleY);
+}
+
+
+void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
+{
+    cameraDistance -= yoffset;
+    cameraDistance = GREATER_THAN(cameraDistance, 0.001f);
+    
+    updateCamera();
+}
+
+
+void mousePosCallback(GLFWwindow * window, double x, double y)
+{
+    if (leftBtnPress == true) {
+        cameraAngleX += (lastMouseX - x) * CAMERA_RPP;
+        cameraAngleY += (lastMouseY - y) * CAMERA_RPP;
+        
+        //-PI/2 < cameraAngleY < PI/2
+        cameraAngleY = LESS_THAN(cameraAngleY, M_PI/2.0f);
+        cameraAngleY = GREATER_THAN(cameraAngleY, -M_PI/2.0f);
+        
+        updateCamera();
+    }
+    
+    lastMouseX = x;
+    lastMouseY = y;
+
+}
+
+
+void mouseCallback(GLFWwindow * window, int btn, int action, int mods)
+{
+	if(btn == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_RELEASE)
+            leftBtnPress = false;
+        else if (action == GLFW_PRESS)
+            leftBtnPress = true;
+    }
+}
+
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 
@@ -395,70 +441,34 @@ void display()
     
     glBindVertexArray(0);
     
-    glutSwapBuffers();
-    
 }
-
-void mouseCallback(int btn, int state, int x, int y)
-{
-	if(btn==GLUT_LEFT_BUTTON && state==GLUT_UP) //this is only for left up button events
-        lastMouseX = NULL;
-
-}
-
-
-void mouseMotion(int x, int y)
-{
-    if (lastMouseX != NULL) {
-        cameraAngleX += (lastMouseX - x) * CAMERA_RPP;
-        cameraAngleY += (lastMouseY - y) * CAMERA_RPP;
-        
-        //-PI/2 < cameraAngleY < PI/2
-        cameraAngleY = LESS_THAN(cameraAngleY, M_PI/2.0f);
-        cameraAngleY = GREATER_THAN(cameraAngleY, -M_PI/2.0f);
-
-        // Calculate the camera position using the distance and angles
-        cameraEye.x = cameraDistance * -sinf(cameraAngleX) * cosf(cameraAngleY);
-        cameraEye.y = cameraDistance * -sinf(cameraAngleY);
-        cameraEye.z = -cameraDistance * cosf(cameraAngleX) * cosf(cameraAngleY);
-    }
-    
-    lastMouseX = x;
-    lastMouseY = y;
-}
-
-
-void keyboard(unsigned char key, int x, int y)
-{
-    switch (key)
-    {
-        case 27: //esc
-            exit (0);
-            break;
-    }
-}
-
 
 int main(int argc, char **argv)
 {
+    GLFWwindow* window;
     
-    //Glu Init
-    glutInit(&argc, argv);
+    /* Initialize the library */
+    if (!glfwInit())
+        return -1;
     
-    #ifdef __APPLE__
-        glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-    #else
-        // Freeglut
-        glutInitContextVersion(3, 2);
-        glutInitContextProfile(GLUT_CORE_PROFILE);
-        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-    #endif
+    /* create context */
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
-    glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
-    glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - WINDOW_WIDTH)/2,
-                           (glutGet(GLUT_SCREEN_HEIGHT) - WINDOW_HEIGHT)/2);
-    glutCreateWindow("CUBE");
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "CUBE", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
     
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+    
+    /*openGL configure*/
     glEnable(GL_DEPTH_TEST);
     glPointSize(POINT_SIZE);
     
@@ -467,29 +477,42 @@ int main(int argc, char **argv)
     GLenum err = glewInit();
     if (GLEW_OK != err)
     {
-		cout << "glewInit failed, aborting." << endl;
-		exit (1);
+        cout << "glewInit failed, aborting." << endl;
+        exit (1);
     }
-    
+
     cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
     cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
     cout << "GLEW version: " << glewGetString(GLEW_VERSION) << endl;
     
-    vao sampledCube;
+    struct vao sampledCube;
     sampledCube = sampleMesh(&cubeMesh);
     loadVAO(&sampledCube);
 
     initShaders();
     
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutIdleFunc(idle);
-    glutKeyboardFunc(keyboard);
-    glutMouseFunc(mouseCallback);
-    glutMotionFunc(mouseMotion);
+    /*glfw Callbacks*/
+    glfwSetKeyCallback(window, keyboardCallback);
+    glfwSetWindowSizeCallback(window, reshapeCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+    glfwSetMouseButtonCallback(window, mouseCallback);
+    glfwSetCursorPosCallback(window, mousePosCallback);
+    reshapeCallback(window, WINDOW_WIDTH, WINDOW_HEIGHT); //callback forced
     
-    glutMainLoop();
-
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {
+        /* Render here */
+        display();
+        
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+        
+        /* Poll for and process events */
+        glfwPollEvents();
+    }
     
+    glfwTerminate();
     return 0;
+
 }
