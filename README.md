@@ -11,6 +11,7 @@ Controls
 -------------------------
 * Mouse: Move Camera
 * Scroll: Zoom
+* Up/Down: Change splat's radii
 * Esc: Exit
 
 

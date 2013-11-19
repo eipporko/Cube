@@ -16,7 +16,6 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
-#define POINT_SIZE 2
 #define POINTS_PER_TRIANGLE 1500
 
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
@@ -35,9 +34,15 @@ using namespace std;
 GLint projMatrixLoc, viewMatrixLoc; //uniform locations
 glm::mat4 projMatrix, viewMatrix;   //transformation matrix
 
+//Frustrum and Viewport
+GLint nearFrustumLoc, topFrustumLoc, bottomFrustumLoc, hViewportLoc;
+
+//Splat's radii
+GLint radiusSplatLoc;
+float radiusSplat = 0.0125f;
 
 //Camera
-float cameraDistance = 7.0f;
+float cameraDistance = 4.0f;
 glm::vec3 cameraEye = glm::vec3(0, 0, -cameraDistance);
 glm::vec3 cameraUp = glm::vec3(0,1,0);
 float cameraAngleX, cameraAngleY;
@@ -53,6 +58,7 @@ struct vao {
     int numOfTriangles;
     vector<glm::vec3> vertices;
     vector<glm::vec3> colors;
+    vector<glm::vec3> normals;
     GLenum mode;
 };
 
@@ -85,6 +91,13 @@ glm::vec3 red   =   glm::vec3(1,0,0);
 glm::vec3 magenta = glm::vec3(1,0,1);
 glm::vec3 yellow =  glm::vec3(1,1,0);
 
+glm::vec3 normal_top = glm::vec3(0,1,0);
+glm::vec3 normal_front = glm::vec3(0,0,-1);
+glm::vec3 normal_right = glm::vec3(1,0,0);
+glm::vec3 normal_bottom = glm::vec3(0,-1,0);
+glm::vec3 normal_left = glm::vec3(-1,0,0);
+glm::vec3 normal_back = glm::vec3(0,0,1);
+
 glm::vec3 vertices[] = {v1, v2, v3, //Top
                         v3, v2, v4,
     
@@ -101,7 +114,7 @@ glm::vec3 vertices[] = {v1, v2, v3, //Top
                         v5, v2, v1,
 
                         v1, v3, v7, //Back
-                        v7, v5, v1};
+                        v7, v5, v1 };
 
 glm::vec3 colors[] = {  blue, blue, blue,   //Top
                         blue, blue, blue,
@@ -121,12 +134,25 @@ glm::vec3 colors[] = {  blue, blue, blue,   //Top
                         yellow, yellow, yellow, //Back
                         yellow, yellow, yellow };
 
+glm::vec3 normals[] = {  normal_top,
+    
+                        normal_front,
+    
+                        normal_right,
+    
+                        normal_bottom,
+    
+                        normal_left,
+    
+                        normal_back };
+
 
 struct vao cubeMesh = {
     .numOfVertices = 36,
     .numOfTriangles = 12,
     .vertices = vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
     .colors = vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
+    .normals = vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
     .mode = GL_TRIANGLES
 };
 
@@ -224,6 +250,7 @@ struct vao sampleMesh(struct vao *mesh)
             line = i*3;
             sampledMesh.vertices.push_back(pickPoint(mesh->vertices[line], mesh->vertices[line+1], mesh->vertices[line+2]));
             sampledMesh.colors.push_back(mesh->colors[line]);
+            sampledMesh.normals.push_back(mesh->normals[line]);
             sampledMesh.numOfVertices++;
         }
     }
@@ -343,6 +370,13 @@ void initShaders()
     
     projMatrixLoc = glGetUniformLocation(p, "projMatrix");
     viewMatrixLoc = glGetUniformLocation(p, "viewMatrix");
+    nearFrustumLoc = glGetUniformLocation(p, "n");
+    topFrustumLoc = glGetUniformLocation(p,"t");
+    bottomFrustumLoc = glGetUniformLocation(p,"b");
+    hViewportLoc = glGetUniformLocation(p,"h");
+    radiusSplatLoc = glGetUniformLocation(p,"r");
+    
+    glUniform1f(radiusSplatLoc, radiusSplat);
     
 	delete [] vs; // dont forget to free allocated memory
 	delete [] fs; // we allocated this in the loadFile function...
@@ -353,6 +387,9 @@ void initShaders()
 void reshapeCallback(GLFWwindow * window, int w, int h)
 {
     float ratio;
+    float fovy = 53.13f;
+    float near = 1.0f;
+    float far = 30.0f;
     
     if (h == 0)
         h = 1;
@@ -361,9 +398,13 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     
     ratio = (1.0f * w) / h;
-    projMatrix = glm::perspective(53.13f, ratio, 1.0f, 30.0f);
+    projMatrix = glm::perspective(fovy, ratio, near, far);
     
     glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
+    glUniform1i(hViewportLoc, (GLint) h);
+    glUniform1f(nearFrustumLoc, (GLfloat) near);
+    glUniform1f(topFrustumLoc, (GLfloat) -1.0f*tan( 0.5f * DEG_TO_RAD(fovy)) * near );
+    glUniform1f(bottomFrustumLoc, (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near );
 }
 
 
@@ -419,6 +460,16 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+    
+    if (key == GLFW_KEY_UP) {
+        radiusSplat += 0.00025f;
+        glUniform1f(radiusSplatLoc, radiusSplat);
+    }
+    
+    if (key == GLFW_KEY_DOWN) {
+        radiusSplat -= 0.00025f;
+        glUniform1f(radiusSplatLoc, radiusSplat);
+    }
 }
 
 
@@ -470,7 +521,7 @@ int main(int argc, char **argv)
     
     /*openGL configure*/
     glEnable(GL_DEPTH_TEST);
-    glPointSize(POINT_SIZE);
+    glEnable(GL_PROGRAM_POINT_SIZE);
     
     //Glew Init
     glewExperimental = GL_TRUE;
