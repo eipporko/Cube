@@ -1,5 +1,6 @@
 #version 400
 uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
 uniform int h; //Height of the viewport
 uniform float n; //Near parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -8,14 +9,22 @@ uniform float r; //Splat's radii
 
 in  vec3 in_Position;
 in  vec3 in_Color;
+in 	vec3 in_Normals;
 out vec3 ex_Color;
+out vec3 ex_Normals;
+out float ex_PointSize;
 
 vec4 ccPosition; //position in Camera Coordinates
 
 void main(void)
 {
-	ex_Color = in_Color;
+	ex_Normals = normalMatrix * in_Normals;
+	
+	//p. 277
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2*r * (n / ccPosition.z) * (h / (t-b));
+
+	ex_PointSize = gl_PointSize;
+	ex_Color = in_Color;
 }

@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <GLFW/glfw3.h>
@@ -16,7 +17,7 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
-#define POINTS_PER_TRIANGLE 1500
+#define POINTS_PER_TRIANGLE 250
 
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
 
@@ -31,11 +32,12 @@ using namespace std;
 
 
 //Projection and View Matrix
-GLint projMatrixLoc, viewMatrixLoc; //uniform locations
+GLint projMatrixLoc, viewMatrixLoc, normalMatrixLoc; //uniform locations
 glm::mat4 projMatrix, viewMatrix;   //transformation matrix
+glm::mat3 normalMatrix;
 
 //Frustrum and Viewport
-GLint nearFrustumLoc, topFrustumLoc, bottomFrustumLoc, hViewportLoc;
+GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, hViewportLoc;
 
 //Splat's radii
 GLint radiusSplatLoc;
@@ -134,16 +136,22 @@ glm::vec3 colors[] = {  blue, blue, blue,   //Top
                         yellow, yellow, yellow, //Back
                         yellow, yellow, yellow };
 
-glm::vec3 normals[] = {  normal_top,
+glm::vec3 normals[] = { normal_top,
+                        normal_top,
     
+                        normal_front,
                         normal_front,
     
                         normal_right,
+                        normal_right,
     
+                        normal_bottom,
                         normal_bottom,
     
                         normal_left,
+                        normal_left,
     
+                        normal_back,
                         normal_back };
 
 
@@ -250,7 +258,7 @@ struct vao sampleMesh(struct vao *mesh)
             line = i*3;
             sampledMesh.vertices.push_back(pickPoint(mesh->vertices[line], mesh->vertices[line+1], mesh->vertices[line+2]));
             sampledMesh.colors.push_back(mesh->colors[line]);
-            sampledMesh.normals.push_back(mesh->normals[line]);
+            sampledMesh.normals.push_back(mesh->normals[i]);
             sampledMesh.numOfVertices++;
         }
     }
@@ -282,7 +290,9 @@ void loadVAO(struct vao *obj)
         
         // Allocate space for it (sizeof(vertices) + sizeof(colors)).
         glBufferData(GL_ARRAY_BUFFER,
-                     sizeof(glm::vec3)*(obj->vertices.size() + obj->colors.size()),
+                     sizeof(glm::vec3)*(obj->vertices.size() +
+                                        obj->colors.size()+
+                                        obj->normals.size()),
                      NULL,
                      GL_STATIC_DRAW);
         
@@ -299,13 +309,25 @@ void loadVAO(struct vao *obj)
                         sizeof(glm::vec3)*obj->colors.size(),
                         &obj->colors[0]);
         
+        // Put "normals" at an offset in the buffer equal to the filled size of
+        // the buffer so far - i.e., sizeof(positions).
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        sizeof(glm::vec3)*(obj->vertices.size()+
+                                           obj->colors.size()),
+                        sizeof(glm::vec3)*obj->normals.size(),
+                        &obj->normals[0]);
+        
         // Now "positions" is at offset 0 and "colors" is directly after it
         // in the same buffer.
         
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*obj->vertices.size()));
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*(obj->vertices.size()+
+                                                                                            obj->colors.size())));
+        
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
         
         displayVAO = obj;
     }
@@ -361,6 +383,7 @@ void initShaders()
     
 	glBindAttribLocation(p,0, "in_Position");
 	glBindAttribLocation(p,1, "in_Color");
+    glBindAttribLocation(p,2, "in_Normals");
     
 	glAttachShader(p,v);
 	glAttachShader(p,f);
@@ -370,7 +393,9 @@ void initShaders()
     
     projMatrixLoc = glGetUniformLocation(p, "projMatrix");
     viewMatrixLoc = glGetUniformLocation(p, "viewMatrix");
+    normalMatrixLoc = glGetUniformLocation(p, "normalMatrix");
     nearFrustumLoc = glGetUniformLocation(p, "n");
+    farFrustumLoc = glGetUniformLocation(p, "f");
     topFrustumLoc = glGetUniformLocation(p,"t");
     bottomFrustumLoc = glGetUniformLocation(p,"b");
     hViewportLoc = glGetUniformLocation(p,"h");
@@ -388,7 +413,7 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
 {
     float ratio;
     float fovy = 53.13f;
-    float near = 1.0f;
+    float near = 0.1f;
     float far = 30.0f;
     
     if (h == 0)
@@ -403,6 +428,7 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
     glUniform1i(hViewportLoc, (GLint) h);
     glUniform1f(nearFrustumLoc, (GLfloat) near);
+    glUniform1f(farFrustumLoc, (GLfloat) far);
     glUniform1f(topFrustumLoc, (GLfloat) -1.0f*tan( 0.5f * DEG_TO_RAD(fovy)) * near );
     glUniform1f(bottomFrustumLoc, (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near );
 }
@@ -475,15 +501,18 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 
 void display()
 {
-	//RGB(86,136,199)
+
 	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     viewMatrix = glm::lookAt(cameraEye,
                              glm::vec3(0,0,0),
-                             cameraUp);
+                             glm::cross(glm::cross(cameraEye, cameraUp), cameraEye));
+    
+    normalMatrix = glm::inverseTranspose(glm::mat3(viewMatrix));
     
     glUniformMatrix4fv(viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
+    glUniformMatrix3fv(normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
     
     if (displayVAO != NULL) {
         glBindVertexArray(displayVAO->vaoID);
@@ -522,7 +551,7 @@ int main(int argc, char **argv)
     /*openGL configure*/
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
-    
+
     //Glew Init
     glewExperimental = GL_TRUE;
     GLenum err = glewInit();
