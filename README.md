@@ -9,9 +9,12 @@ it's Epic!
 
 Controls
 -------------------------
-* Mouse: Move Camera
+* Mouse: Move camera
 * Scroll: Zoom
 * Up/Down: Change splat's radii
+* R: Reset camera position
+* S: Switch between shaders
+* M: Switch between models (CUBE | SPHERE)
 * Esc: Exit
 
 

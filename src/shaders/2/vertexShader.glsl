@@ -1,3 +1,4 @@
+//Affinely Projected Point Sprites
 #version 400
 uniform mat4 viewMatrix, projMatrix;
 uniform mat3 normalMatrix;
@@ -12,19 +13,22 @@ in  vec3 in_Color;
 in 	vec3 in_Normals;
 out vec3 ex_Color;
 out vec3 ex_Normals;
-out float ex_PointSize;
+out float ex_Pz; //z in Camera Coordinates
 
 vec4 ccPosition; //position in Camera Coordinates
 
 void main(void)
 {
-	ex_Normals = normalMatrix * in_Normals;
-	
+	ex_Normals = normalize(normalMatrix * in_Normals);
+
+	if (abs(ex_Normals.z) <= 0.1)
+		ex_Normals.z = 0.1;
+
 	//p. 277
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2*r * (n / ccPosition.z) * (h / (t-b));
 
-	ex_PointSize = gl_PointSize;
 	ex_Color = in_Color;
+	ex_Pz = ccPosition.z;
 }

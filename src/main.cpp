@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <iostream>
-#include <fstream>
 #include <math.h>
 #include <vector>
 
@@ -13,15 +12,19 @@
 
 #include <GLFW/glfw3.h>
 
+#include "globals.h"
+#include "file.h"
+#include "vao.h"
+
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
-#define POINTS_PER_TRIANGLE 250
+#define POINTS_PER_TRIANGLE 500
+#define POINTS_PER_SPHERA 2000
 
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
 
-#define BUFFER_OFFSET(bytes) ((GLubyte*) NULL + (bytes))
 #define SGN(x)   (((x) < 0) ? (-1) : (1))
 #define DEG_TO_RAD(x) (x * (M_PI / 180.0))
 #define LESS_THAN(x, limit) ((x > limit) ? (limit) : (x))
@@ -31,172 +34,12 @@
 using namespace std;
 
 
-//Projection and View Matrix
-GLint projMatrixLoc, viewMatrixLoc, normalMatrixLoc; //uniform locations
-glm::mat4 projMatrix, viewMatrix;   //transformation matrix
-glm::mat3 normalMatrix;
-
-//Frustrum and Viewport
-GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, hViewportLoc;
-
-//Splat's radii
-GLint radiusSplatLoc;
-float radiusSplat = 0.0125f;
-
-//Camera
-float cameraDistance = 4.0f;
-glm::vec3 cameraEye = glm::vec3(0, 0, -cameraDistance);
-glm::vec3 cameraUp = glm::vec3(0,1,0);
-float cameraAngleX, cameraAngleY;
-
-//Mouse
-double lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
-bool leftBtnPress = false;
-
-//VAO Struct Definition
-struct vao {
-    GLuint vaoID, vboID;
-    int numOfVertices;
-    int numOfTriangles;
-    vector<glm::vec3> vertices;
-    vector<glm::vec3> colors;
-    vector<glm::vec3> normals;
-    GLenum mode;
-};
-
-//Pointer to the VAO to be rendered in display func
-struct vao* displayVAO = NULL;
-
-//Cube Description
-//
-//    v1----v3
-//   /|     /|
-//  v2+---v4 |
-//  | |    | |
-//  | v5---+v7
-//  |/     |/
-//  v6----v8
-
-glm::vec3 v1 = glm::vec3(-1,1,1);
-glm::vec3 v2 = glm::vec3(-1,1,-1);
-glm::vec3 v3 = glm::vec3(1,1,1);
-glm::vec3 v4 = glm::vec3(1,1,-1);
-glm::vec3 v5 = glm::vec3(-1,-1,1);
-glm::vec3 v6 = glm::vec3(-1,-1,-1);
-glm::vec3 v7 = glm::vec3(1,-1,1);
-glm::vec3 v8 = glm::vec3(1,-1,-1);
-
-glm::vec3 blue  =   glm::vec3(0,0,1);
-glm::vec3 green =   glm::vec3(0,1,0);
-glm::vec3 cyan  =   glm::vec3(0,1,1);
-glm::vec3 red   =   glm::vec3(1,0,0);
-glm::vec3 magenta = glm::vec3(1,0,1);
-glm::vec3 yellow =  glm::vec3(1,1,0);
-
-glm::vec3 normal_top = glm::vec3(0,1,0);
-glm::vec3 normal_front = glm::vec3(0,0,-1);
-glm::vec3 normal_right = glm::vec3(1,0,0);
-glm::vec3 normal_bottom = glm::vec3(0,-1,0);
-glm::vec3 normal_left = glm::vec3(-1,0,0);
-glm::vec3 normal_back = glm::vec3(0,0,1);
-
-glm::vec3 vertices[] = {v1, v2, v3, //Top
-                        v3, v2, v4,
-    
-                        v4, v2, v6, //Front
-                        v6, v8, v4,
-
-                        v4, v8, v3, //Right
-                        v3, v8, v7,
-
-                        v7, v8, v5, //Bottom
-                        v5, v8, v6,
-
-                        v6, v2, v5, //Left
-                        v5, v2, v1,
-
-                        v1, v3, v7, //Back
-                        v7, v5, v1 };
-
-glm::vec3 colors[] = {  blue, blue, blue,   //Top
-                        blue, blue, blue,
-    
-                        green, green, green,  //Front
-                        green, green, green,
-    
-                        cyan, cyan, cyan,   //Right
-                        cyan, cyan, cyan,
-    
-                        red, red, red,    //Bottom
-                        red, red, red,
-    
-                        magenta, magenta, magenta,//Left
-                        magenta, magenta, magenta,
-    
-                        yellow, yellow, yellow, //Back
-                        yellow, yellow, yellow };
-
-glm::vec3 normals[] = { normal_top,
-                        normal_top,
-    
-                        normal_front,
-                        normal_front,
-    
-                        normal_right,
-                        normal_right,
-    
-                        normal_bottom,
-                        normal_bottom,
-    
-                        normal_left,
-                        normal_left,
-    
-                        normal_back,
-                        normal_back };
-
-
-struct vao cubeMesh = {
-    .numOfVertices = 36,
-    .numOfTriangles = 12,
-    .vertices = vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
-    .colors = vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
-    .normals = vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
-    .mode = GL_TRIANGLES
-};
-
-
-
-char* loadFile(string fname, GLint &fSize)
-{
-	ifstream::pos_type size;
-	char * memblock;
-	string text;
-    
-	// file read based on example in cplusplus.com tutorial
-	ifstream file (fname, ios::in|ios::binary|ios::ate);
-	if (file.is_open())
-	{
-		size = file.tellg();
-		fSize = (GLuint) size;
-		memblock = new char [size];
-		file.seekg (0, ios::beg);
-		file.read (memblock, size);
-		file.close();
-		cout << "file " << fname << " loaded" << endl;
-		text.assign(memblock);
-	}
-	else
-	{
-		cout << "Unable to open file " << fname << endl;
-		exit(1);
-	}
-	return memblock;
-}
-
-
-// printShaderInfoLog
-// From OpenGL Shading Language 3rd Edition, p215-216
-// Display (hopefully) useful error messages if shader fails to compile
+/**
+ @brief Display (hopefully) useful error messages if shader fails to compile
+ From OpenGL Shading Language 3rd Edition, p215-216
+ @param shader shader reference
+ @returns void
+ */
 void printShaderInfoLog(GLint shader)
 {
 	int infoLogLen = 0;
@@ -220,7 +63,24 @@ void printShaderInfoLog(GLint shader)
 }
 
 
-// http://parametricplayground.blogspot.com.es/2011/02/random-points-distributed-inside.html
+/**
+ @brief Returns a title for the window
+ Concatenate 'CUBE' with the description of the shader thats its been used
+ @returns title
+ */
+const char* getTitleWindow()
+{
+    string title = "CUBE | " + shaderDescription[actualShader%numOfShaders];
+    return title.c_str();
+}
+
+
+/**
+ @brief Gets a random point inside a triangle defined by its vertices
+ http://parametricplayground.blogspot.com.es/2011/02/random-points-distributed-inside.html
+ @param v1, v2, v3 vertices of an triangle
+ @returns point
+ */
 glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 {
     glm::vec3 point;
@@ -245,6 +105,11 @@ glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
+/**
+ Sample a model transforming it into a point cloud
+ @param mesh model defined by GL_TRIANGLES
+ @returns point cloud
+ */
 struct vao sampleMesh(struct vao *mesh)
 {
     //Init
@@ -269,81 +134,50 @@ struct vao sampleMesh(struct vao *mesh)
 }
 
 
-void loadVAO(struct vao *obj)
+struct vao sampleSphere()
 {
+    double x, y, z;
     
-    if (GLEW_ARB_vertex_buffer_object)
-    {
-        cout << "Video card supports GL_ARB_vertex_buffer_object." << endl;
+    struct vao sampledSphere;
+    sampledSphere.numOfTriangles = 0;
+    sampledSphere.numOfVertices = 0;
+    
+    for (int i = 0; i < POINTS_PER_SPHERA; i++) {
+        //x^2 + y^2 + z^2 = 1
         
-        // Allocate and assign a Vertex Array Object to our handle
-        glGenVertexArrays(1, &obj->vaoID);
+        x = rand() / double(RAND_MAX) * 2 - 1;
+        y = rand() / double(RAND_MAX) * 2 - 1;
         
-        // Bind our Vertex Array Object as the current used object
-        glBindVertexArray(obj->vaoID);
+        while (sqrt(pow(x, 2) + pow(y, 2)) > 1.0)
+            y = rand() / double(RAND_MAX) * 2 - 1;
+            
+        z = sqrt(1 - pow(x, 2) - pow(y, 2));
+    
+        //+z
+        sampledSphere.vertices.push_back(glm::vec3(x,y,z));
+        sampledSphere.normals.push_back(glm::normalize(glm::vec3(x,y,z)));
+        sampledSphere.colors.push_back(glm::vec3(0,0,1));
         
-        // Reserve a name for the buffer object.
-        glGenBuffers(1, &obj->vboID);
+        //-z
+        sampledSphere.vertices.push_back(glm::vec3(x,y,-z));
+        sampledSphere.normals.push_back(glm::normalize(glm::vec3(x,y,-z)));
+        sampledSphere.colors.push_back(glm::vec3(1,0,0));
         
-        // Bind it to the GL_ARRAY_BUFFER target.
-        glBindBuffer(GL_ARRAY_BUFFER, obj->vboID);
-        
-        // Allocate space for it (sizeof(vertices) + sizeof(colors)).
-        glBufferData(GL_ARRAY_BUFFER,
-                     sizeof(glm::vec3)*(obj->vertices.size() +
-                                        obj->colors.size()+
-                                        obj->normals.size()),
-                     NULL,
-                     GL_STATIC_DRAW);
-        
-        // Put "vertices" at offset zero in the buffer.
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        0,
-                        sizeof(glm::vec3)*obj->vertices.size(),
-                        &obj->vertices[0]);
-        
-        // Put "colors" at an offset in the buffer equal to the filled size of
-        // the buffer so far - i.e., sizeof(positions).
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        sizeof(glm::vec3)*obj->vertices.size(),
-                        sizeof(glm::vec3)*obj->colors.size(),
-                        &obj->colors[0]);
-        
-        // Put "normals" at an offset in the buffer equal to the filled size of
-        // the buffer so far - i.e., sizeof(positions).
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        sizeof(glm::vec3)*(obj->vertices.size()+
-                                           obj->colors.size()),
-                        sizeof(glm::vec3)*obj->normals.size(),
-                        &obj->normals[0]);
-        
-        // Now "positions" is at offset 0 and "colors" is directly after it
-        // in the same buffer.
-        
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*obj->vertices.size()));
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*(obj->vertices.size()+
-                                                                                            obj->colors.size())));
-        
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        
-        displayVAO = obj;
-    }
-    else
-    {
-        cout << "Video card does NOT support GL_ARB_vertex_buffer_object." << endl;
+        sampledSphere.numOfVertices = sampledSphere.numOfVertices + 2;
         
     }
     
+    return sampledSphere;
 }
 
 
-void initShaders()
+/**
+ @brief
+ @param
+ @returns
+ */
+void compileShaders()
 {
-    GLuint p, f, v;
-    
 	char *vs,*fs;
     
 	v = glCreateShader(GL_VERTEX_SHADER);
@@ -352,14 +186,15 @@ void initShaders()
 	// load shaders & get length of each
 	GLint vlen;
 	GLint flen;
-	vs = loadFile("../src/vertexShader.glsl",vlen);
-	fs = loadFile("../src/fragmentShader.glsl",flen);
+    
+	vs = loadFile((string) "../src/shaders/" + to_string(actualShader%numOfShaders) + "/vertexShader.glsl",vlen);
+	fs = loadFile((string) "../src/shaders/" + to_string(actualShader%numOfShaders) + "/fragmentShader.glsl",flen);
 	
 	const char * vv = vs;
 	const char * ff = fs;
     
-	glShaderSource(v, 1, &vv,&vlen);
-	glShaderSource(f, 1, &ff,&flen);
+	glShaderSource(v, 1, &vv, &vlen);
+	glShaderSource(f, 1, &ff, &flen);
 	
 	GLint compiled;
     
@@ -378,49 +213,60 @@ void initShaders()
 		cout << "Fragment shader not compiled." << endl;
 		printShaderInfoLog(f);
 	}
-	
-	p = glCreateProgram();
     
-	glBindAttribLocation(p,0, "in_Position");
-	glBindAttribLocation(p,1, "in_Color");
-    glBindAttribLocation(p,2, "in_Normals");
-    
-	glAttachShader(p,v);
-	glAttachShader(p,f);
-	
-	glLinkProgram(p);
-	glUseProgram(p);
-    
-    projMatrixLoc = glGetUniformLocation(p, "projMatrix");
-    viewMatrixLoc = glGetUniformLocation(p, "viewMatrix");
-    normalMatrixLoc = glGetUniformLocation(p, "normalMatrix");
-    nearFrustumLoc = glGetUniformLocation(p, "n");
-    farFrustumLoc = glGetUniformLocation(p, "f");
-    topFrustumLoc = glGetUniformLocation(p,"t");
-    bottomFrustumLoc = glGetUniformLocation(p,"b");
-    hViewportLoc = glGetUniformLocation(p,"h");
-    radiusSplatLoc = glGetUniformLocation(p,"r");
-    
-    glUniform1f(radiusSplatLoc, radiusSplat);
-    
-	delete [] vs; // dont forget to free allocated memory
+    delete [] vs; // dont forget to free allocated memory
 	delete [] fs; // we allocated this in the loadFile function...
 
 }
 
+void initShaders()
+{
+    program = glCreateProgram();
+    
+    compileShaders();
+    
+    glAttachShader(program, v);
+	glAttachShader(program, f);
+    
+    glBindAttribLocation(program, 0, "in_Position");
+	glBindAttribLocation(program, 1, "in_Color");
+    glBindAttribLocation(program, 2, "in_Normals");
+    
+    glLinkProgram(program);
+    
+    glDeleteShader(v);
+    glDeleteShader(f);
+    
+    glUseProgram(program);
+    glDeleteProgram(program);
+    
+    projMatrixLoc = glGetUniformLocation(program, "projMatrix");
+    viewMatrixLoc = glGetUniformLocation(program, "viewMatrix");
+    normalMatrixLoc = glGetUniformLocation(program, "normalMatrix");
+    nearFrustumLoc = glGetUniformLocation(program, "n");
+    farFrustumLoc = glGetUniformLocation(program, "f");
+    topFrustumLoc = glGetUniformLocation(program,"t");
+    bottomFrustumLoc = glGetUniformLocation(program,"b");
+    hViewportLoc = glGetUniformLocation(program,"h");
+    radiusSplatLoc = glGetUniformLocation(program,"r");
+    
+    glUniform1f(radiusSplatLoc, radiusSplat);
 
-void reshapeCallback(GLFWwindow * window, int w, int h)
+}
+
+
+void updateProjMatrix(GLFWwindow * window)
 {
     float ratio;
     float fovy = 53.13f;
     float near = 0.1f;
     float far = 30.0f;
     
+    int w, h;
+    glfwGetWindowSize(window, &w, &h);
+    
     if (h == 0)
         h = 1;
-    
-    // set viewport to be the entire window
-    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     
     ratio = (1.0f * w) / h;
     projMatrix = glm::perspective(fovy, ratio, near, far);
@@ -431,10 +277,24 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glUniform1f(farFrustumLoc, (GLfloat) far);
     glUniform1f(topFrustumLoc, (GLfloat) -1.0f*tan( 0.5f * DEG_TO_RAD(fovy)) * near );
     glUniform1f(bottomFrustumLoc, (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near );
+
+}
+
+void reshapeCallback(GLFWwindow * window, int w, int h)
+{
+
+    // set viewport to be the entire window
+    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    
+    updateProjMatrix(window);
 }
 
 
-void updateCamera()
+/**
+ Reset camera position to origin.
+ @returns void
+ */
+void updateCameraPosition()
 {
     // Calculate the camera position using the distance and angles
     cameraEye.x = cameraDistance * -sinf(cameraAngleX) * cosf(cameraAngleY);
@@ -443,12 +303,21 @@ void updateCamera()
 }
 
 
+
+void resetCameraPosition()
+{
+    cameraAngleX = 0;
+    cameraAngleY = 0;
+    updateCameraPosition();
+}
+
+
 void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 {
     cameraDistance -= yoffset;
     cameraDistance = GREATER_THAN(cameraDistance, 0.001f);
     
-    updateCamera();
+    updateCameraPosition();
 }
 
 
@@ -462,7 +331,7 @@ void mousePosCallback(GLFWwindow * window, double x, double y)
         cameraAngleY = LESS_THAN(cameraAngleY, M_PI/2.0f);
         cameraAngleY = GREATER_THAN(cameraAngleY, -M_PI/2.0f);
         
-        updateCamera();
+        updateCameraPosition();
     }
     
     lastMouseX = x;
@@ -488,14 +357,31 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         glfwSetWindowShouldClose(window, GL_TRUE);
     
     if (key == GLFW_KEY_UP) {
-        radiusSplat += 0.00025f;
+        radiusSplat += 0.001f;
         glUniform1f(radiusSplatLoc, radiusSplat);
     }
     
     if (key == GLFW_KEY_DOWN) {
-        radiusSplat -= 0.00025f;
+        radiusSplat -= 0.001f;
         glUniform1f(radiusSplatLoc, radiusSplat);
     }
+    
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        resetCameraPosition();
+    }
+    
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        actualShader++;
+        initShaders();
+        updateProjMatrix(window);
+        glfwSetWindowTitle(window, getTitleWindow());
+    }
+    
+    if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+        actualVAO++;
+        displayVAO = &models[actualVAO%models.size()];
+    }
+    
 }
 
 
@@ -539,6 +425,8 @@ int main(int argc, char **argv)
     
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "CUBE", NULL, NULL);
+    glfwSetWindowTitle(window, getTitleWindow());
+    
     if (!window)
     {
         glfwTerminate();
@@ -547,10 +435,6 @@ int main(int argc, char **argv)
     
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    
-    /*openGL configure*/
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_PROGRAM_POINT_SIZE);
 
     //Glew Init
     glewExperimental = GL_TRUE;
@@ -561,13 +445,24 @@ int main(int argc, char **argv)
         exit (1);
     }
 
+    /*openGL configure*/
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
+    
     cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
     cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
     cout << "GLEW version: " << glewGetString(GLEW_VERSION) << endl;
     
-    struct vao sampledCube;
-    sampledCube = sampleMesh(&cubeMesh);
-    loadVAO(&sampledCube);
+    //init all models
+    models.push_back(sampleMesh(&cubeMesh));
+    models.push_back(sampleSphere());
+    for (int i = 0; i < models.size(); i++) {
+        loadVAO(&models[i]);
+        
+    }
+    
+    displayVAO = &models[0];
 
     initShaders();
     
