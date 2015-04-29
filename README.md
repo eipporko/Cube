@@ -47,8 +47,7 @@ Mac Os users should install the following components:
   make
   sudo make install
   ```
-
- * To compile and install [PCL](http://pointclouds.org/) libs, you can clone the official [repository](https://github.com/PointCloudLibrary/pcl) and follow the [guide](http://pointclouds.org/documentation/tutorials/compiling_pcl_macosx.php). Take sure of being installed Boost, Eigen, FLANN and Visualization ToolKit (VTK) dependencies.
+* To compile and install [PCL](http://pointclouds.org/) libs, you can clone the official [repository](https://github.com/PointCloudLibrary/pcl) and follow the [guide](http://pointclouds.org/documentation/tutorials/compiling_pcl_macosx.php). Take sure of being installed Boost, Eigen, FLANN and Visualization ToolKit (VTK) dependencies.
 
   ```
   sudo port install boost
