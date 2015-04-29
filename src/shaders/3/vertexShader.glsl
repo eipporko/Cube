@@ -1,4 +1,4 @@
-//Affinely Projected Point Sprites
+//Perspective Correct Rasterization
 #version 400
 uniform mat4 viewMatrix, projMatrix;
 uniform mat3 normalMatrix;
@@ -11,18 +11,21 @@ uniform float radius; //Splat's radii
 in  vec3 in_Position;
 in  vec3 in_Color;
 in 	vec3 in_Normals;
+
 out vec3 ex_Color;
-out vec3 ex_Normals;
-out float ex_Pz; //z in Camera Coordinates
+out vec3 ex_UxV;
+out vec3 ex_PxV;
+out	vec3 ex_UxP;
 
 vec4 ccPosition; //position in Camera Coordinates
+vec3 normals;
 
 void main(void)
 {
-	ex_Normals = normalize(normalMatrix * in_Normals);
-
-	if (abs(ex_Normals.z) <= 0.1)
-		ex_Normals.z = 0.1;
+	normals = normalize(normalMatrix * in_Normals);
+	ex_PxV = vec3( -normals.y, normals.x, 0);
+	ex_UxP = cross(normals, ex_PxV);
+	ex_UxV = cross(ex_UxP, ex_PxV);
 
 	//p. 277
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
@@ -30,5 +33,4 @@ void main(void)
 	gl_PointSize = 2*radius * (n / ccPosition.z) * (h / (t-b));
 
 	ex_Color = in_Color;
-	ex_Pz = ccPosition.z;
 }

@@ -9,6 +9,7 @@ it's Epic!
 
 Controls
 -------------------------
+* O: Open .PTS File
 * Mouse: Move camera
 * Scroll: Zoom
 * Up/Down: Change splat's radii
@@ -28,6 +29,7 @@ In order to build Cube, you need to have:
 * [GLFW](http://www.glfw.org/) Library 3.0.3 or later.
 * [GLEW](http://glew.sourceforge.net/) Library 1.10.0 or later.
 * [GLM](http://glm.g-truc.net/) Library 0.9.4 or later.
+* [PCL](http://pointclouds.org/) Library 1.3 or later.
 
 (Earlier versions might work OK, but are not tested.)
 
@@ -42,6 +44,23 @@ Mac Os users should install the following components:
   git clone https://github.com/glfw/glfw.git
   cd glfw
   cmake . -DGLFW_BUILD_UNIVERSAL=ON
+  make
+  sudo make install
+  ```
+
+ * To compile and install [PCL](http://pointclouds.org/) libs, you can clone the official [repository](https://github.com/PointCloudLibrary/pcl) and follow the [guide](http://pointclouds.org/documentation/tutorials/compiling_pcl_macosx.php). Take sure of being installed Boost, Eigen, FLANN and Visualization ToolKit (VTK) dependencies.
+
+  ```
+  sudo port install boost
+  sudo port install eigen3
+  sudo port install flann
+  sudo port install vtk5 +qt4_mac
+
+  git clone https://github.com/PointCloudLibrary/pcl.git
+  cd pcl
+  mkdir build
+  cd build
+  cmake ..
   make
   sudo make install
   ```

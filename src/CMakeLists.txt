@@ -14,7 +14,7 @@ add_executable(cube main.cpp globals.h file.h file.cpp vao.h vao.cpp)
 #########################################################
 
 # create the program “cube”
-target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} ${GLFW_LIBRARIES})
+target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
 
 if(CMAKE_GENERATOR STREQUAL Xcode)
   set_target_properties( cube PROPERTIES

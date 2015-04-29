@@ -16,7 +16,8 @@ glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
 glm::mat3 normalMatrix;
 
 //Frustrum and Viewport
-GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, hViewportLoc;
+GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, leftFrustumLoc, rightFrustumLoc;
+GLint hViewportLoc, wViewportLoc;
 
 //Splat's radii
 GLint radiusSplatLoc;
@@ -35,7 +36,8 @@ bool leftBtnPress = false;
 //Shaders
 string shaderDescription[] = {  "Sized-Fixed Points",
                                 "Square Size - Corrected by Depth",
-                                "Affinely Projected Point Sprites" };
+                                "Affinely Projected Point Sprites" ,
+                                "Perspective Correct Rasterization"};
 int numOfShaders = sizeof(shaderDescription)/sizeof(string);
 int actualShader = numOfShaders - 1;
 

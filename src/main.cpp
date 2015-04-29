@@ -12,6 +12,9 @@
 
 #include <GLFW/glfw3.h>
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
 #include "globals.h"
 #include "file.h"
 #include "vao.h"
@@ -171,6 +174,32 @@ struct vao sampleSphere()
 }
 
 
+
+/**
+ @brief
+ @param
+ @returns
+ */
+void openPTSFile(const char * pathFile) {
+    
+    FILE * pFile = fopen(pathFile, "r");
+    char buffer [100];
+    
+    if (pFile == NULL) perror ("Error opening file");
+    else
+    {
+        while ( ! feof (pFile) )
+        {
+            if ( fgets (buffer , 100 , pFile) == NULL ) break;
+            cout << buffer;
+        }
+        fclose (pFile);
+    }
+    
+}
+
+
+
 /**
  @brief
  @param
@@ -247,12 +276,16 @@ void initShaders()
     farFrustumLoc = glGetUniformLocation(program, "f");
     topFrustumLoc = glGetUniformLocation(program,"t");
     bottomFrustumLoc = glGetUniformLocation(program,"b");
+    rightFrustumLoc = glGetUniformLocation(program,"r");
+    leftFrustumLoc = glGetUniformLocation(program, "l");
     hViewportLoc = glGetUniformLocation(program,"h");
-    radiusSplatLoc = glGetUniformLocation(program,"r");
+    wViewportLoc = glGetUniformLocation(program,"w");
+    radiusSplatLoc = glGetUniformLocation(program,"radius");
     
     glUniform1f(radiusSplatLoc, radiusSplat);
 
 }
+
 
 
 void updateProjMatrix(GLFWwindow * window)
@@ -271,14 +304,25 @@ void updateProjMatrix(GLFWwindow * window)
     ratio = (1.0f * w) / h;
     projMatrix = glm::perspective(fovy, ratio, near, far);
     
+    GLfloat bottom = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near;
     glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
     glUniform1i(hViewportLoc, (GLint) h);
+    glUniform1i(wViewportLoc, (GLint) w);
     glUniform1f(nearFrustumLoc, (GLfloat) near);
     glUniform1f(farFrustumLoc, (GLfloat) far);
-    glUniform1f(topFrustumLoc, (GLfloat) -1.0f*tan( 0.5f * DEG_TO_RAD(fovy)) * near );
-    glUniform1f(bottomFrustumLoc, (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near );
+    glUniform1f(topFrustumLoc, (GLfloat) -bottom );
+    glUniform1f(bottomFrustumLoc, (GLfloat) bottom );
+    glUniform1f(leftFrustumLoc, (GLfloat) -bottom * ratio);
+    glUniform1f(rightFrustumLoc, (GLfloat) bottom * ratio);
+    
+    cout << "top: " << -bottom << " ,bottom: " << bottom << endl;
+    cout << "left: " << -bottom * ratio << " ,right: " << bottom * ratio << endl;
+    cout << "(r-l/w) - (r-l/2): " << ((bottom * ratio) - (-bottom * ratio))/w - ((bottom * ratio) - (-bottom * ratio))/2.0  << endl;
+    cout << "(t-b/h) - (t-b/2): " << (-bottom - bottom)/h - (-bottom - bottom)/2.0  << endl;
 
 }
+
+
 
 void reshapeCallback(GLFWwindow * window, int w, int h)
 {
@@ -288,6 +332,7 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     
     updateProjMatrix(window);
 }
+
 
 
 /**
@@ -312,6 +357,7 @@ void resetCameraPosition()
 }
 
 
+
 void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 {
     cameraDistance -= yoffset;
@@ -319,6 +365,7 @@ void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
     
     updateCameraPosition();
 }
+
 
 
 void mousePosCallback(GLFWwindow * window, double x, double y)
@@ -340,6 +387,7 @@ void mousePosCallback(GLFWwindow * window, double x, double y)
 }
 
 
+
 void mouseCallback(GLFWwindow * window, int btn, int action, int mods)
 {
 	if(btn == GLFW_MOUSE_BUTTON_LEFT) {
@@ -349,6 +397,7 @@ void mouseCallback(GLFWwindow * window, int btn, int action, int mods)
             leftBtnPress = true;
     }
 }
+
 
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -382,7 +431,15 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         displayVAO = &models[actualVAO%models.size()];
     }
     
+    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+        string pathToFile;
+        cout << "Open File: ";
+        cin >> pathToFile;
+        openPTSFile(pathToFile.c_str());
+    }
+    
 }
+
 
 
 void display()
