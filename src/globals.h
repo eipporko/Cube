@@ -4,6 +4,9 @@
 #include <vector>
 #include "vao.h"
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
 using namespace std;
 
 //Shader program
@@ -40,6 +43,7 @@ string shaderDescription[] = {  "Sized-Fixed Points",
                                 "Perspective Correct Rasterization"};
 int numOfShaders = sizeof(shaderDescription)/sizeof(string);
 int actualShader = numOfShaders - 1;
+
 
 //Models
 vector<struct vao> models;

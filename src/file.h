@@ -4,6 +4,7 @@
 #include <iostream>
 #include <GL/glew.h>
 
+
 using namespace std;
 
 /**
@@ -13,5 +14,14 @@ using namespace std;
  @returns memblock
  */
 char* loadFile(string fname, GLint &fSize);
+
+
+/**
+ Returns a buffer with file data
+ @param[in] fname path to file
+ @param[out] fSize file size
+ @returns memblock
+ */
+struct vao loadCloud(string pathFile);
 
 #endif

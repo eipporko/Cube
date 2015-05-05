@@ -12,9 +12,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-
 #include "globals.h"
 #include "file.h"
 #include "vao.h"
@@ -171,31 +168,6 @@ struct vao sampleSphere()
     }
     
     return sampledSphere;
-}
-
-
-
-/**
- @brief
- @param
- @returns
- */
-void openPTSFile(const char * pathFile) {
-    
-    FILE * pFile = fopen(pathFile, "r");
-    char buffer [100];
-    
-    if (pFile == NULL) perror ("Error opening file");
-    else
-    {
-        while ( ! feof (pFile) )
-        {
-            if ( fgets (buffer , 100 , pFile) == NULL ) break;
-            cout << buffer;
-        }
-        fclose (pFile);
-    }
-    
 }
 
 
@@ -435,7 +407,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         string pathToFile;
         cout << "Open File: ";
         cin >> pathToFile;
-        openPTSFile(pathToFile.c_str());
+        struct vao VAO = loadCloud(pathToFile);
+        if (VAO.numOfVertices != 0 || VAO.numOfTriangles != 0) {
+            models.push_back(VAO);
+            loadVAO(&models[models.size()-1]);
+            displayVAO = &models[models.size()-1];
+        }
     }
     
 }

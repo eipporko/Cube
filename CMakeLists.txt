@@ -39,7 +39,7 @@ endif(NOT OPENGL_FOUND)
 #########################################################
 # FIND PCL
 #########################################################
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+find_package(PCL 1.3 REQUIRED COMPONENTS common io features segmentation)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
