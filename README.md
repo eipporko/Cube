@@ -9,7 +9,7 @@ it's Epic!
 
 Controls
 -------------------------
-* O: Open .PTS File
+* O: Open .PTS or .PLY files
 * Mouse: Move camera
 * Scroll: Zoom
 * Up/Down: Change splat's radii
