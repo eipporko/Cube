@@ -276,21 +276,16 @@ void updateProjMatrix(GLFWwindow * window)
     ratio = (1.0f * w) / h;
     projMatrix = glm::perspective(fovy, ratio, near, far);
     
-    GLfloat bottom = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near;
+    GLfloat top = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near;
     glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
     glUniform1i(hViewportLoc, (GLint) h);
     glUniform1i(wViewportLoc, (GLint) w);
     glUniform1f(nearFrustumLoc, (GLfloat) near);
     glUniform1f(farFrustumLoc, (GLfloat) far);
-    glUniform1f(topFrustumLoc, (GLfloat) -bottom );
-    glUniform1f(bottomFrustumLoc, (GLfloat) bottom );
-    glUniform1f(leftFrustumLoc, (GLfloat) -bottom * ratio);
-    glUniform1f(rightFrustumLoc, (GLfloat) bottom * ratio);
-    
-    cout << "top: " << -bottom << " ,bottom: " << bottom << endl;
-    cout << "left: " << -bottom * ratio << " ,right: " << bottom * ratio << endl;
-    cout << "(r-l/w) - (r-l/2): " << ((bottom * ratio) - (-bottom * ratio))/w - ((bottom * ratio) - (-bottom * ratio))/2.0  << endl;
-    cout << "(t-b/h) - (t-b/2): " << (-bottom - bottom)/h - (-bottom - bottom)/2.0  << endl;
+    glUniform1f(topFrustumLoc, (GLfloat) -top );
+    glUniform1f(bottomFrustumLoc, (GLfloat) top );
+    glUniform1f(leftFrustumLoc, (GLfloat) -top * ratio);
+    glUniform1f(rightFrustumLoc, (GLfloat) top * ratio);
 
 }
 

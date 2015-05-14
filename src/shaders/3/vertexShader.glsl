@@ -13,24 +13,27 @@ in  vec3 in_Color;
 in 	vec3 in_Normals;
 
 out vec3 ex_Color;
-out vec3 ex_UxV;
-out vec3 ex_PxV;
-out	vec3 ex_UxP;
 
-vec4 ccPosition; //position in Camera Coordinates
-vec3 normals;
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
 
 void main(void)
 {
 	normals = normalize(normalMatrix * in_Normals);
-	ex_PxV = vec3( -normals.y, normals.x, 0);
-	ex_UxP = cross(normals, ex_PxV);
-	ex_UxV = cross(ex_UxP, ex_PxV);
+
 
 	//p. 277
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2*radius * (n / ccPosition.z) * (h / (t-b));
+
+	//U = normalize( cross (in_Position, normals));
+	//V = normalize( cross (U, normals) );
+
+	//ex_PxV = cross(in_Position, V);
+	//ex_UxP = cross(U, in_Position);
+	//ex_UxV = cross(U, V);
 
 	ex_Color = in_Color;
 }
