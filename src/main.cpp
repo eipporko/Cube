@@ -15,6 +15,7 @@
 #include "globals.h"
 #include "file.h"
 #include "vao.h"
+#include "shader.h"
 
 
 #define WINDOW_WIDTH 640
@@ -35,42 +36,18 @@ using namespace std;
 
 
 /**
- @brief Display (hopefully) useful error messages if shader fails to compile
- From OpenGL Shading Language 3rd Edition, p215-216
- @param shader shader reference
- @returns void
- */
-void printShaderInfoLog(GLint shader)
-{
-	int infoLogLen = 0;
-	int charsWritten = 0;
-	GLchar *infoLog;
-    
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
-    
-	// should additionally check for OpenGL errors here
-    
-	if (infoLogLen > 0)
-	{
-		infoLog = new GLchar[infoLogLen];
-		// error check for fail to allocate memory omitted
-		glGetShaderInfoLog(shader,infoLogLen, &charsWritten, infoLog);
-		cout << "InfoLog:" << endl << infoLog << endl;
-		delete [] infoLog;
-	}
-    
-	// should additionally check for OpenGL errors here
-}
-
-
-/**
  @brief Returns a title for the window
  Concatenate 'CUBE' with the description of the shader thats its been used
  @returns title
  */
 const char* getTitleWindow()
 {
-    string title = "CUBE | " + shaderDescription[actualShader%numOfShaders];
+    string multipass;
+    if (MultipassEnabled)
+        multipass = "MultiPass";
+    else
+        multipass = "SinglePass";
+    title = "CUBE | " + shaderDescription[actualShader%numOfShaders] + " | " + multipass;
     return title.c_str();
 }
 
@@ -204,7 +181,7 @@ void compileShaders()
 	if (!compiled)
 	{
 		cout << "Vertex shader not compiled." << endl;
-		printShaderInfoLog(v);
+        Shader::printShaderInfoLog(v);
 	}
     
 	glCompileShader(f);
@@ -212,7 +189,7 @@ void compileShaders()
 	if (!compiled)
 	{
 		cout << "Fragment shader not compiled." << endl;
-		printShaderInfoLog(f);
+        Shader::printShaderInfoLog(f);
 	}
     
     delete [] vs; // dont forget to free allocated memory
@@ -265,7 +242,7 @@ void updateProjMatrix(GLFWwindow * window)
     float ratio;
     float fovy = 53.13f;
     float near = 0.1f;
-    float far = 30.0f;
+    float far = 100.0f;
     
     int w, h;
     glfwGetWindowSize(window, &w, &h);
@@ -405,9 +382,16 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         struct vao VAO = loadCloud(pathToFile);
         if (VAO.numOfVertices != 0 || VAO.numOfTriangles != 0) {
             models.push_back(VAO);
+            actualVAO = models.size() - 1;
             loadVAO(&models[models.size()-1]);
             displayVAO = &models[models.size()-1];
         }
+    }
+    
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        MultipassEnabled = !MultipassEnabled;
+        
+        glfwSetWindowTitle(window, getTitleWindow());
     }
     
 }
@@ -451,7 +435,7 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "CUBE", NULL, NULL);
     glfwSetWindowTitle(window, getTitleWindow());
@@ -478,6 +462,9 @@ int main(int argc, char **argv)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
+    //glDepthMask(GL_TRUE);
+    //glEnable(GL_BLEND);
+    glBlendFuncSeparateEXT(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
     
     cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
     cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;

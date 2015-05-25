@@ -12,6 +12,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/common/distances.h>
 #include <pcl/filters/filter.h>
+#include <pcl/filters/voxel_grid.h>
 
 #include <fstream>
 
@@ -87,9 +88,20 @@ struct vao loadCloud(string pathFile)
     std::vector<int> indices;
     int pointsBefore = cloud->size();
     pcl::removeNaNFromPointCloud(*cloud, *cloud, indices);
+
     
     if (pointsBefore - cloud->size() > 0)
         cout << "-> Deleted " << (pointsBefore - cloud->size()) << " NaN Points." << endl;
+
+    //VoxelGrid for remove duplicates
+    cout << endl << "Downsampling PointCloud with VoxelGrid filter (leafSize = 0.01f) ..." << endl;
+    pointsBefore = cloud->size();
+    pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
+    sor.setInputCloud (cloud);
+    sor.setLeafSize (0.01f, 0.01f, 0.01f);
+    sor.filter (*cloud);
+    cout << "-> Points Before: " << pointsBefore << " , after: " << cloud->size() << endl;
+    
     
     if (cloud->is_dense) {
         
