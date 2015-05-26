@@ -16,6 +16,7 @@ Controls
 * R: Reset camera position
 * S: Switch between shaders
 * M: Switch between models (CUBE | SPHERE)
+* P: Change between single & multi-pass rendering.
 * Esc: Exit
 
 
