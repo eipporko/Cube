@@ -58,4 +58,5 @@ void main(void)
 	//p. 279
 	//q = lambda * qn;
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+
 }

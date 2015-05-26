@@ -47,7 +47,7 @@ const char* getTitleWindow()
         multipass = "MultiPass";
     else
         multipass = "SinglePass";
-    title = "CUBE | " + shaderDescription[actualShader%numOfShaders] + " | " + multipass;
+    title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass;
     return title.c_str();
 }
 
@@ -148,95 +148,6 @@ struct vao sampleSphere()
 }
 
 
-
-/**
- @brief
- @param
- @returns
- */
-void compileShaders()
-{
-	char *vs,*fs;
-    
-	v = glCreateShader(GL_VERTEX_SHADER);
-	f = glCreateShader(GL_FRAGMENT_SHADER);
-    
-	// load shaders & get length of each
-	GLint vlen;
-	GLint flen;
-    
-	vs = loadFile((string) "../src/shaders/" + to_string(actualShader%numOfShaders) + "/vertexShader.glsl",vlen);
-	fs = loadFile((string) "../src/shaders/" + to_string(actualShader%numOfShaders) + "/fragmentShader.glsl",flen);
-	
-	const char * vv = vs;
-	const char * ff = fs;
-    
-	glShaderSource(v, 1, &vv, &vlen);
-	glShaderSource(f, 1, &ff, &flen);
-	
-	GLint compiled;
-    
-	glCompileShader(v);
-	glGetShaderiv(v, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		cout << "Vertex shader not compiled." << endl;
-        Shader::printShaderInfoLog(v);
-	}
-    
-	glCompileShader(f);
-	glGetShaderiv(f, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		cout << "Fragment shader not compiled." << endl;
-        Shader::printShaderInfoLog(f);
-	}
-    
-    delete [] vs; // dont forget to free allocated memory
-	delete [] fs; // we allocated this in the loadFile function...
-
-}
-
-void initShaders()
-{
-    program = glCreateProgram();
-    
-    compileShaders();
-    
-    glAttachShader(program, v);
-	glAttachShader(program, f);
-    
-    glBindAttribLocation(program, 0, "in_Position");
-	glBindAttribLocation(program, 1, "in_Color");
-    glBindAttribLocation(program, 2, "in_Normals");
-    
-    glLinkProgram(program);
-    
-    glDeleteShader(v);
-    glDeleteShader(f);
-    
-    glUseProgram(program);
-    glDeleteProgram(program);
-    
-    projMatrixLoc = glGetUniformLocation(program, "projMatrix");
-    viewMatrixLoc = glGetUniformLocation(program, "viewMatrix");
-    normalMatrixLoc = glGetUniformLocation(program, "normalMatrix");
-    nearFrustumLoc = glGetUniformLocation(program, "n");
-    farFrustumLoc = glGetUniformLocation(program, "f");
-    topFrustumLoc = glGetUniformLocation(program,"t");
-    bottomFrustumLoc = glGetUniformLocation(program,"b");
-    rightFrustumLoc = glGetUniformLocation(program,"r");
-    leftFrustumLoc = glGetUniformLocation(program, "l");
-    hViewportLoc = glGetUniformLocation(program,"h");
-    wViewportLoc = glGetUniformLocation(program,"w");
-    radiusSplatLoc = glGetUniformLocation(program,"radius");
-    
-    glUniform1f(radiusSplatLoc, radiusSplat);
-
-}
-
-
-
 void updateProjMatrix(GLFWwindow * window)
 {
     float ratio;
@@ -254,18 +165,17 @@ void updateProjMatrix(GLFWwindow * window)
     projMatrix = glm::perspective(fovy, ratio, near, far);
     
     GLfloat top = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near;
-    glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
-    glUniform1i(hViewportLoc, (GLint) h);
-    glUniform1i(wViewportLoc, (GLint) w);
-    glUniform1f(nearFrustumLoc, (GLfloat) near);
-    glUniform1f(farFrustumLoc, (GLfloat) far);
-    glUniform1f(topFrustumLoc, (GLfloat) -top );
-    glUniform1f(bottomFrustumLoc, (GLfloat) top );
-    glUniform1f(leftFrustumLoc, (GLfloat) -top * ratio);
-    glUniform1f(rightFrustumLoc, (GLfloat) top * ratio);
+    glUniformMatrix4fv(Shader::projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
+    glUniform1i(Shader::hViewportLoc, (GLint) h);
+    glUniform1i(Shader::wViewportLoc, (GLint) w);
+    glUniform1f(Shader::nearFrustumLoc, (GLfloat) near);
+    glUniform1f(Shader::farFrustumLoc, (GLfloat) far);
+    glUniform1f(Shader::topFrustumLoc, (GLfloat) -top );
+    glUniform1f(Shader::bottomFrustumLoc, (GLfloat) top );
+    glUniform1f(Shader::leftFrustumLoc, (GLfloat) -top * ratio);
+    glUniform1f(Shader::rightFrustumLoc, (GLfloat) top * ratio);
 
 }
-
 
 
 void reshapeCallback(GLFWwindow * window, int w, int h)
@@ -351,12 +261,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_UP) {
         radiusSplat += 0.001f;
-        glUniform1f(radiusSplatLoc, radiusSplat);
+        glUniform1f(Shader::radiusSplatLoc, radiusSplat);
     }
     
     if (key == GLFW_KEY_DOWN) {
         radiusSplat -= 0.001f;
-        glUniform1f(radiusSplatLoc, radiusSplat);
+        glUniform1f(Shader::radiusSplatLoc, radiusSplat);
     }
     
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
@@ -365,7 +275,8 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         actualShader++;
-        initShaders();
+        listOfShaders[actualShader%listOfShaders.size()].compileShader();
+        Shader::bindShader();
         updateProjMatrix(window);
         glfwSetWindowTitle(window, getTitleWindow());
     }
@@ -391,6 +302,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         MultipassEnabled = !MultipassEnabled;
         
+        if (!MultipassEnabled) {
+            listOfShaders[actualShader%listOfShaders.size()].compileShader();
+            Shader::bindShader();
+            updateProjMatrix(window);
+        }
+        
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
@@ -398,7 +315,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 
 
 
-void display()
+void display(GLFWwindow* window)
 {
 
 	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
@@ -410,15 +327,72 @@ void display()
     
     normalMatrix = glm::inverseTranspose(glm::mat3(viewMatrix));
     
-    glUniformMatrix4fv(viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
-    glUniformMatrix3fv(normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
+    glBindVertexArray(displayVAO->vaoID);
     
     if (displayVAO != NULL) {
-        glBindVertexArray(displayVAO->vaoID);
-        glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+        
+        if (!MultipassEnabled) {
+            glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
+            glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
+            
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
+            glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+        }
+        else {
+            //glDisable(GL_DEPTH_TEST);
+            Shader shaderh = listOfShaders[actualShader%listOfShaders.size()];
+            
+            for (int i = 0; i < shaderh.getMultiPass().size(); i++) {
+                shaderh.getMultiPass()[i].compileShader();
+                Shader::bindShader();
+                updateProjMatrix(window);
+                
+                glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
+                glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
+                
+                switch (shaderh.getMultiPass()[i].getMode()) {
+                    case shader::DEPTH_MASK:
+                    {
+                        glDepthMask(GL_TRUE);
+                        glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+                        break;
+                    }
+                    case shader::BLENDING:
+                    {
+                        glEnable(GL_BLEND);
+                        glDepthMask(GL_FALSE);
+                        glDepthFunc(GL_LEQUAL);
+                        glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+                        break;
+                    }
+                    case shader::NORMALIZATION:
+                    {
+//                        GLfloat vVertices[] = {0.0f, 0.5f, 0.0f,
+//                            -0.5f, -0.5f, 0.0f,
+//                            0.5f, -0.5f, 0.0f};
+//                    
+//                        // Load the vertex data
+//                        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
+//                        glEnableVertexAttribArray(0);
+//                        glDrawArrays(GL_TRIANGLES, 0, 3);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                
+                glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                glDisable(GL_BLEND);
+                glDepthMask(GL_TRUE);
+                
+            }
+            
+        }
     }
     
     glBindVertexArray(0);
+
     
 }
 
@@ -459,11 +433,8 @@ int main(int argc, char **argv)
     }
 
     /*openGL configure*/
-    glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
-    //glDepthMask(GL_TRUE);
-    //glEnable(GL_BLEND);
     glBlendFuncSeparateEXT(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
     
     cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
@@ -479,8 +450,10 @@ int main(int argc, char **argv)
     }
     
     displayVAO = &models[0];
-
-    initShaders();
+    
+    listOfShaders[actualShader].compileShader();
+    Shader::bindShader();
+    updateProjMatrix(window);
     
     /*glfw Callbacks*/
     glfwSetKeyCallback(window, keyboardCallback);
@@ -494,7 +467,7 @@ int main(int argc, char **argv)
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        display();
+        display(window);
         
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

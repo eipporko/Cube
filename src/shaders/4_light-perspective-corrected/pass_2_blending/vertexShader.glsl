@@ -28,16 +28,5 @@ void main(void)
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2*radius * (n / ccPosition.z) * (h / (t-b));
 
-	//U = normalize( cross (in_Position, normals));
-	//V = normalize( cross (U, normals) );
-
-	//ex_PxV = cross(in_Position, V);
-	//ex_UxP = cross(U, in_Position);
-	//ex_UxV = cross(U, V);
-
-	//compute lightning color
-	//vec3 lightDirection = vec3(0.0,0.0,1.0);
-	//float dotValue = max(dot(normals, lightDirection), 0.0);
-	//ex_Color = vec3(dotValue) + in_Color;
-	ex_Color = (normals + vec3(1.0, 1.0, 1.0))/2.0;
+	ex_Color = (normals + in_Color)/2.0f;
 }

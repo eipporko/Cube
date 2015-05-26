@@ -1,20 +1,13 @@
 #include "globals.h"
+#include "shader.h"
 
-//Shader program
-GLint program;
-GLuint f, v; //fragment and vertex shader
+using namespace shader;
 
 //Projection and View Matrix
-GLint projMatrixLoc, viewMatrixLoc, normalMatrixLoc; //uniform locations
 glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
 glm::mat3 normalMatrix;
 
-//Frustrum and Viewport
-GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, leftFrustumLoc, rightFrustumLoc;
-GLint hViewportLoc, wViewportLoc;
-
 //Splat's radii
-GLint radiusSplatLoc;
 float radiusSplat = 0.0125f;
 
 //Camera
@@ -28,15 +21,63 @@ double lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
 bool leftBtnPress = false;
 
 //Shaders
+Shader sizedFixedShaderShader     = Shader::Shader("Sized-Fixed Points",
+                                                   "0_fixed-sized-points/vertexShader.glsl",
+                                                   "0_fixed-sized-points/fragmentShader.glsl",
+                                                   SINGLEPASS);
+
+Shader squareSizedCorrectedShader = Shader::Shader("Square Size - Corrected by Depth",
+                                                   "1_square-Sized-corrected/vertexShader.glsl",
+                                                   "1_square-Sized-corrected/fragmentShader.glsl",
+                                                   SINGLEPASS);
+
+Shader affinelyProjectedShader    = Shader::Shader("Affinely Projected Point Sprites" ,
+                                                   "2_affinely-projected-point-sprites/vertexShader.glsl",
+                                                   "2_affinely-projected-point-sprites/fragmentShader.glsl",
+                                                   SINGLEPASS);
+
+Shader perspectiveCorrectedShader = Shader::Shader("Perspective Correct Rasterization",
+                                                   "3_perspective-corrected/vertexShader.glsl",
+                                                   "3_perspective-corrected/fragmentShader.glsl",
+                                                   SINGLEPASS);
+
+Shader perspectiveCorrectedShaderMPVisibility = Shader::Shader("(Light) Perspective Correct Rasterization",
+                                                               "4_light-perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                                                               "4_light-perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                                                               DEPTH_MASK);
+
+Shader perspectiveCorrectedShaderMPBlending = Shader::Shader("(Light) Perspective Correct Rasterization",
+                                                             "4_light-perspective-corrected/pass_2_blending/vertexShader.glsl",
+                                                             "4_light-perspective-corrected/pass_2_blending/fragmentShader.glsl",
+                                                             BLENDING);
+
+Shader perspectiveCorrectedShaderMPNormalization = Shader::Shader("(Light) Perspective Correct Rasterization",
+                                                                  "4_light-perspective-corrected/pass_3_normalization/vertexShader.glsl",
+                                                                  "4_light-perspective-corrected/pass_3_normalization/fragmentShader.glsl",
+                                                                  NORMALIZATION);
+
+static const Shader arr[] =   {perspectiveCorrectedShaderMPVisibility,
+                               perspectiveCorrectedShaderMPBlending,
+                               perspectiveCorrectedShaderMPNormalization};
+vector<Shader> vec (arr, arr + sizeof(arr) / sizeof(arr[0]) );
+
+Shader lightPerspectiveCorrectedShader = Shader::Shader("(Light) Perspective Correct Rasterization",
+                                                   "4_light-perspective-corrected/vertexShader.glsl",
+                                                   "4_light-perspective-corrected/fragmentShader.glsl",
+                                                   SINGLEPASS,
+                                                   vec);
+
+static const Shader arr2[] =   {sizedFixedShaderShader,
+                                squareSizedCorrectedShader,
+                                affinelyProjectedShader,
+                                perspectiveCorrectedShader,
+                                lightPerspectiveCorrectedShader};
+
+vector<Shader> vec2 (arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]) );
+
 string title;
-string shaderDescription[] = {  "Sized-Fixed Points",
-    "Square Size - Corrected by Depth",
-    "Affinely Projected Point Sprites" ,
-    "Perspective Correct Rasterization",
-    "Testing"};
-int numOfShaders = sizeof(shaderDescription)/sizeof(string);
-int actualShader = numOfShaders - 1;
-vector<Shader*> shaders;
+int actualShader = 4;
+vector<Shader> listOfShaders = vec2;
 
 //int actualShader = 0;
 bool MultipassEnabled = false;
@@ -147,3 +188,5 @@ struct vao cubeMesh = {
     .normals = vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
     .mode = GL_TRIANGLES
 };
+
+

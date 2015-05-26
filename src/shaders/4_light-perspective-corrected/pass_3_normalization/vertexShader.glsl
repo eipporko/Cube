@@ -12,18 +12,11 @@ in  vec3 in_Position;
 in  vec3 in_Color;
 in 	vec3 in_Normals;
 
-
 out vec4 ccPosition; //position in Camera Coordinates
 out vec3 normals;
 
 
 void main(void)
 {
-	normals = normalize(normalMatrix * in_Normals);
-
-
-	//p. 277
-	ccPosition = viewMatrix * vec4(in_Position, 1.0);
-	gl_Position = projMatrix * ccPosition;
-	gl_PointSize = 2*radius * (n / ccPosition.z) * (h / (t-b));
+	gl_Position = vec4(in_Position, 1.0);
 }

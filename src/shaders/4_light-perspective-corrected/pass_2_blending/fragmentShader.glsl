@@ -49,15 +49,11 @@ void main(void)
 
 	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(radius, 2))
 		discard;
-
-
-	//p. 281
-	//lambda = dot ( vec3(ccPosition.x, ccPosition.y, ccPosition.z) , ex_UxV ) / dot( qn, ex_UxV );
-
 	
-	//p. 279
-	//q = lambda * qn;
-	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+	vec3 epsilon = normalize(qn)/20.0f;
+	q = q - epsilon;
 
-	out_Color = vec4(ex_Color, 1.0f);
+	//((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) )) 
+	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+	out_Color = vec4(ex_Color, 1.0f - (length(dist)/radius));
 }

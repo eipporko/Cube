@@ -11,21 +11,11 @@ using namespace std;
 
 class Shader;
 
-//Shader program
-extern GLint program;
-extern GLuint f, v; //fragment and vertex shader
-
 //Projection and View Matrix
-extern GLint projMatrixLoc, viewMatrixLoc, normalMatrixLoc; //uniform locations
 extern glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
 extern glm::mat3 normalMatrix;
 
-//Frustrum and Viewport
-extern GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, leftFrustumLoc, rightFrustumLoc;
-extern GLint hViewportLoc, wViewportLoc;
-
 //Splat's radii
-extern GLint radiusSplatLoc;
 extern float radiusSplat;
 
 //Camera
@@ -40,10 +30,8 @@ extern bool leftBtnPress;
 
 //Shaders
 extern string title;
-extern string shaderDescription[];
-extern int numOfShaders;
 extern int actualShader;
-extern vector<Shader*> shaders;
+extern vector<Shader> listOfShaders;
 
 //int actualShader = 0;
 extern bool MultipassEnabled;
@@ -67,7 +55,5 @@ extern struct vao* displayVAO;
 //  v6----v8
 
 extern struct vao cubeMesh;
-
-
 
 #endif

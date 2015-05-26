@@ -40,7 +40,7 @@ char* loadFile(string fname, GLint &fSize)
 		file.seekg (0, ios::beg);
 		file.read (memblock, size);
 		file.close();
-		cout << "file " << fname << " loaded" << endl;
+
 		text.assign(memblock);
 	}
 	else
