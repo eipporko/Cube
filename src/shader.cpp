@@ -24,6 +24,8 @@ GLint   Shader::wViewportLoc;
 //Splat's radii
 GLint   Shader::radiusSplatLoc;
 
+GLint   Shader::textureLoc;
+
 
 Shader::Shader(string description, string vertexShaderPath, string fragmentShaderPath, shaderMode mode)
 {
@@ -105,8 +107,10 @@ void Shader::bindShader()
     Shader::hViewportLoc = glGetUniformLocation(Shader::program,"h");
     Shader::wViewportLoc = glGetUniformLocation(Shader::program,"w");
     Shader::radiusSplatLoc = glGetUniformLocation(Shader::program,"radius");
+    Shader::textureLoc = glGetUniformLocation(Shader::program, "myTexture");
     
     glUniform1f(Shader::radiusSplatLoc, radiusSplat);
+    glUniform1i(Shader::textureLoc, 0);
 }
 
 

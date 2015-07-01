@@ -3,6 +3,13 @@
 
 using namespace shader;
 
+//FBO
+
+
+//Texture
+GLuint textureID = 0;
+bool firstTime = true;
+
 //Projection and View Matrix
 glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
 glm::mat3 normalMatrix;

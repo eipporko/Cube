@@ -11,6 +11,9 @@ using namespace std;
 
 class Shader;
 
+extern GLuint textureID;
+extern bool firstTime;
+
 //Projection and View Matrix
 extern glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
 extern glm::mat3 normalMatrix;

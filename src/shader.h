@@ -41,6 +41,7 @@ public:
     static GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, leftFrustumLoc,rightFrustumLoc;
     static GLint hViewportLoc, wViewportLoc;
     static GLint radiusSplatLoc;
+    static GLint textureLoc;
     
     //Methods ...
     

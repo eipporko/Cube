@@ -34,6 +34,13 @@
 
 using namespace std;
 
+GLuint FramebufferName = 0;
+GLuint renderedTexture;
+GLuint depthrenderbuffer;
+GLuint depthTexture;
+
+GLenum windowBuff[1] = { GL_BACK_LEFT };
+GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
 
 /**
  @brief Returns a title for the window
@@ -145,6 +152,36 @@ struct vao sampleSphere()
     }
     
     return sampledSphere;
+}
+
+
+void drawWindowSizedRectangle()
+{
+    float points[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f,
+    };
+    
+    GLuint vbo = 0;
+    glGenBuffers (1, &vbo);
+    glBindBuffer (GL_ARRAY_BUFFER, vbo);
+    glBufferData (GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+    
+    GLuint vao = 0;
+    glGenVertexArrays (1, &vao);
+    glBindVertexArray (vao);
+    glEnableVertexAttribArray (0);
+    glBindBuffer (GL_ARRAY_BUFFER, vbo);
+    glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    // draw points 0-3 from the currently bound VAO with current in-use shader
+    glDrawArrays (GL_TRIANGLES, 0, 6);
+    
+    glBindVertexArray(0);
+
 }
 
 
@@ -317,9 +354,8 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 
 void display(GLFWwindow* window)
 {
-
-	glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
+    
     
     viewMatrix = glm::lookAt(cameraEye,
                              glm::vec3(0,0,0),
@@ -335,12 +371,25 @@ void display(GLFWwindow* window)
             glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
             glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
             
-            glEnable(GL_DEPTH_TEST);
+            // Render to the screen
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDrawBuffers(1, windowBuff);
+            glViewport(0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glDepthFunc(GL_LESS);
+            
             glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
         }
         else {
-            //glDisable(GL_DEPTH_TEST);
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            
+            glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+            
+            glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+            
+            glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
             Shader shaderh = listOfShaders[actualShader%listOfShaders.size()];
             
             for (int i = 0; i < shaderh.getMultiPass().size(); i++) {
@@ -368,21 +417,35 @@ void display(GLFWwindow* window)
                     }
                     case shader::NORMALIZATION:
                     {
-//                        GLfloat vVertices[] = {0.0f, 0.5f, 0.0f,
-//                            -0.5f, -0.5f, 0.0f,
-//                            0.5f, -0.5f, 0.0f};
-//                    
-//                        // Load the vertex data
-//                        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
-//                        glEnableVertexAttribArray(0);
-//                        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+                        glActiveTexture(GL_TEXTURE0);
+
+                        glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
+                        glEnable(GL_TEXTURE_RECTANGLE);
+
+
+                        if (firstTime){
+                            glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+                            firstTime = false;
+                        }
+                        else
+                            glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+                        
+                        glUniform1i(Shader::textureLoc, 0);
+                        glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
+                        glClear(GL_COLOR_BUFFER_BIT);
+                        drawWindowSizedRectangle();
+                        glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferName);
+                        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+                        glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                          0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                        
                         break;
                     }
                     default:
                         break;
                 }
                 
-                glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
                 glDisable(GL_BLEND);
                 glDepthMask(GL_TRUE);
                 
@@ -392,9 +455,63 @@ void display(GLFWwindow* window)
     }
     
     glBindVertexArray(0);
-
     
 }
+
+void buildFBO()
+{
+    // ---------------------------------------------
+    // Render to Texture - specific code begins here
+    // ---------------------------------------------
+    
+    // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+    glGenFramebuffers(1, &FramebufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    
+    // The texture we're going to render to
+    glGenTextures(1, &renderedTexture);
+    
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    
+    // Give an empty image to OpenGL ( the last "0" means "empty" )
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+    
+    // Poor filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    // The depth buffer
+    glGenRenderbuffers(1, &depthrenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+    
+    //// Alternative : Depth texture. Slower, but you can sample it later in your shader
+    glGenTextures(1, &depthTexture);
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    // Set "renderedTexture" as our colour attachement #0
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+    
+    //// Depth texture alternative :
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+    
+    
+    // Set the list of draw buffers.
+    
+    // Always check that our framebuffer is ok
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        exit(1);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -405,6 +522,7 @@ int main(int argc, char **argv)
         return -1;
     
     /* create context */
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -431,8 +549,36 @@ int main(int argc, char **argv)
         cout << "glewInit failed, aborting." << endl;
         exit (1);
     }
-
+    
+    GLenum theError = glGetError();
+    if(theError != GL_NO_ERROR) {
+        cout << "Warning: GLEW init " << gluErrorString(theError) << endl;
+    }
+    
+    
+    if (!GLEW_EXT_framebuffer_object)
+    {
+        printf("Error: no extension GL_EXT_framebuffer_object.");
+        return 0;
+    }
+    
+    if (!GLEW_ARB_color_buffer_float)
+    {
+        printf("Error: no extension ARB_color_buffer_float.");
+        return 0;
+    }
+    
+    buildFBO();
+    
+    glGenTextures(1, &textureID);
+    
+    glClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
+    glClampColor(GL_CLAMP_VERTEX_COLOR, GL_FALSE);
+    glClampColor(GL_CLAMP_FRAGMENT_COLOR, GL_FALSE);
+    
+    
     /*openGL configure*/
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
     glBlendFuncSeparateEXT(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);

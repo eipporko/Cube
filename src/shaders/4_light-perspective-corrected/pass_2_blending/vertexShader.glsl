@@ -28,5 +28,8 @@ void main(void)
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2*radius * (n / ccPosition.z) * (h / (t-b));
 
-	ex_Color = (normals + in_Color)/2.0f;
+	vec3 lightDirection = vec3(0.0,0.0,0.5);
+	float dotValue = max(dot(normals, lightDirection), 0.0);
+	ex_Color = vec3(dotValue) + in_Color;
+	//ex_Color = (normals + in_Color)/2.0f;
 }

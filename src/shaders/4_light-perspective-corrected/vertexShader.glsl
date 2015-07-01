@@ -35,7 +35,7 @@ void main(void)
 	//ex_UxP = cross(U, in_Position);
 	//ex_UxV = cross(U, V);
 
-	vec3 lightDirection = vec3(0.0,0.0,1.0);
+	vec3 lightDirection = vec3(0.0,0.0,0.5);
 	float dotValue = max(dot(normals, lightDirection), 0.0);
 	ex_Color = vec3(dotValue) + in_Color;
 }

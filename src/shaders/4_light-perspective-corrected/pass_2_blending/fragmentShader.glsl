@@ -50,10 +50,11 @@ void main(void)
 	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(radius, 2))
 		discard;
 	
-	vec3 epsilon = normalize(qn)/20.0f;
+	vec3 epsilon = normalize(qn)/40.0f;
 	q = q - epsilon;
 
 	//((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) )) 
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
-	out_Color = vec4(ex_Color, 1.0f - (length(dist)/radius));
+	float weight = (1.0f - length(dist)/radius);
+	out_Color = vec4(ex_Color.rgb, 1.0f * weight);
 }
