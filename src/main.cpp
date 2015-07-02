@@ -39,7 +39,7 @@ GLuint renderedTexture;
 GLuint depthrenderbuffer;
 GLuint depthTexture;
 
-GLenum windowBuff[1] = { GL_BACK_LEFT };
+GLenum windowBuff[1] = {GL_BACK_LEFT};
 GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
 
 /**
@@ -418,12 +418,10 @@ void display(GLFWwindow* window)
                     case shader::NORMALIZATION:
                     {
 
+                        //Copy framebuffer to a Texture
                         glActiveTexture(GL_TEXTURE0);
-
                         glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
                         glEnable(GL_TEXTURE_RECTANGLE);
-
-
                         if (firstTime){
                             glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
                             firstTime = false;
@@ -431,10 +429,14 @@ void display(GLFWwindow* window)
                         else
                             glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
                         
+                        
+                        //Render Texture and normalize
                         glUniform1i(Shader::textureLoc, 0);
                         glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
                         glClear(GL_COLOR_BUFFER_BIT);
                         drawWindowSizedRectangle();
+                        
+                        //Blit framebuffer resultant to window
                         glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferName);
                         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
                         glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -568,8 +570,10 @@ int main(int argc, char **argv)
         return 0;
     }
     
+    //FrameBuffer for rendering in multipass mode
     buildFBO();
     
+    //Texture used for normalize
     glGenTextures(1, &textureID);
     
     glClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
