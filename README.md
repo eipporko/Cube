@@ -13,7 +13,7 @@ Controls
 * Scroll: Zoom
 * Up/Down: Change splat's radii
 * R: Reset camera position
-* S: Switch between shaders (Sized-Fixed Points | Corrected by Depth | Affinely Projected Point Sprites | Perspective Correct Rasterization)
+* S: Switch between shaders (Sized-Fixed | Corrected by Depth | Affinely Projected Sprites | Perspective Correct)
 * M: Switch between models  (CUBE | SPHERE | Opened Models)
 * O: Open .PTS or .PLY files
 * P: Change between Normal Shading & Gouraud Shading.
