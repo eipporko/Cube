@@ -9,14 +9,15 @@ it's Epic!
 
 Controls
 -------------------------
-* O: Open .PTS or .PLY files
 * Mouse: Move camera
 * Scroll: Zoom
 * Up/Down: Change splat's radii
 * R: Reset camera position
-* S: Switch between shaders
-* M: Switch between models (CUBE | SPHERE)
-* P: Change between single & multi-pass rendering.
+* S: Switch between shaders (Sized-Fixed Points | Corrected by Depth | Affinely Projected Point Sprites | Perspective Correct Rasterization)
+* M: Switch between models  (CUBE | SPHERE | Opened Models)
+* O: Open .PTS or .PLY files
+* P: Change between Normal Shading & Gouraud Shading.
+* F: Activate/Deactivate FXAA
 * Esc: Exit
 
 

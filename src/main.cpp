@@ -51,10 +51,17 @@ const char* getTitleWindow()
 {
     string multipass;
     if (MultipassEnabled)
-        multipass = "MultiPass";
+        multipass = "Gouraud Shading";
     else
-        multipass = "SinglePass";
-    title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass;
+        multipass = "Normal Shading";
+    
+    string fxaa;
+    if (FXAA)
+        fxaa = " | FXAA";
+    else
+        fxaa = "";
+    
+    title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass + fxaa;
     return title.c_str();
 }
 
@@ -312,9 +319,10 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         actualShader++;
-        listOfShaders[actualShader%listOfShaders.size()].compileShader();
-        Shader::bindShader();
-        updateProjMatrix(window);
+        
+        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().size() == 0)
+            MultipassEnabled = false;
+        
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
@@ -337,57 +345,83 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        MultipassEnabled = !MultipassEnabled;
         
-        if (!MultipassEnabled) {
-            listOfShaders[actualShader%listOfShaders.size()].compileShader();
-            Shader::bindShader();
-            updateProjMatrix(window);
-        }
+        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().size() > 0)
+            MultipassEnabled = !MultipassEnabled;
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
+    
+    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        FXAA = !FXAA;
+        
+        glfwSetWindowTitle(window, getTitleWindow());
+    }
+    
+    
 }
 
+void applyFXAA()
+{
+    fxaaFilter.compileShader();
+    Shader::bindShader();
+    
+    //Copy framebuffer to a Texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
+    glEnable(GL_TEXTURE_RECTANGLE);
+    if (firstTime){
+        glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+        firstTime = false;
+    }
+    else
+        glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    
+    glUniform1i(Shader::textureLoc, 0);
+    glUniform3f(Shader::inverseTextureSizeLoc, 1.0f/WINDOW_WIDTH, 1.0f/WINDOW_HEIGHT, 0.0f);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    drawWindowSizedRectangle();
+    
+    glBindVertexArray(0);
 
+}
 
 void display(GLFWwindow* window)
 {
-    glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
-    
-    
     viewMatrix = glm::lookAt(cameraEye,
                              glm::vec3(0,0,0),
                              glm::cross(glm::cross(cameraEye, cameraUp), cameraEye));
     
     normalMatrix = glm::inverseTranspose(glm::mat3(viewMatrix));
     
+
     glBindVertexArray(displayVAO->vaoID);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
     
     if (displayVAO != NULL) {
         
         if (!MultipassEnabled) {
+            listOfShaders[actualShader%listOfShaders.size()].compileShader();
+            Shader::bindShader();
             glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
             glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
+            updateProjMatrix(window);
             
-            // Render to the screen
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glDrawBuffers(1, windowBuff);
-            glViewport(0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
+            
+            glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glDepthFunc(GL_LESS);
-            
+            glDepthFunc(GL_LEQUAL);
             glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
         }
         else {
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            
-            glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-            
-            glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-            
-            glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             Shader shaderh = listOfShaders[actualShader%listOfShaders.size()];
@@ -395,8 +429,8 @@ void display(GLFWwindow* window)
             for (int i = 0; i < shaderh.getMultiPass().size(); i++) {
                 shaderh.getMultiPass()[i].compileShader();
                 Shader::bindShader();
-                updateProjMatrix(window);
                 
+                updateProjMatrix(window);
                 glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
                 glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
                 
@@ -429,18 +463,12 @@ void display(GLFWwindow* window)
                         else
                             glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
                         
+                        glUniform1i(Shader::textureLoc, 0);
                         
                         //Render Texture and normalize
-                        glUniform1i(Shader::textureLoc, 0);
                         glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
                         glClear(GL_COLOR_BUFFER_BIT);
                         drawWindowSizedRectangle();
-                        
-                        //Blit framebuffer resultant to window
-                        glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferName);
-                        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-                        glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-                                          0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
                         
                         break;
                     }
@@ -457,6 +485,17 @@ void display(GLFWwindow* window)
     }
     
     glBindVertexArray(0);
+    
+    if (FXAA)
+        applyFXAA();
+    
+    //Blit framebuffer resultant to window
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferName);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                      0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    
+
     
 }
 

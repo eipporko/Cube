@@ -36,8 +36,12 @@ extern string title;
 extern int actualShader;
 extern vector<Shader> listOfShaders;
 
+extern Shader fxaaFilter;
+
 //int actualShader = 0;
 extern bool MultipassEnabled;
+
+extern bool FXAA;
 
 //Models
 extern vector<struct vao> models;
