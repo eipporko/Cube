@@ -94,11 +94,11 @@ struct vao loadCloud(string pathFile)
         cout << "-> Deleted " << (pointsBefore - cloud->size()) << " NaN Points." << endl;
 
     //VoxelGrid for remove duplicates
-    cout << endl << "Downsampling PointCloud with VoxelGrid filter (leafSize = 0.01f) ..." << endl;
+    cout << endl << "Downsampling PointCloud with VoxelGrid filter (leafSize = 0.001f) ..." << endl;
     pointsBefore = cloud->size();
     pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
     sor.setInputCloud (cloud);
-    sor.setLeafSize (0.01f, 0.01f, 0.01f);
+    sor.setLeafSize (0.006f, 0.006f, 0.006f);
     sor.filter (*cloud);
     cout << "-> Points Before: " << pointsBefore << " , after: " << cloud->size() << endl;
     
