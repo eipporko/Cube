@@ -16,7 +16,7 @@ Controls
 * S: Switch between shaders (Sized-Fixed | Corrected by Depth | Affinely Projected Sprites | Perspective Correct)
 * M: Switch between models  (CUBE | SPHERE | Opened Models)
 * O: Open .PCD or .PLY files
-* P: Change between Normal Shading & Gouraud Shading.
+* P: Change between Flat Shading & Gouraud Shading.
 * F: Activate/Deactivate FXAA
 * Esc: Exit
 

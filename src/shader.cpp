@@ -4,31 +4,8 @@
 #include "file.h"
 #include "globals.h"
 
-GLint   Shader::program;
-GLuint  Shader::f;
-GLuint  Shader::v; //fragment and vertex shader
 
-
-GLint   Shader::projMatrixLoc;
-GLint   Shader::viewMatrixLoc;
-GLint   Shader::normalMatrixLoc;
-GLint   Shader::nearFrustumLoc;
-GLint   Shader::farFrustumLoc;
-GLint   Shader::topFrustumLoc;
-GLint   Shader::bottomFrustumLoc;
-GLint   Shader::leftFrustumLoc;
-GLint   Shader::rightFrustumLoc;
-GLint   Shader::hViewportLoc;
-GLint   Shader::wViewportLoc;
-
-//Splat's radii
-GLint   Shader::radiusSplatLoc;
-
-//Texture
-GLint   Shader::textureLoc;
-
-//
-GLint   Shader::inverseTextureSizeLoc;
+Shader* Shader::shaderInUse = NULL;
 
 
 Shader::Shader(string description, string vertexShaderPath, string fragmentShaderPath, shaderMode mode)
@@ -40,7 +17,7 @@ Shader::Shader(string description, string vertexShaderPath, string fragmentShade
 }
 
 
-Shader::Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode, vector<Shader> multiPass)
+Shader::Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode, vector<Shader> &multiPass)
 {
     this->description = description;
     this->vertexShaderPath = vertexShaderPath;
@@ -81,43 +58,45 @@ void Shader::printShaderInfoLog(GLint shader)
 
 
 void Shader::bindShader()
-{
-    Shader::program = glCreateProgram();
+{    
+    program = glCreateProgram();
     
-    glAttachShader(Shader::program, Shader::v);
-    glAttachShader(Shader::program, Shader::f);
+    glAttachShader(program, v);
+    glAttachShader(program, f);
     
-    glBindAttribLocation(Shader::program, 0, "in_Position");
-    glBindAttribLocation(Shader::program, 1, "in_Color");
-    glBindAttribLocation(Shader::program, 2, "in_Normals");
+    glBindAttribLocation(program, 0, "in_Position");
+    glBindAttribLocation(program, 1, "in_Color");
+    glBindAttribLocation(program, 2, "in_Normals");
     
-    glLinkProgram(Shader::program);
+    glLinkProgram(program);
     
-    glDeleteShader(Shader::v);
-    glDeleteShader(Shader::f);
+    //glDeleteShader(v);
+    //glDeleteShader(f);
     
-    glUseProgram(Shader::program);
-    glDeleteProgram(Shader::program);
+    glUseProgram(program);
+    glDeleteProgram(program);
     
-    Shader::projMatrixLoc = glGetUniformLocation(Shader::program, "projMatrix");
-    Shader::viewMatrixLoc = glGetUniformLocation(Shader::program, "viewMatrix");
-    Shader::normalMatrixLoc = glGetUniformLocation(Shader::program, "normalMatrix");
-    Shader::nearFrustumLoc = glGetUniformLocation(Shader::program, "n");
-    Shader::farFrustumLoc = glGetUniformLocation(Shader::program, "f");
-    Shader::topFrustumLoc = glGetUniformLocation(Shader::program,"t");
-    Shader::bottomFrustumLoc = glGetUniformLocation(Shader::program,"b");
-    Shader::rightFrustumLoc = glGetUniformLocation(Shader::program,"r");
-    Shader::leftFrustumLoc = glGetUniformLocation(Shader::program, "l");
-    Shader::hViewportLoc = glGetUniformLocation(Shader::program,"h");
-    Shader::wViewportLoc = glGetUniformLocation(Shader::program,"w");
-    Shader::radiusSplatLoc = glGetUniformLocation(Shader::program,"radius");
+    projMatrixLoc = glGetUniformLocation(program, "projMatrix");
+    viewMatrixLoc = glGetUniformLocation(program, "viewMatrix");
+    normalMatrixLoc = glGetUniformLocation(program, "normalMatrix");
+    nearFrustumLoc = glGetUniformLocation(program, "n");
+    farFrustumLoc = glGetUniformLocation(program, "f");
+    topFrustumLoc = glGetUniformLocation(program,"t");
+    bottomFrustumLoc = glGetUniformLocation(program,"b");
+    rightFrustumLoc = glGetUniformLocation(program,"r");
+    leftFrustumLoc = glGetUniformLocation(program, "l");
+    hViewportLoc = glGetUniformLocation(program,"h");
+    wViewportLoc = glGetUniformLocation(program,"w");
+    radiusSplatLoc = glGetUniformLocation(program,"radius");
     
-    Shader::textureLoc = glGetUniformLocation(Shader::program, "myTexture");
+    textureLoc = glGetUniformLocation(program, "myTexture");
     
-    Shader::inverseTextureSizeLoc = glGetUniformLocation(Shader::program, "inverseTextureSize");
+    inverseTextureSizeLoc = glGetUniformLocation(program, "inverseTextureSize");
     
     
-    glUniform1f(Shader::radiusSplatLoc, radiusSplat);
+    glUniform1f(radiusSplatLoc, radiusSplat);
+    
+    Shader::shaderInUse = this;
 }
 
 
@@ -127,8 +106,8 @@ void Shader::compileShader()
     
     char *vs,*fs;
     
-    Shader::v = glCreateShader(GL_VERTEX_SHADER);
-    Shader::f = glCreateShader(GL_FRAGMENT_SHADER);
+    v = glCreateShader(GL_VERTEX_SHADER);
+    f = glCreateShader(GL_FRAGMENT_SHADER);
     
     // load shaders & get length of each
     GLint vlen;
@@ -140,25 +119,25 @@ void Shader::compileShader()
     const char * vv = vs;
     const char * ff = fs;
     
-    glShaderSource(Shader::v, 1, &vv, &vlen);
-    glShaderSource(Shader::f, 1, &ff, &flen);
+    glShaderSource(v, 1, &vv, &vlen);
+    glShaderSource(f, 1, &ff, &flen);
     
     GLint compiled;
     
-    glCompileShader(Shader::v);
+    glCompileShader(v);
     glGetShaderiv(v, GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
         cout << "Vertex shader not compiled." << endl;
-        printShaderInfoLog(Shader::v);
+        printShaderInfoLog(v);
     }
     
-    glCompileShader(Shader::f);
-    glGetShaderiv(Shader::f, GL_COMPILE_STATUS, &compiled);
+    glCompileShader(f);
+    glGetShaderiv(f, GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
         cout << "Fragment shader not compiled." << endl;
-        printShaderInfoLog(Shader::f);
+        printShaderInfoLog(f);
     }
     
     delete [] vs; // dont forget to free allocated memory

@@ -42,6 +42,8 @@ GLuint depthTexture;
 GLenum windowBuff[1] = {GL_BACK_LEFT};
 GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
 
+
+
 /**
  @brief Returns a title for the window
  Concatenate 'CUBE' with the description of the shader thats its been used
@@ -53,7 +55,7 @@ const char* getTitleWindow()
     if (MultipassEnabled)
         multipass = "Gouraud Shading";
     else
-        multipass = "Normal Shading";
+        multipass = "Flat Shading";
     
     string fxaa;
     if (FXAA)
@@ -64,6 +66,7 @@ const char* getTitleWindow()
     title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass + fxaa;
     return title.c_str();
 }
+
 
 
 /**
@@ -96,6 +99,7 @@ glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
+
 /**
  Sample a model transforming it into a point cloud
  @param mesh model defined by GL_TRIANGLES
@@ -123,6 +127,7 @@ struct vao sampleMesh(struct vao *mesh)
     
     return sampledMesh;
 }
+
 
 
 struct vao sampleSphere()
@@ -162,6 +167,7 @@ struct vao sampleSphere()
 }
 
 
+
 void drawWindowSizedRectangle()
 {
     float points[] = {
@@ -192,6 +198,7 @@ void drawWindowSizedRectangle()
 }
 
 
+
 void updateProjMatrix(GLFWwindow * window)
 {
     float ratio;
@@ -209,17 +216,18 @@ void updateProjMatrix(GLFWwindow * window)
     projMatrix = glm::perspective(fovy, ratio, near, far);
     
     GLfloat top = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near;
-    glUniformMatrix4fv(Shader::projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
-    glUniform1i(Shader::hViewportLoc, (GLint) h);
-    glUniform1i(Shader::wViewportLoc, (GLint) w);
-    glUniform1f(Shader::nearFrustumLoc, (GLfloat) near);
-    glUniform1f(Shader::farFrustumLoc, (GLfloat) far);
-    glUniform1f(Shader::topFrustumLoc, (GLfloat) -top );
-    glUniform1f(Shader::bottomFrustumLoc, (GLfloat) top );
-    glUniform1f(Shader::leftFrustumLoc, (GLfloat) -top * ratio);
-    glUniform1f(Shader::rightFrustumLoc, (GLfloat) top * ratio);
+    glUniformMatrix4fv(Shader::shaderInUse->projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
+    glUniform1i(Shader::shaderInUse->hViewportLoc, (GLint) h);
+    glUniform1i(Shader::shaderInUse->wViewportLoc, (GLint) w);
+    glUniform1f(Shader::shaderInUse->nearFrustumLoc, (GLfloat) near);
+    glUniform1f(Shader::shaderInUse->farFrustumLoc, (GLfloat) far);
+    glUniform1f(Shader::shaderInUse->topFrustumLoc, (GLfloat) -top );
+    glUniform1f(Shader::shaderInUse->bottomFrustumLoc, (GLfloat) top );
+    glUniform1f(Shader::shaderInUse->leftFrustumLoc, (GLfloat) -top * ratio);
+    glUniform1f(Shader::shaderInUse->rightFrustumLoc, (GLfloat) top * ratio);
 
 }
+
 
 
 void reshapeCallback(GLFWwindow * window, int w, int h)
@@ -305,12 +313,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_UP) {
         radiusSplat += 0.001f;
-        glUniform1f(Shader::radiusSplatLoc, radiusSplat);
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, radiusSplat);
     }
     
     if (key == GLFW_KEY_DOWN) {
         radiusSplat -= 0.001f;
-        glUniform1f(Shader::radiusSplatLoc, radiusSplat);
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, radiusSplat);
     }
     
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
@@ -320,7 +328,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         actualShader++;
         
-        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().size() == 0)
+        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty())
             MultipassEnabled = false;
         
         glfwSetWindowTitle(window, getTitleWindow());
@@ -346,7 +354,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         
-        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().size() > 0)
+        if (!listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty())
             MultipassEnabled = !MultipassEnabled;
         
         glfwSetWindowTitle(window, getTitleWindow());
@@ -362,10 +370,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
 }
 
+
+
 void applyFXAA()
 {
-    fxaaFilter.compileShader();
-    Shader::bindShader();
+    //fxaaFilter.compileShader();
+    fxaaFilter.bindShader();
     
     //Copy framebuffer to a Texture
     glActiveTexture(GL_TEXTURE0);
@@ -378,8 +388,8 @@ void applyFXAA()
     else
         glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     
-    glUniform1i(Shader::textureLoc, 0);
-    glUniform3f(Shader::inverseTextureSizeLoc, 1.0f/WINDOW_WIDTH, 1.0f/WINDOW_HEIGHT, 0.0f);
+    glUniform1i(Shader::shaderInUse->textureLoc, 0);
+    glUniform3f(Shader::shaderInUse->inverseTextureSizeLoc, 1.0f/WINDOW_WIDTH, 1.0f/WINDOW_HEIGHT, 0.0f);
     
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -388,6 +398,8 @@ void applyFXAA()
     glBindVertexArray(0);
 
 }
+
+
 
 void display(GLFWwindow* window)
 {
@@ -408,10 +420,11 @@ void display(GLFWwindow* window)
     if (displayVAO != NULL) {
         
         if (!MultipassEnabled) {
-            listOfShaders[actualShader%listOfShaders.size()].compileShader();
-            Shader::bindShader();
-            glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
-            glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
+
+            listOfShaders[actualShader%listOfShaders.size()].bindShader();
+
+            glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
+            glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
             updateProjMatrix(window);
             
             
@@ -427,14 +440,15 @@ void display(GLFWwindow* window)
             Shader shaderh = listOfShaders[actualShader%listOfShaders.size()];
             
             for (int i = 0; i < shaderh.getMultiPass().size(); i++) {
-                shaderh.getMultiPass()[i].compileShader();
-                Shader::bindShader();
                 
+                shaderh.getMultiPass()[i].bindShader();
+                
+                glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
+                glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
                 updateProjMatrix(window);
-                glUniformMatrix4fv(Shader::viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
-                glUniformMatrix3fv(Shader::normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
                 
                 switch (shaderh.getMultiPass()[i].getMode()) {
+                        
                     case shader::DEPTH_MASK:
                     {
                         glDepthMask(GL_TRUE);
@@ -463,7 +477,7 @@ void display(GLFWwindow* window)
                         else
                             glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
                         
-                        glUniform1i(Shader::textureLoc, 0);
+                        glUniform1i(Shader::shaderInUse->textureLoc, 0);
                         
                         //Render Texture and normalize
                         glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
@@ -640,8 +654,21 @@ int main(int argc, char **argv)
     
     displayVAO = &models[0];
     
-    listOfShaders[actualShader].compileShader();
-    Shader::bindShader();
+    
+    fxaaFilter.compileShader();
+    
+    for (int i = 0; i < listOfShaders.size(); i ++) {
+        listOfShaders[i].compileShader();
+        
+        if ( !listOfShaders[i].getMultiPass().empty()) {
+
+            for (int ii = 0; ii < listOfShaders[i].getMultiPass().size(); ii ++)
+                listOfShaders[i].getMultiPass()[ii].compileShader();
+        }
+        
+    }
+    
+    listOfShaders[actualShader].bindShader();
     updateProjMatrix(window);
     
     /*glfw Callbacks*/

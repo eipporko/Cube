@@ -65,8 +65,8 @@ Shader perspectiveCorrectedShaderMPNormalization = Shader::Shader("Perspective C
                                                                   NORMALIZATION);
 
 static const Shader arr[] =   {perspectiveCorrectedShaderMPVisibility,
-                               perspectiveCorrectedShaderMPBlending,
-                               perspectiveCorrectedShaderMPNormalization};
+                                perspectiveCorrectedShaderMPBlending,
+                                perspectiveCorrectedShaderMPNormalization};
 vector<Shader> vec (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
 Shader perspectiveCorrectedShader = Shader::Shader("Perspective Correct Rasterization",
