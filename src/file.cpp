@@ -98,7 +98,8 @@ struct vao loadCloud(string pathFile)
     pointsBefore = cloud->size();
     pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
     sor.setInputCloud (cloud);
-    sor.setLeafSize (0.006f, 0.006f, 0.006f);
+    //sor.setLeafSize (0.006f, 0.006f, 0.006f);
+    sor.setLeafSize (0.001f, 0.001f, 0.001f);
     sor.filter (*cloud);
     cout << "-> Points Before: " << pointsBefore << " , after: " << cloud->size() << endl;
     

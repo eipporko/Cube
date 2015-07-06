@@ -236,6 +236,14 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     // set viewport to be the entire window
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     
+    // resize framebuffer
+    glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+    
+    firstTime = true;
+    
     updateProjMatrix(window);
 }
 
@@ -372,8 +380,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 
 
 
-void applyFXAA()
+void applyFXAA(GLFWwindow * window)
 {
+    
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    
     //fxaaFilter.compileShader();
     fxaaFilter.bindShader();
     
@@ -382,14 +394,14 @@ void applyFXAA()
     glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
     glEnable(GL_TEXTURE_RECTANGLE);
     if (firstTime){
-        glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+        glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, windowWidth, windowHeight, 0);
         firstTime = false;
     }
     else
-        glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, windowWidth, windowHeight);
     
     glUniform1i(Shader::shaderInUse->textureLoc, 0);
-    glUniform3f(Shader::shaderInUse->inverseTextureSizeLoc, 1.0f/WINDOW_WIDTH, 1.0f/WINDOW_HEIGHT, 0.0f);
+    glUniform3f(Shader::shaderInUse->inverseTextureSizeLoc, 1.0f/windowWidth, 1.0f/windowHeight, 0.0f);
     
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -403,6 +415,9 @@ void applyFXAA()
 
 void display(GLFWwindow* window)
 {
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    
     viewMatrix = glm::lookAt(cameraEye,
                              glm::vec3(0,0,0),
                              glm::cross(glm::cross(cameraEye, cameraUp), cameraEye));
@@ -414,7 +429,7 @@ void display(GLFWwindow* window)
     
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
     glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, windowWidth, windowHeight);
 
     
     if (displayVAO != NULL) {
@@ -471,11 +486,11 @@ void display(GLFWwindow* window)
                         glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
                         glEnable(GL_TEXTURE_RECTANGLE);
                         if (firstTime){
-                            glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+                            glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, windowWidth, windowHeight, 0);
                             firstTime = false;
                         }
                         else
-                            glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+                            glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, windowWidth, windowHeight);
                         
                         glUniform1i(Shader::shaderInUse->textureLoc, 0);
                         
@@ -501,13 +516,13 @@ void display(GLFWwindow* window)
     glBindVertexArray(0);
     
     if (FXAA)
-        applyFXAA();
+        applyFXAA(window);
     
     //Blit framebuffer resultant to window
     glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferName);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-                      0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, windowWidth, windowHeight,
+                      0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     
 
     
