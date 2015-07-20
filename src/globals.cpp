@@ -15,7 +15,8 @@ glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
 glm::mat3 normalMatrix;
 
 //Splat's radii
-float radiusSplat = 0.0125f;
+float userRadiusFactor = 0.0125f;
+float backupUserRadiusFactor;
 
 //Camera
 float cameraDistance = 4.0f;
@@ -83,13 +84,17 @@ static const Shader arr2[] =   {sizedFixedShaderShader,
 vector<Shader> vec2 (arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]) );
 
 string title;
-int actualShader = 3;
+int actualShader = 0;
 vector<Shader> listOfShaders = vec2;
 
 //int actualShader = 0;
 bool MultipassEnabled = false;
 
 bool FXAA = false;
+
+bool colorEnabled = false;
+
+bool automaticRadiusEnabled = false;
 
 //Models
 vector<struct vao> models;

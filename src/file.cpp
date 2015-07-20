@@ -94,15 +94,15 @@ struct vao loadCloud(string pathFile)
         cout << "-> Deleted " << (pointsBefore - cloud->size()) << " NaN Points." << endl;
 
     //VoxelGrid for remove duplicates
-    cout << endl << "Downsampling PointCloud with VoxelGrid filter (leafSize = 0.001f) ..." << endl;
-    pointsBefore = cloud->size();
-    pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
-    sor.setInputCloud (cloud);
-    //sor.setLeafSize (0.006f, 0.006f, 0.006f);
-    sor.setLeafSize (0.001f, 0.001f, 0.001f);
-    sor.filter (*cloud);
-    cout << "-> Points Before: " << pointsBefore << " , after: " << cloud->size() << endl;
-    
+//    cout << endl << "Downsampling PointCloud with VoxelGrid filter (leafSize = 0.001f) ..." << endl;
+//    pointsBefore = cloud->size();
+//    pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
+//    sor.setInputCloud (cloud);
+//    //sor.setLeafSize (0.006f, 0.006f, 0.006f);
+//    sor.setLeafSize (0.001f, 0.001f, 0.001f);
+//    sor.filter (*cloud);
+//    cout << "-> Points Before: " << pointsBefore << " , after: " << cloud->size() << endl;
+    cout << "Points: " << cloud->size() << endl;
     
     if (cloud->is_dense) {
         
@@ -145,23 +145,16 @@ struct vao loadCloud(string pathFile)
             NEmop.compute(*cloud);
         }
         
+
         
         //Pushing data cloud to VAO structure
         for (size_t i = 0; i < cloud->points.size (); ++i) {
-            
-            VAO.vertices.push_back(glm::vec3(cloud->points[i].x/maxDistance,
-                                             cloud->points[i].y/maxDistance,
-                                             cloud->points[i].z/maxDistance ));
-            
-            VAO.normals.push_back(glm::normalize(glm::vec3(cloud->points[i].normal_x,
-                                                           cloud->points[i].normal_y,
-                                                           cloud->points[i].normal_z)));
-            
-            VAO.colors.push_back(glm::vec3(cloud->points[i].r/255.f,
-                                           cloud->points[i].g/255.f,
-                                           cloud->points[i].b/255.f));
-            
+            cloud->points[i].x = cloud->points[i].x/maxDistance;
+            cloud->points[i].y = cloud->points[i].y/maxDistance;
+            cloud->points[i].z = cloud->points[i].z/maxDistance;
         }
+        
+        VAO.cloud = cloud;
 
         VAO.mode = GL_POINTS;
     

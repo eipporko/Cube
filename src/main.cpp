@@ -10,6 +10,9 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+
 #include <GLFW/glfw3.h>
 
 #include "globals.h"
@@ -57,13 +60,19 @@ const char* getTitleWindow()
     else
         multipass = "Flat Shading";
     
+    string color;
+    if (colorEnabled)
+        color = " | NONE ";
+    else
+        color = " | RGB ";
+    
     string fxaa;
     if (FXAA)
         fxaa = " | FXAA";
     else
         fxaa = "";
     
-    title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass + fxaa;
+    title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass + color + fxaa;
     return title.c_str();
 }
 
@@ -111,17 +120,34 @@ struct vao sampleMesh(struct vao *mesh)
     struct vao sampledMesh;
     sampledMesh.numOfTriangles = 0;
     sampledMesh.numOfVertices = 0;
+    typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
+    CloudType::Ptr cloud (new CloudType);
+    
+    cloud->width = mesh->numOfTriangles * POINTS_PER_TRIANGLE;
+    cloud->height  = 1;
+    cloud->points.resize(cloud->width * cloud->height);
     
     int line;
     for (int i = 0; i < mesh->numOfTriangles; i++) {
         for (int j = 0; j < POINTS_PER_TRIANGLE; j++) {
             line = i*3;
-            sampledMesh.vertices.push_back(pickPoint(mesh->vertices[line], mesh->vertices[line+1], mesh->vertices[line+2]));
-            sampledMesh.colors.push_back(mesh->colors[line]);
-            sampledMesh.normals.push_back(mesh->normals[i]);
+            
+            glm::vec3 point = pickPoint(mesh->vertices[line], mesh->vertices[line+1], mesh->vertices[line+2]);
+            cloud->points[sampledMesh.numOfVertices].x = point.x;
+            cloud->points[sampledMesh.numOfVertices].y = point.y;
+            cloud->points[sampledMesh.numOfVertices].z = point.z;
+            cloud->points[sampledMesh.numOfVertices].normal_x = mesh->normals[i].x;
+            cloud->points[sampledMesh.numOfVertices].normal_y = mesh->normals[i].y;
+            cloud->points[sampledMesh.numOfVertices].normal_z = mesh->normals[i].z;
+            cloud->points[sampledMesh.numOfVertices].r = mesh->colors[line].r * 255;
+            cloud->points[sampledMesh.numOfVertices].g = mesh->colors[line].g * 255;
+            cloud->points[sampledMesh.numOfVertices].b = mesh->colors[line].b * 255;
+            
             sampledMesh.numOfVertices++;
         }
     }
+    
+    sampledMesh.cloud = cloud;
     
     sampledMesh.mode = GL_POINTS;
     
@@ -137,8 +163,14 @@ struct vao sampleSphere()
     struct vao sampledSphere;
     sampledSphere.numOfTriangles = 0;
     sampledSphere.numOfVertices = 0;
+    typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
+    CloudType::Ptr cloud (new CloudType);
     
-    for (int i = 0; i < POINTS_PER_SPHERA; i++) {
+    cloud->width = POINTS_PER_SPHERA;
+    cloud->height  = 1;
+    cloud->points.resize(cloud->width * cloud->height);
+    
+    for (int i = 0; i < POINTS_PER_SPHERA; i += 2) {
         //x^2 + y^2 + z^2 = 1
         
         x = rand() / double(RAND_MAX) * 2 - 1;
@@ -149,19 +181,32 @@ struct vao sampleSphere()
             
         z = sqrt(1 - pow(x, 2) - pow(y, 2));
     
-        //+z
-        sampledSphere.vertices.push_back(glm::vec3(x,y,z));
-        sampledSphere.normals.push_back(glm::normalize(glm::vec3(x,y,z)));
-        sampledSphere.colors.push_back(glm::vec3(0,0,1));
+        cloud->points[i].x = x;
+        cloud->points[i].y = y;
+        cloud->points[i].z = z;
+        cloud->points[i].normal_x = x;
+        cloud->points[i].normal_y = y;
+        cloud->points[i].normal_z = z;
+        cloud->points[i].r = 0;
+        cloud->points[i].g = 0;
+        cloud->points[i].b = 255;
         
-        //-z
-        sampledSphere.vertices.push_back(glm::vec3(x,y,-z));
-        sampledSphere.normals.push_back(glm::normalize(glm::vec3(x,y,-z)));
-        sampledSphere.colors.push_back(glm::vec3(1,0,0));
+        cloud->points[i+1].x = x;
+        cloud->points[i+1].y = y;
+        cloud->points[i+1].z = -z;
+        cloud->points[i+1].normal_x = x;
+        cloud->points[i+1].normal_y = y;
+        cloud->points[i+1].normal_z = -z;
+        cloud->points[i+1].r = 255;
+        cloud->points[i+1].g = 0;
+        cloud->points[i+1].b = 0;
         
         sampledSphere.numOfVertices = sampledSphere.numOfVertices + 2;
         
     }
+    
+    
+    sampledSphere.cloud = cloud;
     
     return sampledSphere;
 }
@@ -320,24 +365,37 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         glfwSetWindowShouldClose(window, GL_TRUE);
     
     if (key == GLFW_KEY_UP) {
-        radiusSplat += 0.001f;
-        glUniform1f(Shader::shaderInUse->radiusSplatLoc, radiusSplat);
+        userRadiusFactor += 0.001f;
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, userRadiusFactor);
     }
     
     if (key == GLFW_KEY_DOWN) {
-        radiusSplat -= 0.001f;
-        glUniform1f(Shader::shaderInUse->radiusSplatLoc, radiusSplat);
+        userRadiusFactor -= 0.001f;
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, userRadiusFactor);
     }
     
-    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        resetCameraPosition();
-    }
-    
-    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-        actualShader++;
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        automaticRadiusEnabled = !automaticRadiusEnabled;
         
-        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty())
-            MultipassEnabled = false;
+        if (automaticRadiusEnabled) {
+            backupUserRadiusFactor = userRadiusFactor;
+            userRadiusFactor = 1.0f;
+        }
+        else
+            userRadiusFactor = backupUserRadiusFactor;
+        
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, userRadiusFactor);
+        glUniform1i(Shader::shaderInUse->automaticRadiusEnabledLoc, automaticRadiusEnabled?1:0);
+    }
+    
+    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+        colorEnabled = !colorEnabled;
+        glUniform1i(Shader::shaderInUse->colorEnabledLoc, colorEnabled?1:0);
+        glfwSetWindowTitle(window, getTitleWindow());
+    }
+    
+    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        FXAA = !FXAA;
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
@@ -368,13 +426,18 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        resetCameraPosition();
+    }
     
-    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-        FXAA = !FXAA;
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        actualShader++;
+        
+        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty())
+            MultipassEnabled = false;
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
-    
     
 }
 
@@ -424,7 +487,7 @@ void display(GLFWwindow* window)
     
     normalMatrix = glm::inverseTranspose(glm::mat3(viewMatrix));
     
-
+    if (displayVAO != NULL) {
     glBindVertexArray(displayVAO->vaoID);
     
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
@@ -524,7 +587,7 @@ void display(GLFWwindow* window)
     glBlitFramebuffer(0, 0, windowWidth, windowHeight,
                       0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     
-
+    }
     
 }
 
@@ -664,7 +727,7 @@ int main(int argc, char **argv)
     models.push_back(sampleSphere());
     for (int i = 0; i < models.size(); i++) {
         loadVAO(&models[i]);
-        
+    
     }
     
     displayVAO = &models[0];

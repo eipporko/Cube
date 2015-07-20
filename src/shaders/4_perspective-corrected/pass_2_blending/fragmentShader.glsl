@@ -8,8 +8,8 @@ uniform float r; //Right parameter of the viewing frustum
 uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
-uniform float radius;
 
+in float ex_Radius;
 in  vec3 ex_Color;
 in 	vec3 ex_UxV;
 in  vec3 normals;
@@ -47,7 +47,7 @@ void main(void)
 
 	vec3 dist = (q - ccPosition.xyz);
 
-	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(radius, 2))
+	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
 		discard;
 	
 	//vec3 epsilon = normalize(qn)/120.0f;
@@ -56,6 +56,6 @@ void main(void)
 
 	//((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) )) 
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
-	float weight = (1.0f - length(dist)/radius);
+	float weight = (1.0f - length(dist)/ex_Radius);
 	out_Color = vec4(ex_Color.rgb, 1.0f * weight);
 }

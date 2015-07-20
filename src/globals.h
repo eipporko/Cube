@@ -19,7 +19,8 @@ extern glm::mat4 projMatrix, viewMatrix;                    //transformation mat
 extern glm::mat3 normalMatrix;
 
 //Splat's radii
-extern float radiusSplat;
+extern float userRadiusFactor;
+extern float backupUserRadiusFactor;
 
 //Camera
 extern float cameraDistance;
@@ -42,6 +43,10 @@ extern Shader fxaaFilter;
 extern bool MultipassEnabled;
 
 extern bool FXAA;
+
+extern bool colorEnabled;
+
+extern bool automaticRadiusEnabled;
 
 //Models
 extern vector<struct vao> models;

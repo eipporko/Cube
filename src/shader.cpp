@@ -67,6 +67,7 @@ void Shader::bindShader()
     glBindAttribLocation(program, 0, "in_Position");
     glBindAttribLocation(program, 1, "in_Color");
     glBindAttribLocation(program, 2, "in_Normals");
+    glBindAttribLocation(program, 3, "in_Radius");
     
     glLinkProgram(program);
     
@@ -87,14 +88,17 @@ void Shader::bindShader()
     leftFrustumLoc = glGetUniformLocation(program, "l");
     hViewportLoc = glGetUniformLocation(program,"h");
     wViewportLoc = glGetUniformLocation(program,"w");
-    radiusSplatLoc = glGetUniformLocation(program,"radius");
+    radiusSplatLoc = glGetUniformLocation(program, "userRadiusFactor");
     
     textureLoc = glGetUniformLocation(program, "myTexture");
     
     inverseTextureSizeLoc = glGetUniformLocation(program, "inverseTextureSize");
+    colorEnabledLoc = glGetUniformLocation(program, "colorEnabled");
+    automaticRadiusEnabledLoc = glGetUniformLocation(program, "automaticRadiusEnabled");
     
-    
-    glUniform1f(radiusSplatLoc, radiusSplat);
+    glUniform1f(automaticRadiusEnabledLoc, automaticRadiusEnabled);
+    glUniform1f(colorEnabledLoc, colorEnabled);
+    glUniform1f(radiusSplatLoc, userRadiusFactor);
     
     Shader::shaderInUse = this;
 }

@@ -7,6 +7,9 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+
 #define BUFFER_OFFSET(bytes) ((GLubyte*) NULL + (bytes))
 
 using namespace std;
@@ -35,12 +38,18 @@ struct vao {
     GLuint vaoID, vboID;
     int numOfVertices;
     int numOfTriangles;
-    vector<glm::vec3> vertices;
-    vector<glm::vec3> colors;
-    vector<glm::vec3> normals;
+    vector<glm::vec3> vertices; //DEPRECATED
+    vector<glm::vec3> colors;   //DEPRECATED
+    vector<glm::vec3> normals;  //DEPRECATED
     GLenum mode;
+    typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
+    vector<float> radius;
+    CloudType::Ptr cloud;
 };
 
+
+
+vector<float> getRadius(struct vao *obj);
 
 /**
  @brief Load models into GPU memory.
