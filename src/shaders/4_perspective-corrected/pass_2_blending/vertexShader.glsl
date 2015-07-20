@@ -36,6 +36,10 @@ void main(void)
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2*ex_Radius * (n / ccPosition.z) * (h / (t-b));
 
+	//Backface Culling
+	if (dot (ccPosition.xyz, normals) > 0)
+		gl_Position.w = 0;
+
 	vec3 color = vec3 (0.0, 0.0f, 0.0f);
 
 	//Diffuse

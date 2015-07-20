@@ -37,6 +37,10 @@ void main(void)
 	gl_Position = projMatrix * ccPosition;
 	gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
 
+	//BackFace Culling
+	if (dot (ccPosition.xyz, normals) > 0)
+		gl_Position.w = 0;
+
 	//U = normalize( cross (in_Position, normals));
 	//V = normalize( cross (U, normals) );
 
