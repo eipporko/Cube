@@ -46,6 +46,8 @@ public:
     GLint hViewportLoc, wViewportLoc;
     GLint radiusSplatLoc;
     
+    GLint colorEnabledLoc;
+    GLint automaticRadiusEnabledLoc;
     GLint textureLoc;
     GLint inverseTextureSizeLoc;
     

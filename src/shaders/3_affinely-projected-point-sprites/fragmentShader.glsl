@@ -6,6 +6,7 @@ uniform float f; //Far parameter of the viewing frustum
 in  vec3 ex_Color;
 in 	vec3 ex_Normals;
 in float ex_Pz;
+
 out vec4 out_Color;
 
 vec3 test;
