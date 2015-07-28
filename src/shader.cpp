@@ -23,9 +23,20 @@ Shader::Shader(string description, string vertexShaderPath, string fragmentShade
     this->vertexShaderPath = vertexShaderPath;
     this->fragmentShaderPath = fragmentShaderPath;
     this->mode = mode;
-    this->multiPass = multiPass;
+    this->multiPass.push_back( multiPass);
 }
 
+Shader::Shader(string description, string vertexShaderPath,
+               string fragmentShaderPath,
+               enum shaderMode mode,
+               vector< vector<Shader> > &multiPass)
+{
+    this->description = description;
+    this->vertexShaderPath = vertexShaderPath;
+    this->fragmentShaderPath = fragmentShaderPath;
+    this->mode = mode;
+    this->multiPass = multiPass;
+}
 
 /**
  @brief Display (hopefully) useful error messages if shader fails to compile

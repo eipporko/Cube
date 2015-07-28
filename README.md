@@ -17,7 +17,8 @@ Controls
 * F: Activate/Deactivate FXAA
 * M: Switch between models  (CUBE | SPHERE | Opened Models)
 * O: Open .PCD or .PLY files
-* P: Change between Flat Shading & Gouraud Shading.
+* P: Change between Flat Shading, Gouraud Shading & Phong Shading (Only on Perspective Correct mode).
+* Q: Recompile the actual shader.
 * R: Reset camera position
 * S: Switch between shaders (Sized-Fixed | Corrected by Depth | Affinely Projected Sprites | Perspective Correct)
 * Esc: Exit

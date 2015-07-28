@@ -35,6 +35,7 @@ extern bool leftBtnPress;
 //Shaders
 extern string title;
 extern int actualShader;
+extern int actualMultipass;
 extern vector<Shader> listOfShaders;
 
 extern Shader fxaaFilter;

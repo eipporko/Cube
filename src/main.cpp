@@ -54,9 +54,12 @@ GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
  */
 const char* getTitleWindow()
 {
+
     string multipass;
-    if (MultipassEnabled)
-        multipass = "Gouraud Shading";
+    if (MultipassEnabled){
+        int indexMultipass = actualMultipass % listOfShaders[actualShader%listOfShaders.size()].getMultiPass().size();
+        multipass = listOfShaders[actualShader%listOfShaders.size()].getDescription(indexMultipass) + " Shading";
+    }
     else
         multipass = "Flat Shading";
     
@@ -420,10 +423,22 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         
-        if (!listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty())
-            MultipassEnabled = !MultipassEnabled;
+        if (MultipassEnabled)
+            actualMultipass++;
+        
+        int indexShader = actualShader % listOfShaders.size();
+        int indexMultiPass = actualMultipass % listOfShaders[indexShader].getMultiPass().size();
+        
+        if (indexMultiPass == 0 && MultipassEnabled)
+            MultipassEnabled = false;
+        else
+            MultipassEnabled = true;
         
         glfwSetWindowTitle(window, getTitleWindow());
+    }
+    
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+        listOfShaders[actualShader%listOfShaders.size()].compileShader();
     }
     
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
@@ -433,8 +448,10 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         actualShader++;
         
-        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty())
+        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty()) {
             MultipassEnabled = false;
+            actualMultipass = 0;
+        }
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
@@ -516,16 +533,17 @@ void display(GLFWwindow* window)
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             Shader shaderh = listOfShaders[actualShader%listOfShaders.size()];
+            int indexMultipass = actualMultipass % shaderh.getMultiPass().size();
             
-            for (int i = 0; i < shaderh.getMultiPass().size(); i++) {
+            for (int i = 0; i < shaderh.getMultiPass(indexMultipass).size(); i++) {
                 
-                shaderh.getMultiPass()[i].bindShader();
+                shaderh.getMultiPass(indexMultipass)[i].bindShader();
                 
                 glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
                 glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
                 updateProjMatrix(window);
                 
-                switch (shaderh.getMultiPass()[i].getMode()) {
+                switch (shaderh.getMultiPass(indexMultipass)[i].getMode()) {
                         
                     case shader::DEPTH_MASK:
                     {
@@ -739,9 +757,9 @@ int main(int argc, char **argv)
         listOfShaders[i].compileShader();
         
         if ( !listOfShaders[i].getMultiPass().empty()) {
-
             for (int ii = 0; ii < listOfShaders[i].getMultiPass().size(); ii ++)
-                listOfShaders[i].getMultiPass()[ii].compileShader();
+                for (int iii = 0; iii < listOfShaders[i].getMultiPass(ii).size(); iii ++)
+                    listOfShaders[i].getMultiPass(ii)[iii].compileShader();
         }
         
     }

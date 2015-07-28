@@ -50,25 +50,48 @@ Shader affinelyProjectedShader    = Shader::Shader("Affinely Projected Point Spr
                                                    "3_affinely-projected-point-sprites/fragmentShader.glsl",
                                                    SINGLEPASS);
 
-Shader perspectiveCorrectedShaderMPVisibility = Shader::Shader("Perspective Correct Rasterization",
+Shader perspectiveCorrectedShaderMPVisibility = Shader::Shader("Gouraud",
                                                                "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
                                                                "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
                                                                DEPTH_MASK);
 
-Shader perspectiveCorrectedShaderMPBlending = Shader::Shader("Perspective Correct Rasterization",
-                                                             "4_perspective-corrected/pass_2_blending/vertexShader.glsl",
-                                                             "4_perspective-corrected/pass_2_blending/fragmentShader.glsl",
+Shader perspectiveCorrectedShaderMPBlending = Shader::Shader("Gouraud",
+                                                             "4_perspective-corrected/pass_2_blending/gouraudVertexShader.glsl",
+                                                             "4_perspective-corrected/pass_2_blending/gouraudFragmentShader.glsl",
                                                              BLENDING);
 
-Shader perspectiveCorrectedShaderMPNormalization = Shader::Shader("Perspective Correct Rasterization",
+Shader perspectiveCorrectedShaderMPNormalization = Shader::Shader("Gouraud",
                                                                   "4_perspective-corrected/pass_3_normalization/vertexShader.glsl",
                                                                   "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
                                                                   NORMALIZATION);
 
-static const Shader arr[] =   {perspectiveCorrectedShaderMPVisibility,
+static const Shader gouraud[] =   {perspectiveCorrectedShaderMPVisibility,
                                 perspectiveCorrectedShaderMPBlending,
                                 perspectiveCorrectedShaderMPNormalization};
-vector<Shader> vec (arr, arr + sizeof(arr) / sizeof(arr[0]) );
+vector<Shader> vecGouraud (gouraud, gouraud + sizeof(gouraud) / sizeof(gouraud[0]) );
+
+Shader perspectiveCorrectedShaderPhongVisibility = Shader::Shader("Phong",
+                                                                  "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                                                                  "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                                                                  DEPTH_MASK);
+
+Shader perspectiveCorrectedShaderPhongBlending = Shader::Shader("Phong",
+                                                                "4_perspective-corrected/pass_2_blending/phongVertexShader.glsl",
+                                                                "4_perspective-corrected/pass_2_blending/phongFragmentShader.glsl",
+                                                                BLENDING);
+
+Shader perspectiveCorrectedShaderPhongNormalization = Shader::Shader("Phong",
+                                                                     "4_perspective-corrected/pass_3_normalization/vertexShader.glsl",
+                                                                     "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
+                                                                     NORMALIZATION);
+
+static const Shader phong[] =   {perspectiveCorrectedShaderPhongVisibility,
+                                 perspectiveCorrectedShaderPhongBlending,
+                                 perspectiveCorrectedShaderPhongNormalization};
+vector<Shader> vecPhong (phong, phong + sizeof(phong) / sizeof(phong[0]) );
+
+static const vector<Shader> multipassArray[] = {vecGouraud, vecPhong};
+vector<vector <Shader> > vec (multipassArray, multipassArray + sizeof(multipassArray) / sizeof(multipassArray[0]) );
 
 Shader perspectiveCorrectedShader = Shader::Shader("Perspective Correct Rasterization",
                                                    "4_perspective-corrected/vertexShader.glsl",
@@ -85,6 +108,7 @@ vector<Shader> vec2 (arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]) );
 
 string title;
 int actualShader = 0;
+int actualMultipass = 0;
 vector<Shader> listOfShaders = vec2;
 
 //int actualShader = 0;

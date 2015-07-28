@@ -29,7 +29,7 @@ private:
     string vertexShaderPath;
     string fragmentShaderPath;
     shaderMode mode;
-    vector<Shader> multiPass;
+    vector<vector<Shader> > multiPass;
 
         
 public:
@@ -56,11 +56,14 @@ public:
     //Constructor
     Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode);
     Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode, vector<Shader> &multiPass);
+    Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode, vector< vector<Shader> > &multiPass);
     
     //Getters & Setters
-    void setMultiPass(vector<Shader> &multiPassVector) {multiPass = multiPassVector;};
+    void addMultiPass(vector<Shader> &multiPassVector) {multiPass.push_back(multiPassVector);};
     string getDescription() { return description; };
-    vector<Shader> &getMultiPass() { return multiPass; };
+    string getDescription(int i) { return multiPass[i][0].description; };
+    vector<Shader> &getMultiPass(int i) { return multiPass[i]; };
+    vector< vector<Shader> > &getMultiPass() { return multiPass; };
     shaderMode getMode() {return mode; };
     
     void printShaderInfoLog(GLint shader);

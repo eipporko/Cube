@@ -22,9 +22,8 @@ void main(void)
 		discard;
 	
 	//p. 279
-	zBuffer = (ex_Pz + test.z);
+	zBuffer = (ex_Pz + test.z * 0.1);
 	gl_FragDepth = ((1.0 / zBuffer) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
-	gl_FragDepth = gl_FragDepth;
 	
 	out_Color = vec4(ex_Color,1.0);
 }
