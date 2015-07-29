@@ -1,5 +1,5 @@
 //Perspective Correct Rasterization, Gouraud Shading (Blending Pass)
-#version 400
+#version 410
 uniform mat4 viewMatrix, projMatrix;
 uniform mat3 normalMatrix;
 uniform int h; //Height of the viewport

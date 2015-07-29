@@ -101,7 +101,9 @@ void Shader::bindShader()
     wViewportLoc = glGetUniformLocation(program,"w");
     radiusSplatLoc = glGetUniformLocation(program, "userRadiusFactor");
     
-    textureLoc = glGetUniformLocation(program, "myTexture");
+    renderTextureLoc = glGetUniformLocation(program, "renderTexture");
+    blendTextureLoc = glGetUniformLocation(program, "blendTexture");
+    normalTextureLoc = glGetUniformLocation(program, "normalTexture");
     
     inverseTextureSizeLoc = glGetUniformLocation(program, "inverseTextureSize");
     colorEnabledLoc = glGetUniformLocation(program, "colorEnabled");

@@ -48,7 +48,9 @@ public:
     
     GLint colorEnabledLoc;
     GLint automaticRadiusEnabledLoc;
-    GLint textureLoc;
+    GLint renderTextureLoc;
+    GLint blendTextureLoc;
+    GLint normalTextureLoc;
     GLint inverseTextureSizeLoc;
     
     //Methods ...
@@ -61,7 +63,7 @@ public:
     //Getters & Setters
     void addMultiPass(vector<Shader> &multiPassVector) {multiPass.push_back(multiPassVector);};
     string getDescription() { return description; };
-    string getDescription(int i) { return multiPass[i][0].description; };
+    string getDescription(int i) { return multiPass[i][0].description;};
     vector<Shader> &getMultiPass(int i) { return multiPass[i]; };
     vector< vector<Shader> > &getMultiPass() { return multiPass; };
     shaderMode getMode() {return mode; };

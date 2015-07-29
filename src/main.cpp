@@ -38,14 +38,8 @@
 using namespace std;
 
 GLuint FramebufferName = 0;
-GLuint renderedTexture;
+GLuint fbufferTex[4];
 GLuint depthrenderbuffer;
-GLuint depthTexture;
-
-GLenum windowBuff[1] = {GL_BACK_LEFT};
-GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0};
-
-
 
 /**
  @brief Returns a title for the window
@@ -285,9 +279,13 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     
     // resize framebuffer
-    glBindTexture(GL_TEXTURE_2D, renderedTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[0]);
+    glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[1]);
+    glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[2]);
+    glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_2D, fbufferTex[3]);
     glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
     
     firstTime = true;
@@ -423,16 +421,19 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         
-        if (MultipassEnabled)
-            actualMultipass++;
-        
         int indexShader = actualShader % listOfShaders.size();
-        int indexMultiPass = actualMultipass % listOfShaders[indexShader].getMultiPass().size();
         
-        if (indexMultiPass == 0 && MultipassEnabled)
-            MultipassEnabled = false;
+        if (MultipassEnabled) {
+            actualMultipass++;
+            
+            int indexMultiPass = actualMultipass % listOfShaders[indexShader].getMultiPass().size();
+            
+            if (indexMultiPass == 0)
+                MultipassEnabled = false;
+        }
         else
-            MultipassEnabled = true;
+            if (listOfShaders[indexShader].getMultiPass().size() > 0 )
+                MultipassEnabled = true;
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
@@ -474,13 +475,13 @@ void applyFXAA(GLFWwindow * window)
     glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
     glEnable(GL_TEXTURE_RECTANGLE);
     if (firstTime){
-        glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, windowWidth, windowHeight, 0);
+        glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA16F, 0, 0, windowWidth, windowHeight, 0);
         firstTime = false;
     }
     else
         glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, windowWidth, windowHeight);
     
-    glUniform1i(Shader::shaderInUse->textureLoc, 0);
+    glUniform1i(Shader::shaderInUse->renderTextureLoc, 0);
     glUniform3f(Shader::shaderInUse->inverseTextureSizeLoc, 1.0f/windowWidth, 1.0f/windowHeight, 0.0f);
     
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -508,7 +509,8 @@ void display(GLFWwindow* window)
     glBindVertexArray(displayVAO->vaoID);
     
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+        
+    glDrawBuffer(GL_COLOR_ATTACHMENT0); // "1" is the size of DrawBuffers
     glViewport(0, 0, windowWidth, windowHeight);
 
     
@@ -556,26 +558,29 @@ void display(GLFWwindow* window)
                         glEnable(GL_BLEND);
                         glDepthMask(GL_FALSE);
                         glDepthFunc(GL_LEQUAL);
+                        //glDrawBuffer(GL_COLOR_ATTACHMENT1);
+                        GLenum attach[2] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+                        glDrawBuffers(2, attach);
+                        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                        glClear(GL_COLOR_BUFFER_BIT);
                         glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
                         break;
                     }
                     case shader::NORMALIZATION:
                     {
 
-                        //Copy framebuffer to a Texture
                         glActiveTexture(GL_TEXTURE0);
-                        glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
+                        glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[1]);
                         glEnable(GL_TEXTURE_RECTANGLE);
-                        if (firstTime){
-                            glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA32F, 0, 0, windowWidth, windowHeight, 0);
-                            firstTime = false;
-                        }
-                        else
-                            glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, windowWidth, windowHeight);
+                        glUniform1i(Shader::shaderInUse->blendTextureLoc, 0);
                         
-                        glUniform1i(Shader::shaderInUse->textureLoc, 0);
+                        glActiveTexture(GL_TEXTURE1);
+                        glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[2]);
+                        glEnable(GL_TEXTURE_RECTANGLE);
+                        glUniform1i(Shader::shaderInUse->normalTextureLoc, 1);
                         
                         //Render Texture and normalize
+                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
                         glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
                         glClear(GL_COLOR_BUFFER_BIT);
                         drawWindowSizedRectangle();
@@ -601,7 +606,10 @@ void display(GLFWwindow* window)
     
     //Blit framebuffer resultant to window
     glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferName);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+        
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glDrawBuffer(GL_BACK_LEFT);
     glBlitFramebuffer(0, 0, windowWidth, windowHeight,
                       0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     
@@ -620,19 +628,46 @@ void buildFBO()
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
     
     // The texture we're going to render to
-    glGenTextures(1, &renderedTexture);
+    // The texture we're going to render to
+    glGenTextures(4, fbufferTex);
     
     // "Bind" the newly created texture : all future texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[0]);
     
     // Give an empty image to OpenGL ( the last "0" means "empty" )
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
     
     // Poor filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[1]);
+    
+    // Give an empty image to OpenGL ( the last "0" means "empty" )
+    glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+    
+    // Poor filtering
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[2]);
+    
+    // Give an empty image to OpenGL ( the last "0" means "empty" )
+    glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
+    
+    // Poor filtering
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     // The depth buffer
     glGenRenderbuffers(1, &depthrenderbuffer);
@@ -641,8 +676,7 @@ void buildFBO()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
     
     //// Alternative : Depth texture. Slower, but you can sample it later in your shader
-    glGenTextures(1, &depthTexture);
-    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glBindTexture(GL_TEXTURE_2D, fbufferTex[3]);
     glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -650,10 +684,17 @@ void buildFBO()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     // Set "renderedTexture" as our colour attachement #0
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fbufferTex[0], 0);
+    
+    
+    // Set "renderedTexture" as our colour attachement #0
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, fbufferTex[1], 0);
+    
+    // Set "renderedTexture" as our colour attachement #0
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, fbufferTex[2], 0);
     
     //// Depth texture alternative :
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fbufferTex[3], 0);
     
     
     // Set the list of draw buffers.

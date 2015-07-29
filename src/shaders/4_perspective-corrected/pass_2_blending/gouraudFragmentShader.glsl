@@ -1,5 +1,5 @@
 //Perspective Correct Rasterization, Gouraud Shading (Blending Pass)
-#version 400
+#version 410
 uniform float n; //Near parameter of the viewing frustum
 uniform float f; //Far parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -15,7 +15,7 @@ in 	vec3 ex_UxV;
 in  vec3 normals;
 in 	vec4 ccPosition;
 
-out vec4 out_Color;
+layout (location = 0) out vec4 out_Color;
 
 float LinearizeDepth(float depth)
 {
