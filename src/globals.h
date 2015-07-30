@@ -34,8 +34,8 @@ extern bool leftBtnPress;
 
 //Shaders
 extern string title;
-extern int actualShader;
-extern int actualMultipass;
+extern unsigned int actualShader;
+extern unsigned int actualMultipass;
 extern vector<Shader> listOfShaders;
 
 extern Shader fxaaFilter;
@@ -51,7 +51,7 @@ extern bool automaticRadiusEnabled;
 
 //Models
 extern vector<struct vao> models;
-extern int actualVAO;
+extern unsigned int actualVAO;
 
 //Pointer to the VAO to be rendered in display func
 extern struct vao* displayVAO;

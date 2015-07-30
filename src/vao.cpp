@@ -20,7 +20,7 @@ vector<float> getRadius(struct vao *obj)
     std::vector<int> pointIdxNKNSearch(K);
     std::vector<float> pointNKNSquaredDistance(K);
     
-    for (int i = 0; i < obj->cloud->size(); i++) {
+    for (unsigned int i = 0; i < obj->cloud->size(); i++) {
         
         if ( kdtree.nearestKSearch (obj->cloud->points[i], K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
             radius.push_back(sqrt(pointNKNSquaredDistance[4]));
@@ -62,7 +62,7 @@ void loadVAO(struct vao *obj)
         
         // Read cloud and get 3 vectors (vertices, colors and normals)
         if (obj->cloud != NULL)
-            for (int i = 0; i < obj->cloud->size(); i++) {
+            for (unsigned int i = 0; i < obj->cloud->size(); i++) {
                 vertices.push_back( glm::vec3( obj->cloud->points[i].x,
                                                obj->cloud->points[i].y,
                                                obj->cloud->points[i].z) );
@@ -117,7 +117,7 @@ void loadVAO(struct vao *obj)
                         &radius[0]);
         
         //cout << "###########################################" << endl;
-        //for (int i = 0; i < radius.size(); i++) {
+        //for (unsigned int i = 0; i < radius.size(); i++) {
         //    cout << radius[i] << endl;
         //}
         
