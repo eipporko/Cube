@@ -773,12 +773,6 @@ int main(int argc, char **argv)
         exit (1);
     }
     
-    GLenum theError = glGetError();
-    if(theError != GL_NO_ERROR) {
-        cout << "Warning: GLEW init " << gluErrorString(theError) << endl;
-    }
-    
-    
     if (!GLEW_EXT_framebuffer_object)
     {
         printf("Error: no extension GL_EXT_framebuffer_object.");
