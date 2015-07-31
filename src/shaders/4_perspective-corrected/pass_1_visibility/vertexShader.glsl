@@ -1,5 +1,5 @@
 //Perspective Correct Rasterization, Gouraud Shading (Visibility Pass)
-#version 400
+#version 410
 uniform mat4 viewMatrix, projMatrix;
 uniform mat3 normalMatrix;
 uniform int h; //Height of the viewport
@@ -10,11 +10,9 @@ uniform float userRadiusFactor; //Splat's radii
 uniform bool automaticRadiusEnabled;
 
 in  vec3 in_Position;
-in  vec3 in_Color;
 in 	vec3 in_Normals;
 in  float in_Radius;
 
-out vec3 ex_Color;
 out float ex_Radius;
 
 out vec4 ccPosition; //position in Camera Coordinates

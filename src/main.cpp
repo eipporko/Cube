@@ -2,6 +2,8 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <chrono>
+#include <ctime>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -20,6 +22,8 @@
 #include "vao.h"
 #include "shader.h"
 
+#define DEBUG
+#define ITERATIONS 25
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -36,6 +40,11 @@
 
 
 using namespace std;
+
+#ifdef DEBUG
+std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
+int itCounter = 0;
+#endif
 
 GLuint FramebufferName = 0;
 GLuint fbufferTex[4];
@@ -496,6 +505,16 @@ void applyFXAA(GLFWwindow * window)
 
 void display(GLFWwindow* window)
 {
+    
+#ifdef DEBUG
+    
+    if (itCounter == 0)
+        startTime = std::chrono::system_clock::now();
+
+    itCounter++;
+
+#endif
+    
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
     
@@ -558,7 +577,6 @@ void display(GLFWwindow* window)
                         glEnable(GL_BLEND);
                         glDepthMask(GL_FALSE);
                         glDepthFunc(GL_LEQUAL);
-                        //glDrawBuffer(GL_COLOR_ATTACHMENT1);
                         GLenum attach[2] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
                         glDrawBuffers(2, attach);
                         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -568,7 +586,6 @@ void display(GLFWwindow* window)
                     }
                     case shader::NORMALIZATION:
                     {
-
                         glActiveTexture(GL_TEXTURE0);
                         glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[1]);
                         glEnable(GL_TEXTURE_RECTANGLE);
@@ -612,8 +629,22 @@ void display(GLFWwindow* window)
     glDrawBuffer(GL_BACK_LEFT);
     glBlitFramebuffer(0, 0, windowWidth, windowHeight,
                       0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        
+    
     
     }
+    
+#ifdef DEBUG
+    
+    if (itCounter >= ITERATIONS) {
+        endTime = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = endTime-startTime;
+        cout << elapsed_seconds.count()/ITERATIONS << endl;
+        itCounter = 0;
+    }
+
+
+#endif
     
 }
 
@@ -715,8 +746,8 @@ int main(int argc, char **argv)
     
     /* create context */
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 

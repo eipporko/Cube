@@ -58,6 +58,7 @@ void main(void)
 	//((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) )) 
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
 	float weight = (1.0f - length(dist)/ex_Radius);
+	
 	out_Color = vec4(ex_Color.rgb, 1.0f * weight); 
 	out_Normals = vec4(normals, 1.0f * weight);
 }
