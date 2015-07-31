@@ -14,6 +14,14 @@
 
 using namespace std;
 
+
+struct vaoVertex {
+    glm::vec3 position;
+    glm::vec3 color;
+    glm::vec3 normal;
+    float radius;
+};
+
 //VAO Struct Definition
 /** @struct vao
  *  @brief This structure blah blah blah...

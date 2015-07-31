@@ -44,6 +44,8 @@ void loadVAO(struct vao *obj)
     vector<glm::vec3> colors;
     vector<glm::vec3> normals;
     
+    vector<vaoVertex> vboData;
+    
     if (GLEW_ARB_vertex_buffer_object)
     {
         cout << "Video card supports GL_ARB_vertex_buffer_object." << endl;
@@ -61,76 +63,46 @@ void loadVAO(struct vao *obj)
         glBindBuffer(GL_ARRAY_BUFFER, obj->vboID);
         
         // Read cloud and get 3 vectors (vertices, colors and normals)
-        if (obj->cloud != NULL)
+        if (obj->cloud != NULL) {
+            
+            vector<float> radius = getRadius(obj);
+            
             for (unsigned int i = 0; i < obj->cloud->size(); i++) {
-                vertices.push_back( glm::vec3( obj->cloud->points[i].x,
-                                               obj->cloud->points[i].y,
-                                               obj->cloud->points[i].z) );
+                vaoVertex vertice;
+                vertice.position = glm::vec3( obj->cloud->points[i].x,
+                                              obj->cloud->points[i].y,
+                                              obj->cloud->points[i].z);
                 
-                normals.push_back( glm::vec3( obj->cloud->points[i].normal_x,
-                                              obj->cloud->points[i].normal_y,
-                                              obj->cloud->points[i].normal_z) );
+                vertice.normal = glm::vec3( obj->cloud->points[i].normal_x,
+                                            obj->cloud->points[i].normal_y,
+                                            obj->cloud->points[i].normal_z);
                 
-                colors.push_back(glm::vec3( obj->cloud->points[i].r/255.f,
-                                            obj->cloud->points[i].g/255.f,
-                                            obj->cloud->points[i].b/255.f));
+                vertice.color = glm::vec3( obj->cloud->points[i].r/255.f,
+                                           obj->cloud->points[i].g/255.f,
+                                           obj->cloud->points[i].b/255.f);
+                vertice.radius = radius[i];
+                
+                vboData.push_back(vertice);
             }
-        
-        vector<float> radius = getRadius(obj);
+        }
         
         // Allocate space for it (sizeof(vertices) + sizeof(colors)).
         glBufferData(GL_ARRAY_BUFFER,
-                     sizeof(glm::vec3)*(vertices.size() +
-                                        colors.size()+
-                                        normals.size()) +
-                     sizeof(float) * radius.size(),
+                     sizeof(vaoVertex)*vboData.size(),
                      NULL,
                      GL_STATIC_DRAW);
         
         // Put "vertices" at offset zero in the buffer.
         glBufferSubData(GL_ARRAY_BUFFER,
                         0,
-                        sizeof(glm::vec3)*vertices.size(),
-                        &vertices[0]);
+                        sizeof(vaoVertex)*vboData.size(),
+                        &vboData[0]);
         
-        // Put "colors" at an offset in the buffer equal to the filled size of
-        // the buffer so far - i.e., sizeof(positions).
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        sizeof(glm::vec3)*vertices.size(),
-                        sizeof(glm::vec3)*colors.size(),
-                        &colors[0]);
         
-        // Put "normals" at an offset in the buffer equal to the filled size of
-        // the buffer so far - i.e., sizeof(positions).
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        sizeof(glm::vec3)*(vertices.size()+
-                                           colors.size()),
-                        sizeof(glm::vec3)*normals.size(),
-                        &normals[0]);
-        
-        // Put "radius" at an offset in the buffer equal to the filled size of ...
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        sizeof(glm::vec3)*(vertices.size() +
-                                           colors.size()+
-                                           normals.size()),
-                        sizeof(float)*radius.size(),
-                        &radius[0]);
-        
-        //cout << "###########################################" << endl;
-        //for (unsigned int i = 0; i < radius.size(); i++) {
-        //    cout << radius[i] << endl;
-        //}
-        
-        // Now "positions" is at offset 0 and "colors" is directly after it
-        // in the same buffer.
-        
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*vertices.size()));
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*(vertices.size()+
-                                                                                            colors.size())));
-        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(glm::vec3)*(vertices.size() +
-                                                                                             colors.size()+
-                                                                                             normals.size()) ));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(0));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)) );
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)*2) );
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)*3) );
         
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
