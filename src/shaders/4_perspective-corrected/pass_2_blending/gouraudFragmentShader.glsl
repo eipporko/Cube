@@ -1,5 +1,5 @@
 //Perspective Correct Rasterization, Gouraud Shading (Blending Pass)
-#version 400
+#version 410
 uniform float n; //Near parameter of the viewing frustum
 uniform float f; //Far parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -9,13 +9,15 @@ uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
 
+uniform bool colorEnabled;
+
 in float ex_Radius;
 in  vec3 ex_Color;
 in 	vec3 ex_UxV;
 in  vec3 normals;
 in 	vec4 ccPosition;
 
-out vec4 out_Color;
+layout (location = 0) out vec4 out_Color;
 
 float LinearizeDepth(float depth)
 {
@@ -44,18 +46,32 @@ void main(void)
 	float timef = dot (ccPosition.xyz, normals ) / denom;
 
 	vec3 q = qn * timef;
+	vec3 testq = q;
 
 	vec3 dist = (q - ccPosition.xyz);
 
 	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
 		discard;
-	
+
 	//vec3 epsilon = normalize(qn)/120.0f;
 	vec3 epsilon = normalize(qn)/40.0f;
 	q = q - epsilon;
 
+
 	//((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) )) 
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
 	float weight = (1.0f - length(dist)/ex_Radius);
-	out_Color = vec4(ex_Color.rgb, 1.0f * weight);
+
+	vec3 color = vec3 (0.0, 0.0f, 0.0f);
+
+	//Diffuse
+	if (colorEnabled == true) {
+		vec3 lightPosition = vec3(0.0, 0.0, 1.0f);
+		vec3 lithToQ = normalize(lightPosition - testq);
+		float dotValue = max(dot(normals, lithToQ), 0.0);
+		out_Color = vec4(vec3(dotValue) + color, 1.0f);
+	}
+	else
+		out_Color = vec4(ex_Color, 1.0f);
+
 }

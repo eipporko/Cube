@@ -1,5 +1,5 @@
 //Perspective Correct Rasterization, Gouraud Shading (Blending Pass)
-#version 400
+#version 410
 uniform mat4 viewMatrix, projMatrix;
 uniform mat3 normalMatrix;
 uniform int h; //Height of the viewport
@@ -7,7 +7,6 @@ uniform float n; //Near parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
 uniform float b; //Bottom parameter of the viewing frustum
 uniform float userRadiusFactor; //Splat's radii
-uniform bool colorEnabled;
 uniform bool automaticRadiusEnabled;
 
 in float in_Radius;
@@ -40,14 +39,6 @@ void main(void)
 	if (dot (ccPosition.xyz, normals) > 0)
 		gl_Position.w = 0;
 
-	vec3 color = vec3 (0.0, 0.0f, 0.0f);
 
-	//Diffuse
-	if (colorEnabled == true) {
-		vec3 lightDirection = vec3(0.0,0.0,1.0f);
-		float dotValue = max(dot(normals, lightDirection), 0.0);
-		ex_Color = vec3(dotValue) + color;
-	}
-	else
-		ex_Color = in_Color;
+	ex_Color = in_Color;
 }

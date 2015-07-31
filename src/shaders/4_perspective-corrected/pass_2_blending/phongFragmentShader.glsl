@@ -47,6 +47,7 @@ void main(void)
 	float timef = dot (ccPosition.xyz, normals ) / denom;
 
 	vec3 q = qn * timef;
+	vec3 testq = q;
 
 	vec3 dist = (q - ccPosition.xyz);
 
@@ -69,8 +70,9 @@ void main(void)
 
 	//Diffuse
 	if (colorEnabled == true) {
-		vec3 lightDirection = vec3(0.0,0.0,1.0f);
-		float dotValue = max(dot(phongNormal, lightDirection), 0.0);
+		vec3 lightPosition = vec3(0.0,0.0,1.0f);
+		vec3 lithToQ = normalize(lightPosition - testq);
+		float dotValue = max(dot(phongNormal, lithToQ), 0.0);
 		out_Color = vec4(vec3(dotValue) + color, 1.0f * weight);
 	}
 	else

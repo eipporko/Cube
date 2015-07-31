@@ -8,6 +8,7 @@ uniform float r; //Right parameter of the viewing frustum
 uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
+uniform bool colorEnabled;
 
 in float ex_Radius;
 in  vec3 ex_Color;
@@ -44,19 +45,27 @@ void main(void)
 	float timef = dot (ccPosition.xyz, normals ) / denom;
 
 	vec3 q = qn * timef;
+	vec3 testq = q;
 
 	vec3 dist = (q - ccPosition.xyz);
 
 	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
 		discard;
-
-
-	//p. 281
-	//lambda = dot ( vec3(ccPosition.x, ccPosition.y, ccPosition.z) , ex_UxV ) / dot( qn, ex_UxV );
-
 	
 	//p. 279
 	//q = lambda * qn;
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
-	out_Color = vec4(ex_Color, 1.0f);
+
+		vec3 color = vec3 (0.0, 0.0f, 0.0f);
+
+	//Diffuse
+	if (colorEnabled == true) {
+		vec3 lightPosition = vec3(0.0, 0.0, 1.0f);
+		vec3 lithToQ = normalize(lightPosition - testq);
+		float dotValue = max(dot(normals, lithToQ), 0.0);
+		out_Color = vec4(vec3(dotValue) + color, 1.0f);
+	}
+	else
+		out_Color = vec4(q, 1.0f);
+		//out_Color = vec4(ex_Color, 1.0f);
 }

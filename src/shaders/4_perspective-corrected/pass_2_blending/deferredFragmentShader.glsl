@@ -1,5 +1,5 @@
-//Perspective Correct Rasterization, Gouraud Shading (Blending Pass)
-#version 400
+//Perspective Correct Rasterization, Deferred Shading (Blending Pass)
+#version 410
 uniform float n; //Near parameter of the viewing frustum
 uniform float f; //Far parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -15,7 +15,8 @@ in 	vec3 ex_UxV;
 in  vec3 normals;
 in 	vec4 ccPosition;
 
-out vec4 out_Color;
+layout (location = 0) out vec4 out_Color;
+layout (location = 1) out vec4 out_Normals;
 
 float LinearizeDepth(float depth)
 {
@@ -57,5 +58,7 @@ void main(void)
 	//((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) )) 
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
 	float weight = (1.0f - length(dist)/ex_Radius);
-	out_Color = vec4(ex_Color.rgb, 1.0f * weight);
+	
+	out_Color = vec4(ex_Color.rgb, 1.0f * weight); 
+	out_Normals = vec4(normals, 1.0f * weight);
 }

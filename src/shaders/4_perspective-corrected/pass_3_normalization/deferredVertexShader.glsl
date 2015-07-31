@@ -1,4 +1,4 @@
-//Perspective Correct Rasterization, Gouraud Shading (Normalization Pass)
+//Perspective Correct Rasterization, Deferred Shading (Normalization Pass)
 #version 400
 in  vec3 in_Position;
 in 	vec3 in_Color;

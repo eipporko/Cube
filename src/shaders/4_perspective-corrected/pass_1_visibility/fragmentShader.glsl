@@ -1,5 +1,5 @@
 //Perspective Correct Rasterization, Gouraud Shading (Visibility Pass)
-#version 400
+#version 410
 uniform float n; //Near parameter of the viewing frustum
 uniform float f; //Far parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -10,12 +10,8 @@ uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
 
 in float ex_Radius;
-in  vec3 ex_Color;
-in 	vec3 ex_UxV;
 in  vec3 normals;
 in 	vec4 ccPosition;
-
-out vec4 out_Color;
 
 float LinearizeDepth(float depth)
 {
@@ -50,13 +46,8 @@ void main(void)
 	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
 		discard;
 
-
-	//p. 281
-	//lambda = dot ( vec3(ccPosition.x, ccPosition.y, ccPosition.z) , ex_UxV ) / dot( qn, ex_UxV );
-
 	
 	//p. 279
-	//q = lambda * qn;
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
 
 }

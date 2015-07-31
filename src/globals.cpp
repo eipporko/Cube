@@ -65,6 +65,7 @@ Shader perspectiveCorrectedShaderMPNormalization("Gouraud",
                                                  "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
                                                  NORMALIZATION);
 
+
 static const Shader gouraud[] =   {perspectiveCorrectedShaderMPVisibility,
                                 perspectiveCorrectedShaderMPBlending,
                                 perspectiveCorrectedShaderMPNormalization};
@@ -90,7 +91,33 @@ static const Shader phong[] =   {perspectiveCorrectedShaderPhongVisibility,
                                  perspectiveCorrectedShaderPhongNormalization};
 vector<Shader> vecPhong (phong, phong + sizeof(phong) / sizeof(phong[0]) );
 
-static const vector<Shader> multipassArray[] = {vecGouraud, vecPhong};
+
+
+//PERSPECTIVE CORRECT RASTERIZATION  - DEFERRED
+Shader perspectiveCorrectedShaderDeferredVisibility = Shader::Shader("Deferred",
+                                                                  "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                                                                  "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                                                                  DEPTH_MASK);
+
+Shader perspectiveCorrectedShaderDeferredBlending = Shader::Shader("Deferred",
+                                                                "4_perspective-corrected/pass_2_blending/deferredVertexShader.glsl",
+                                                                "4_perspective-corrected/pass_2_blending/deferredFragmentShader.glsl",
+                                                                BLENDING);
+
+Shader perspectiveCorrectedShaderDeferredNormalization = Shader::Shader("Deferred",
+                                                                     "4_perspective-corrected/pass_3_normalization/deferredVertexShader.glsl",
+                                                                     "4_perspective-corrected/pass_3_normalization/deferredFragmentShader.glsl",
+                                                                     NORMALIZATION);
+
+static const Shader deferred[] =   {perspectiveCorrectedShaderDeferredVisibility,
+                                    perspectiveCorrectedShaderDeferredBlending,
+                                    perspectiveCorrectedShaderDeferredNormalization};
+vector<Shader> vecDeferred (deferred, deferred + sizeof(deferred) / sizeof(deferred[0]) );
+
+
+
+//PERSPECTIVE CORRECT RASTERIZATION - SINGLEPASS
+static const vector<Shader> multipassArray[] = {vecGouraud, vecPhong, vecDeferred};
 vector<vector <Shader> > vec (multipassArray, multipassArray + sizeof(multipassArray) / sizeof(multipassArray[0]) );
 
 Shader perspectiveCorrectedShader("Perspective Correct Rasterization",
@@ -106,12 +133,12 @@ static const Shader arr2[] =   {sizedFixedShaderShader,
 
 vector<Shader> vec2 (arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]) );
 
+
 string title;
 unsigned int actualShader = 0;
 unsigned int actualMultipass = 0;
 vector<Shader> listOfShaders = vec2;
 
-//int actualShader = 0;
 bool MultipassEnabled = false;
 
 bool FXAA = false;

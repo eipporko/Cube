@@ -8,7 +8,7 @@ vector<float> getRadius(struct vao *obj)
 {
     vector<float> radius;
     
-    int K = 6;
+    int K = 12;
 
     std::vector<glm::vec3> positions;
     pcl::KdTreeFLANN<pcl::PointXYZRGBNormal> kdtree;
@@ -23,7 +23,7 @@ vector<float> getRadius(struct vao *obj)
     for (unsigned int i = 0; i < obj->cloud->size(); i++) {
         
         if ( kdtree.nearestKSearch (obj->cloud->points[i], K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
-            radius.push_back(sqrt(pointNKNSquaredDistance[4]));
+            radius.push_back(sqrt(pointNKNSquaredDistance[K-1]));
 
         
     }
