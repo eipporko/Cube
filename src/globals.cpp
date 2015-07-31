@@ -94,20 +94,20 @@ vector<Shader> vecPhong (phong, phong + sizeof(phong) / sizeof(phong[0]) );
 
 
 //PERSPECTIVE CORRECT RASTERIZATION  - DEFERRED
-Shader perspectiveCorrectedShaderDeferredVisibility = Shader::Shader("Deferred",
-                                                                  "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
-                                                                  "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
-                                                                  DEPTH_MASK);
+Shader perspectiveCorrectedShaderDeferredVisibility("Deferred",
+                                                    "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                                                    "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                                                    DEPTH_MASK);
 
-Shader perspectiveCorrectedShaderDeferredBlending = Shader::Shader("Deferred",
-                                                                "4_perspective-corrected/pass_2_blending/deferredVertexShader.glsl",
-                                                                "4_perspective-corrected/pass_2_blending/deferredFragmentShader.glsl",
-                                                                BLENDING);
+Shader perspectiveCorrectedShaderDeferredBlending("Deferred",
+                                                  "4_perspective-corrected/pass_2_blending/deferredVertexShader.glsl",
+                                                  "4_perspective-corrected/pass_2_blending/deferredFragmentShader.glsl",
+                                                  BLENDING);
 
-Shader perspectiveCorrectedShaderDeferredNormalization = Shader::Shader("Deferred",
-                                                                     "4_perspective-corrected/pass_3_normalization/deferredVertexShader.glsl",
-                                                                     "4_perspective-corrected/pass_3_normalization/deferredFragmentShader.glsl",
-                                                                     NORMALIZATION);
+Shader perspectiveCorrectedShaderDeferredNormalization("Deferred",
+                                                       "4_perspective-corrected/pass_3_normalization/deferredVertexShader.glsl",
+                                                       "4_perspective-corrected/pass_3_normalization/deferredFragmentShader.glsl",
+                                                       NORMALIZATION);
 
 static const Shader deferred[] =   {perspectiveCorrectedShaderDeferredVisibility,
                                     perspectiveCorrectedShaderDeferredBlending,
