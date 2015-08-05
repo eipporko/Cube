@@ -24,7 +24,7 @@
 #include "vao.h"
 #include "shader.h"
 
-//#define DEBUG
+#define DEBUG
 #define ITERATIONS 25
 
 #define WINDOW_WIDTH 640
@@ -472,6 +472,11 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
             if (listOfShaders[indexShader].getMultiPass().size() > 0 )
                 MultipassEnabled = true;
         
+#ifdef DEBUG
+        itCounter = 0;
+        cout << getTitleWindow() << endl;
+#endif
+        
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
@@ -490,6 +495,11 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
             MultipassEnabled = false;
             actualMultipass = 0;
         }
+        
+#ifdef DEBUG
+        itCounter = 0;
+        cout << getTitleWindow() << endl;
+#endif
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
@@ -618,17 +628,14 @@ void display(GLFWwindow* window)
                     {
                         glActiveTexture(GL_TEXTURE0);
                         glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[1]);
-                        glEnable(GL_TEXTURE_RECTANGLE);
                         glUniform1i(Shader::shaderInUse->blendTextureLoc, 0);
                         
                         glActiveTexture(GL_TEXTURE1);
                         glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[2]);
-                        glEnable(GL_TEXTURE_RECTANGLE);
                         glUniform1i(Shader::shaderInUse->normalTextureLoc, 1);
                         
                         glActiveTexture(GL_TEXTURE2);
                         glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[3]);
-                        glEnable(GL_TEXTURE_RECTANGLE);
                         glUniform1i(Shader::shaderInUse->positionTextureLoc, 2);
                         
                         //Render Texture and normalize
@@ -811,6 +818,8 @@ int main(int argc, char **argv)
         printf("Error: no extension ARB_color_buffer_float.");
         return 0;
     }
+    
+    glEnable(GL_TEXTURE_RECTANGLE);
     
     //FrameBuffer for rendering in multipass mode
     buildFBO();
