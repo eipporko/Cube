@@ -66,6 +66,5 @@ void main(void)
 		out_Color = vec4(vec3(dotValue) + color, 1.0f);
 	}
 	else
-		out_Color = vec4(q, 1.0f);
-		//out_Color = vec4(ex_Color, 1.0f);
+		out_Color = vec4(ex_Color, 1.0f);
 }

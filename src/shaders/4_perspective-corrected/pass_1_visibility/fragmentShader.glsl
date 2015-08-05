@@ -13,6 +13,8 @@ in float ex_Radius;
 in  vec3 normals;
 in 	vec4 ccPosition;
 
+layout (location = 1) out vec3 out_Position;
+
 float LinearizeDepth(float depth)
 {
     float near = n; 
@@ -47,6 +49,7 @@ void main(void)
 		discard;
 
 	
+	out_Position = q;
 	//p. 279
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
 
