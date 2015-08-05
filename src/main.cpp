@@ -296,6 +296,9 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glBindTexture(GL_TEXTURE_RECTANGLE, fbufferTex[3]);
     glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
     
+    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+    
     firstTime = true;
     
     updateProjMatrix(window);
@@ -527,6 +530,7 @@ void display(GLFWwindow* window)
     glBindVertexArray(displayVAO->vaoID);
     
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glViewport(0, 0, windowWidth, windowHeight);
 
     if (displayVAO != NULL) {
@@ -566,6 +570,7 @@ void display(GLFWwindow* window)
                         
                     case shader::DEPTH_MASK:
                     {
+                        glDepthMask(GL_TRUE);
                         GLenum attach[2] = {GL_NONE, GL_COLOR_ATTACHMENT3};
                         glDrawBuffers(2, attach);
                         glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
