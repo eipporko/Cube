@@ -1,5 +1,6 @@
 //Perspective Correct Rasterization
 #version 400
+uniform mat4 viewMatrix;
 uniform float n; //Near parameter of the viewing frustum
 uniform float f; //Far parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -9,6 +10,8 @@ uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
 uniform bool colorEnabled;
+
+uniform vec3 lightPosition;
 
 in float ex_Radius;
 in  vec3 ex_Color;
@@ -60,8 +63,8 @@ void main(void)
 
 	//Diffuse
 	if (colorEnabled == true) {
-		vec3 lightPosition = vec3(0.0, 0.0, 1.0f);
-		vec3 lithToQ = normalize(lightPosition - testq);
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition, 1.0f)).xyz;
+		vec3 lithToQ = normalize(ccLightPosition - testq);
 		float dotValue = max(dot(normals, lithToQ), 0.0);
 		out_Color = vec4(vec3(dotValue) + color, 1.0f);
 	}

@@ -6,8 +6,10 @@
 #include <ctime>
 
 #include <GL/glew.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -32,6 +34,8 @@
 #define POINTS_PER_SPHERA 2000
 
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
+
+#define LIGHT_ROTATION_STEP 5.0f
 
 #define SGN(x)   (((x) < 0) ? (-1) : (1))
 #define DEG_TO_RAD(x) (x * (M_PI / 180.0))
@@ -305,6 +309,20 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
 }
 
 
+void updateLightPosition()
+{
+    if (orbitalLightEnabled) {
+        lightPosition = glm::rotate(lightPosition, LIGHT_ROTATION_STEP, glm::vec3(0,1,0) );
+    }
+    else {
+        lightPosition = glm::normalize(cameraEye) * LIGHT_DISTANCE;
+    }
+    
+    glUniform3fv(Shader::shaderInUse->lightPositionLoc, 1, glm::value_ptr(lightPosition));
+                                
+}
+
+
 
 /**
  Reset camera position to origin.
@@ -410,6 +428,14 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         FXAA = !FXAA;
         
         glfwSetWindowTitle(window, getTitleWindow());
+    }
+    
+    if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+        orbitalLightEnabled = !orbitalLightEnabled;
+        
+        //Reset light position
+        if (orbitalLightEnabled)
+            lightPosition = glm::vec3 (0, 0, LIGHT_DISTANCE);
     }
     
     if (key == GLFW_KEY_M && action == GLFW_PRESS) {
@@ -855,6 +881,8 @@ int main(int argc, char **argv)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        updateLightPosition();
+        
         /* Render here */
         display(window);
         

@@ -1,5 +1,6 @@
 //Perspective Correct Rasterization, Deferred Shading (Normalization Pass)
 #version 410
+uniform mat4 viewMatrix;
 uniform float n; //Near parameter of the viewing frustum
 uniform float f; //Far parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
@@ -8,6 +9,7 @@ uniform float r; //Right parameter of the viewing frustum
 uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
+uniform vec3 lightPosition;
 
 uniform sampler2DRect blendTexture;
 uniform sampler2DRect normalTexture;
@@ -45,8 +47,8 @@ void main(void)
 
 	//Lightning with the resultant normalized textures
 	if (colorEnabled == true) {
-		vec3 lightPosition = vec3(0.0, 0.0, 1.0f);
-		vec3 ligthToQ = normalize(lightPosition - q);
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition, 1.0f)).xyz;
+		vec3 ligthToQ = normalize(ccLightPosition - q);
 		float dotValue = max(dot(normalize(normalizedNormal.xyz), ligthToQ), 0.0);
 		out_Color = vec4(vec3(dotValue) + blackColor, 1.0f);
 	}

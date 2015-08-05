@@ -101,6 +101,8 @@ void Shader::bindShader()
     wViewportLoc = glGetUniformLocation(program,"w");
     radiusSplatLoc = glGetUniformLocation(program, "userRadiusFactor");
     
+    lightPositionLoc = glGetUniformLocation(program, "lightPosition");
+    
     renderTextureLoc = glGetUniformLocation(program, "renderTexture");
     blendTextureLoc = glGetUniformLocation(program, "blendTexture");
     normalTextureLoc = glGetUniformLocation(program, "normalTexture");
@@ -110,6 +112,7 @@ void Shader::bindShader()
     colorEnabledLoc = glGetUniformLocation(program, "colorEnabled");
     automaticRadiusEnabledLoc = glGetUniformLocation(program, "automaticRadiusEnabled");
     
+    glUniform3fv(lightPositionLoc, 1, glm::value_ptr(lightPosition));
     glUniform1f(automaticRadiusEnabledLoc, automaticRadiusEnabled);
     glUniform1f(colorEnabledLoc, colorEnabled);
     glUniform1f(radiusSplatLoc, userRadiusFactor);

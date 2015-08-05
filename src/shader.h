@@ -45,7 +45,7 @@ public:
     GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, leftFrustumLoc,rightFrustumLoc;
     GLint hViewportLoc, wViewportLoc;
     GLint radiusSplatLoc;
-    
+    GLint lightPositionLoc;
     GLint colorEnabledLoc;
     GLint automaticRadiusEnabledLoc;
     GLint renderTextureLoc;

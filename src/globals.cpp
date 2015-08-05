@@ -24,6 +24,10 @@ glm::vec3 cameraEye = glm::vec3(0, 0, -cameraDistance);
 glm::vec3 cameraUp = glm::vec3(0,1,0);
 float cameraAngleX, cameraAngleY;
 
+//Light
+glm::vec3 lightPosition = glm::vec3(0, 0, LIGHT_DISTANCE);
+bool orbitalLightEnabled = false;
+
 //Mouse
 double lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
 bool leftBtnPress = false;

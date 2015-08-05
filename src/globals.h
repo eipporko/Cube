@@ -7,6 +7,10 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
+#define LIGHT_DISTANCE 4.0f
+
 using namespace std;
 
 class Shader;
@@ -27,6 +31,10 @@ extern float cameraDistance;
 extern glm::vec3 cameraEye;
 extern glm::vec3 cameraUp;
 extern float cameraAngleX, cameraAngleY;
+
+//Light
+extern glm::vec3 lightPosition;
+extern bool orbitalLightEnabled;
 
 //Mouse
 extern double lastMouseX, lastMouseY; //last mouse position pressed;
