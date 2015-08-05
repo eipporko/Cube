@@ -104,6 +104,7 @@ void Shader::bindShader()
     renderTextureLoc = glGetUniformLocation(program, "renderTexture");
     blendTextureLoc = glGetUniformLocation(program, "blendTexture");
     normalTextureLoc = glGetUniformLocation(program, "normalTexture");
+    positionTextureLoc = glGetUniformLocation(program, "positionTexture");
     
     inverseTextureSizeLoc = glGetUniformLocation(program, "inverseTextureSize");
     colorEnabledLoc = glGetUniformLocation(program, "colorEnabled");
