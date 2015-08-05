@@ -51,7 +51,6 @@ public:
     GLint renderTextureLoc;
     GLint blendTextureLoc;
     GLint normalTextureLoc;
-    GLint positionTextureLoc;
     GLint inverseTextureSizeLoc;
     
     //Methods ...
