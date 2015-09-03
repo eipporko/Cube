@@ -1,4 +1,8 @@
+#ifdef _MSC_VER
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <iostream>
 #include <math.h>
 #include <vector>
@@ -258,8 +262,8 @@ void updateProjMatrix(GLFWwindow * window)
 {
     float ratio;
     float fovy = 53.13f;
-    float near = 0.1f;
-    float far = 100.0f;
+    float n = 0.1f;
+    float f = 100.0f;
     
     int w, h;
     glfwGetWindowSize(window, &w, &h);
@@ -268,14 +272,14 @@ void updateProjMatrix(GLFWwindow * window)
         h = 1;
     
     ratio = (1.0f * w) / h;
-    projMatrix = glm::perspective(fovy, ratio, near, far);
+    projMatrix = glm::perspective(fovy, ratio, n, f);
     
-    GLfloat top = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * near;
+    GLfloat top = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * n;
     glUniformMatrix4fv(Shader::shaderInUse->projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
     glUniform1i(Shader::shaderInUse->hViewportLoc, (GLint) h);
     glUniform1i(Shader::shaderInUse->wViewportLoc, (GLint) w);
-    glUniform1f(Shader::shaderInUse->nearFrustumLoc, (GLfloat) near);
-    glUniform1f(Shader::shaderInUse->farFrustumLoc, (GLfloat) far);
+    glUniform1f(Shader::shaderInUse->nearFrustumLoc, (GLfloat) n);
+    glUniform1f(Shader::shaderInUse->farFrustumLoc, (GLfloat) f);
     glUniform1f(Shader::shaderInUse->topFrustumLoc, (GLfloat) -top );
     glUniform1f(Shader::shaderInUse->bottomFrustumLoc, (GLfloat) top );
     glUniform1f(Shader::shaderInUse->leftFrustumLoc, (GLfloat) -top * ratio);
