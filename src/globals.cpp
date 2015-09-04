@@ -248,14 +248,14 @@ glm::vec3 normals[] = {
 
 
 struct vao cubeMesh = {
-    .vaoID = 0,
-    .vboID = 0,
-    .numOfVertices = 36,
-    .numOfTriangles = 12,
-    .vertices = vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
-    .colors = vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
-    .normals = vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
-    .mode = GL_TRIANGLES
+    0,
+    0,
+    36,
+    12,
+    vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
+    vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
+    vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
+    GL_TRIANGLES
 };
 
 
