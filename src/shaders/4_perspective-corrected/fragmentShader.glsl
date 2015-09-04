@@ -23,8 +23,8 @@ out vec4 out_Color;
 
 float LinearizeDepth(float depth)
 {
-    float near = n; 
-    float far = f; 
+    float near = 1.0f; 
+    float far = 100.0f; 
     float z = depth; // Back to NDC 
     return (2.0 * near) / (far + near - z * (far - near));	
 }

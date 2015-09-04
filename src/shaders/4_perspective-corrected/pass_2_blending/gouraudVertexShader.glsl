@@ -40,10 +40,6 @@ void main(void)
 	if (dot (ccPosition.xyz, normals) > 0)
 		gl_Position.w = 0;
 
-	//Diffuse
-	if (colorEnabled == true) {
-		ex_Color = vec3 (0.0, 0.0f, 0.0f);
-	}
-	else
-		ex_Color = in_Color;
+
+	ex_Color = in_Color;
 }
