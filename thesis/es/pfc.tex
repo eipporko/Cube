@@ -1,0 +1,159 @@
+% Opciones empleadas:
+%
+%	a4paper -> indica el tama�o del papel, en este caso A4.
+%	11pt -> tama�o de la fuente 11 puntos.
+%	oneside -> s�lo escribimos en una cara del folio.
+% 
+% Otras opciones interesantes:
+%
+%	twoside -> escribimos a doble cara.
+%	openbib -> para que las referencias bibliogr�ficas tengan un salto de l�nea entre cada campo de la referencia.
+%
+\documentclass[a4paper,11pt,oneside]{book}
+
+% codificaci�n latin1 y s�mbolos del idioma espa�ol (�, acentos, ...)
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{float}
+
+% puede que queramos usar el s�mbolo del euro.
+\usepackage{eurosym}
+
+% El paquete fancybox nos permite crear cajas de diferentes estilos con facilidad.
+% http://www.ctan.org/get/macros/latex/contrib/fancybox/fancybox.pdf
+% http://www.mackichan.com/index.html?techtalk/487.htm~mainFrame
+\usepackage{fancybox}
+\usepackage{multicol}
+\usepackage{amsmath}
+
+% Para incluir subfiguras.
+\usepackage{subfigure}
+
+% Para incluir gr�ficos en JPG => compilar con pdflatex.
+% \usepackage[pdftex]{graphicx}
+
+% Para incluir gr�ficos EPS => compilar con latex.
+\usepackage[pdftex]{graphicx}
+\usepackage{epstopdf}
+
+% Para escribir en color...
+%
+% ... cuando compilamos con el comando ``latex''
+\usepackage[pdftex,usenames,dvipsnames]{color}
+% ... uando compilamos con el comando ``pdflatex''
+% \usepackage[pdftex,usenames,dvipsnames]{color}
+
+% Espaciado y ajuste de m�rgenes
+\usepackage{setspace}
+\onehalfspacing
+% \doublespacing
+\setlength{\textwidth}{15cm}
+\setlength{\textheight}{22cm}
+\setlength{\oddsidemargin}{1cm}
+\setlength{\evensidemargin}{1cm}
+
+\usepackage{listings}
+%Landscape figures.
+\usepackage{lscape}
+\usepackage{wrapfig}
+
+% Paquete fancyhdr -> Para modificar la cabecera y pie de p�ginas.
+% http://tug.ctan.org/tex-archive/macros/latex/contrib/fancyhdr/
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhf[HR]{\thepage}
+\fancyhf[HL]{\nouppercase\rightmark}
+
+% Package booktabs -> Para mejorar el aspecto de las tablas o cuadros.
+% http://www.ctan.org/tex-archive/macros/latex/contrib/booktabs/
+\usepackage{booktabs}
+
+% Package rotating -> Para poder girar las tablas y dibujarlas a lo largo
+% del folio en vez de a lo ancho.
+\usepackage{rotating}
+
+% Packages multicol y multirow, para manejar tablas de filas y columnas m�ltiples.
+\usepackage{multicol}
+\usepackage{multirow}
+
+% Personalizamos la separaci�n entre p�rrafos...
+\parskip=6pt
+
+% Personalizamos el identado en la primera l�nea del nuevo p�rrafo...
+\parindent=10pt
+
+% Establecemos el n�mero m�ximo de niveles de profundidad en las secciones.
+\setcounter{secnumdepth}{3}
+
+% T�tulo
+\title{Lorem ipsum dolor sit amet, consectetuer adipiscing elit vestibulum a pede sit amet augue pellentesque}
+% Autor
+\author{Mauro Silvosa Rivera}
+% Fecha
+\date{\today}
+
+
+\begin{document}
+
+	% \maketitle sirve para generar autom�tica una portada predefinida, pero para un proyecto fin de carrera
+	%	de FIC no sirvir�a porque no cumple las normas de presentaci�n. Podemos hacer dos cosas:
+	% 1. Usarla e ignorar las normas (y asumir las consecuencias que pueda tener)
+	% 2. Hacernos una portada en LaTeX que cumpla las normas (menos arriesgado)
+	%
+        \include{pfc_portada}
+
+	% FRONTMATTER: TOC, LOF, LOT y descripci�n/organizaci�n de la memoria.
+        \frontmatter
+
+	% Los proyectos de fin de carrera de FIC han de ir acompa�ados de una serie de documentos adicionales, algunos
+	% 	de ellos obligatorios (certificado, resumen, lista de palabras clave) y otros opcionales (dedicatoria
+	%	y agradecimientos).
+	%
+        \thispagestyle{empty}     % No number page, headings...
+        \include{pfc_certificado}
+        \thispagestyle{empty}     % No number page, headings...
+
+        \include{pfc_resumen}
+        \thispagestyle{empty}     % No number page, headings...
+
+        \include{pfc_palabras_clave}
+        \thispagestyle{empty}     % No number page, headings...
+
+        \include{pfc_dedicatoria}
+        \thispagestyle{empty}     % No number page, headings...
+
+        \include{pfc_agradecimientos}
+        \thispagestyle{empty}     % No number page, headings...
+
+        \tableofcontents
+        \listoffigures
+        \listoftables
+
+        \include{pfc_frontmatter_intro}
+
+
+	% MAINMATTER: El contenido, cap�tulo a cap�tulo, de la memoria del PFC.
+        \mainmatter
+
+	\include{pfc_main_010}
+	\include{pfc_main_020}
+	\include{pfc_main_030}
+	\include{pfc_main_040}
+	\include{pfc_main_050}
+	\include{pfc_main_060}
+
+
+	% INCLUIMOS LOS AP�NDICES...
+    %    \appendix
+	%\include{pfc_appendix_010}
+%         \include{pfc_appendix_020}
+
+
+	% INCLUIMOS LA BIBLIOGRAF�A...
+	\nocite{*}	% Se usa para indicar en la bibliograf�a las referencias no citadas.
+	\bibliography{pfc_biblio}
+	\bibliographystyle{plain}
+
+\end{document}
+

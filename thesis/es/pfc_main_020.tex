@@ -1,0 +1,150 @@
+%
+% FUNDAMENTOS TECNOLÓGICOS
+%
+\chapter[Fundamentos tecnológicos]{
+	Fundamentos tecnológicos
+	\label{nombre_referencia_al_capitulo_020}
+}
+
+En este capítulo se explicarán los fundamentos tenológicos necesarios para la comprensión de este proyecto. Empezando por la explicación de las Nubes de puntos (ver \ref{s_nubes}), OpenGL (ver \ref{s_opengl}) y la librería PCL (ver \ref{s_pcl}).
+
+
+%
+% SECCION - Render de puntos
+%
+\section[Nubes de puntos]{
+	Nubes de puntos
+	\label{s_nubes}
+}
+
+Una nube de puntos es un conjunto de puntos en un sistema de coordenadas tridimensional. Estos puntos se identifican habitualmente como coordenadas X, Y, y Z y son representaciones de la superficie externa de un objeto.
+
+Las nubes de puntos tienen múltiples aplicaciones, entre las que se incluyen la elaboración de modelos tridimensionales en CAD de piezas fabricadas, la inspección de calidad en metrología, y muchas otras en el ámbito de la visualización, animación, texturización y aplicaciones de personalización masiva.
+
+Aunque las nubes de puntos se pueden revisar y texturizar directamente, habitualmente no se utilizan de esta forma en la mayoría de las aplicaciones tridimensionales, ya que se convierten en modelos de mallas poligonales o mallas triangulares irregulares, modelos de superficie \textit{NURBS}, o modelos de \textit{CAD} mediante un proceso denominado reconstrucción de superficies.
+
+Una aplicación en la que las nubes de puntos se utilizan directamente es la metrología y en la inspección industrial (ver Figura \ref{figure_desviaciones}). La nube de una pieza fabricada se alinea a un modelo CAD (o a otra nube de puntos) y se comparan para verificar las diferencias. Éstas se visualizan como mapas de color que proporcionan un indicador visual de la desviación entre la pieza fabricada y el modelo CAD. Las dimensiones geométricas y tolerancias también se pueden extraer directamente de la nube de puntos.
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/gom.jpg}
+	\caption{Mapa de desviaciones de una pieza con respecto a un modelo \textit{CAD} en un proceso industrial.}
+	\label{figure_desviaciones}
+\end{figure}
+
+Las nubes de puntos también se pueden utilizar para representar datos volumétricos como en la imagen médica. Se logra usando nubes de puntos de muestreo múltiple y compresión de datos.
+
+En los Sistemas de Información Geográfica \textit{GIS} las nubes de puntos son una de las fuentes de datos para construir modelos digitales del terreno.
+
+\subsection[Adquisición] {Adquisición}
+
+Para la adquisición de estas nubes de puntos, existen actualmente diferentes métodos:
+
+\begin{itemize}
+	\item \textbf{Escaner 3D} Un escáner 3D es un dispositivo que analiza un objeto o una escena para reunir datos de su forma y ocasionalmente su color. Diferenciando dos tipos de escáneres en función de si existe contacto con el objeto o no y  dividiendo estos últimos en otras dos categorías (activos y pasivos).
+	
+	\begin{itemize}
+		\item \textbf{Contacto} Los escáneres 3D examinan el objeto apoyando el elemento de medida (palpador) sobre la superficie del mismo, típicamente una punta de acero duro o zafiro. Una serie de sensores internos permiten determinar la posición espacial del palpador. Se usan en su mayoría en control dimensional en procesos de fabricación y pueden conseguir precisiones típicas de 0,01 mm. 
+		
+		\item \textbf{Sin contacto}
+		\begin{itemize}
+			\item \textbf{Activos} Los escáneres activos (ver Figura \ref{figure_leica}) emiten alguna clase de señal y analizan su retorno para capturar la geometría de un objeto o una escena. Se utilizan radiaciones electromagnéticas (desde ondas de radio hasta rayos X) o ultrasonidos.
+			
+			\item \textbf{Pasivos} Los escáneres pasivos no emiten ninguna clase de radiación por sí mismos, pero en lugar se fía de detectar la radiación reflejada del ambiente. La mayoría de los escáneres de este tipo detectan la luz visible porque es una radiación ya disponible en el ambiente. Otros tipos de radiación, tal como el infrarrojo podrían ser utilizados también. Los métodos pasivos pueden ser muy baratos, porque en la mayoría de los casos estos no necesitan hardware particular.
+		\end{itemize}
+	\end{itemize}
+	
+	
+	\item \textbf{Fotogrametría} La fotogrametría es una técnica para determinar las propiedades geométricas de los objetos y las situaciones espaciales a partir de imágenes fotográficas. Básicamente, es una técnica de medición de coordenadas 3D, que utiliza fotografías u otros sistemas de percepción remota junto con puntos de referencia, como medio fundamental para la medición.
+\end{itemize}
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=7cm]{../figures/lidar.jpg}
+	\caption{Estación Leica LIDAR utilizado para el escaneo de edificios, formaciones rocosas, etc. con el objetivo de generar modelos 3D.}
+	\label{figure_leica}
+\end{figure}
+
+
+%
+% SECCION - OpenGL
+%
+\section[OpenGL]{
+	OpenGL
+	\label{s_opengl}
+}
+
+OpenGL (Open Graphics Library) es una libreria multiplataforma destinada a renderizado 2D y 3D. Esta API es típicamente usada para trabajar con la Unidad Gráfica de Procesado (GPU) para conseguir un renderizado acelerado mediante \textit{hardware}, aunque es posible que esta sea implementada enteramente mediante \textit{software}.
+
+% Subsección
+\subsection[Pipeline] {Pipeline}
+
+El \textit{Pipeline} de render es una secuencia de pasos funcionales para la obtención de imágenes de escenas 3D. Idealmente, si se divide un proceso en $ n $ etapas se incrementará la velocidad del proceso en ese factor $ n $. Así, la velocidad de la cadena viene determinada por el tiempo requerido por la etapa más lenta. 
+
+El \textit{pipeline} que OpenGL sigue en la renderización de objetos (ver Figura \ref{figure_opengl_pipeline}) sería el siguiente:
+
+\begin{enumerate}
+	\item Preparación del \textit{Vertex Array Object} a renderizar.
+	
+	\item Procesamiento de los vértices:
+	\begin{enumerate}
+		\item  Cada vértice del flujo de datos (\textit{stream}) es procesado mediante el \textit{vertex shader} con motivo de realizar las transformaciones necesarias de estos a un espacio de coordenadas adaptado a su proyección.
+		
+		\item Fase opcional de teselación.
+		
+		\item Fase opcional \textit{geometry shader}. La salida es una secuencia de primitivas.
+	\end{enumerate}
+	
+	\item \textit{Vertex Post-Processing}, la salida del anterior paso es ajustado (\textit{primitive clipping} y transformación del \textit{viewport} a coordenadas de la ventana). 
+	
+	\item \textit{Primitive Assembly}.
+ 	
+	\item Las primitivas son divididas en elementos discretos, los cuales generan un numero determinado de fragmentos.
+	
+	\item El \textit{fragment shader} procesa cada fragmento generando un numero diferente de salidas.
+	
+	\item \textit{Per-Sample Processing}, donde se descartan fragmentos, se combinan los colores de los fragmentos obtenidos del \textit{fragment shader} con los que ya existen en el \textit{buffer}, ademas de realizar diferentes operaciones lógicas.
+
+\end{enumerate}
+
+\begin{figure} [H]
+	\centering
+	\includegraphics[width=\textwidth]{../figures/pipeline.eps}
+	\caption{El pipeline de OpenGL, las fases es negrita son programables.}
+	\label{figure_opengl_pipeline}
+\end{figure}
+
+\subsection[Shaders] {Shaders}
+
+El \textit{hardware} de aceleración gráfica ha sufrido una importante transformación en la última década. Como se muestra en la Figura \ref{figure_evolucion_gpu}, en los últimos años el potencial de las \textit{GPUs} ha superado con creces al de la \textit{CPU}.
+
+Esta tendencia en el \textit{hardware} gráfico ha reemplazado la funcionalidad fija del antiguo \textit{pipeline} con areas programables mediante pequeños programas. De este modo algunas de las fases del \textit{pipeline} pueden ser modificadas con pequeños programas escritos por el usuario denominados \textit{shaders}. Estos programas se ejecutan directamente en la \textit{GPU}, y permite realizar operaciones a diferentes niveles con alta eficiencia.
+
+El lenguaje de OpenGL de \textit{Shading} (\textit{GLSL}) está basado en ANSI C y muchas de las características han sido mantenidas excepto las que entraban en conflicto con temas de rendimineto o implementación. C fué extendido con tipos nuevos para manejar estructuras como vectores o matrices, para hacer mas fácil operaciones típicas en gráficos 3D. 
+
+En al figura \ref{figure_opengl_pipeline} se puede observar que en OpenGL las fases referentes al \textit{vertex shader}, \textit{tessellation}, \textit{geometry shader} o \textit{fragment shader} pueden ser programables.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/integracion-transistores.eps}
+	\caption{Evolución del número de transistores en GPU y CPU (1999 - 2010).}
+	\label{figure_evolucion_gpu}
+\end{figure}
+
+%
+% SECCION - PCL
+%
+\section[PCL]{
+	PCL
+	\label{s_pcl}
+}
+\textit{Point Cloud Library} (\textit{PCL}) es una librería \textit{open-source} con algoritmia destinada a tareas de  procesamiento de nubes de puntos y geometría 3D. La librería contiene algoritmos para estimación, reconstrucción de superficies, \textit{model fitting} y segmentación. Está escrita en C++ y distribuida bajo una licencia \textit{BSD}.
+
+Estos son usandos, por ejemplo, para percepción en robótica para filtrar ruido, unir nubes de puntos 3D, extraer \textit{keypoints} y calcular descriptores para reconocimiento de objetos basados en su geometría y crear superficies a partir de nubes de puntos para visualizarlas.
+
+El desarrollo de esta librería comenzó en Marzo de 2010 
+The development of the Point Cloud Library started in March 2010 en la empresa \textit{Willow Garage}. La primera version oficial de \textit{PCL} fue lanzada en Mayo de 2011.
+
+%
+% FIN DEL CAPÍTULO
+%
