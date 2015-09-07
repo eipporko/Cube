@@ -54,8 +54,6 @@ public:
     GLint positionTextureLoc;
     GLint inverseTextureSizeLoc;
     
-    //Methods ...
-    
     //Constructor
     Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode);
     Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode, vector<Shader> &multiPass);

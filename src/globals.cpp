@@ -152,11 +152,11 @@ bool colorEnabled = false;
 bool automaticRadiusEnabled = false;
 
 //Models
-vector<struct vao> models;
+vector<VAO> models;
 unsigned int actualVAO = 0;
 
 //Pointer to the VAO to be rendered in display func
-struct vao* displayVAO = NULL;
+VAO* displayVAO = NULL;
 
 //Cube Description
 //
@@ -246,16 +246,11 @@ glm::vec3 normals[] = {
     normal_back,
     normal_back };
 
-
-struct vao cubeMesh = {
-    0,
-    0,
-    36,
-    12,
-    vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
-    vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
-    vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
-    GL_TRIANGLES
-};
+VAO cubeMesh(36,
+             12,
+             vector<glm::vec3> (vertices, vertices + sizeof(vertices)/sizeof(glm::vec3)),
+             vector<glm::vec3> (colors, colors + sizeof(colors)/sizeof(glm::vec3)),
+             vector<glm::vec3> (normals, normals + sizeof(normals)/sizeof(glm::vec3)),
+             GL_TRIANGLES);
 
 

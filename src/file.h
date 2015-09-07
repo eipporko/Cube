@@ -4,6 +4,7 @@
 #include <iostream>
 #include <GL/glew.h>
 
+#include "vao.h"
 
 using namespace std;
 
@@ -22,6 +23,6 @@ char* loadFile(string fname, GLint &fSize);
  @param[out] fSize file size
  @returns memblock
  */
-struct vao loadCloud(string pathFile);
+VAO loadCloud(string pathFile);
 
 #endif

@@ -1,7 +1,5 @@
 #include "file.h"
 
-#include "vao.h"
-
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/point_types.h>
@@ -53,17 +51,12 @@ char* loadFile(string fname, GLint &fSize)
 
 
 //Return VAO with .numOfTrianges = 0 && numOfVertices = 0 if error
-struct vao loadCloud(string pathFile)
+VAO loadCloud(string pathFile)
 {
     typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
     CloudType::Ptr cloud (new CloudType);
-
     
-    //Init
-    struct vao VAO;
-    VAO.numOfTriangles = 0;
-    VAO.numOfVertices  = 0;
-    
+    VAO VAO;
     
     //Open PCD or PLY files
     if (ends_with(pathFile, ".pcd"))
@@ -93,20 +86,9 @@ struct vao loadCloud(string pathFile)
     if (pointsBefore - cloud->size() > 0)
         cout << "-> Deleted " << (pointsBefore - cloud->size()) << " NaN Points." << endl;
 
-    //VoxelGrid for remove duplicates
-//    cout << endl << "Downsampling PointCloud with VoxelGrid filter (leafSize = 0.001f) ..." << endl;
-//    pointsBefore = cloud->size();
-//    pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
-//    sor.setInputCloud (cloud);
-//    //sor.setLeafSize (0.006f, 0.006f, 0.006f);
-//    sor.setLeafSize (0.001f, 0.001f, 0.001f);
-//    sor.filter (*cloud);
-//    cout << "-> Points Before: " << pointsBefore << " , after: " << cloud->size() << endl;
     cout << "Points: " << cloud->size() << endl;
     
     if (cloud->is_dense) {
-        
-        VAO.numOfVertices = cloud->points.size ();
         
         //Move to origin
         cout << endl << "Centering Cloud to origin ..." << endl;
@@ -154,9 +136,7 @@ struct vao loadCloud(string pathFile)
             cloud->points[i].z = cloud->points[i].z/maxDistance;
         }
         
-        VAO.cloud = cloud;
-
-        VAO.mode = GL_POINTS;
+        return VAO::VAO(cloud);
     
     }
     else

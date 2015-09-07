@@ -28,14 +28,11 @@
 #include "vao.h"
 #include "shader.h"
 
-#define DEBUG
+//#define DEBUG
 #define ITERATIONS 25
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
-
-#define POINTS_PER_TRIANGLE 500
-#define POINTS_PER_SPHERA 2000
 
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
 
@@ -90,140 +87,11 @@ const char* getTitleWindow()
     return title.c_str();
 }
 
-
-
-/**
- @brief Gets a random point inside a triangle defined by its vertices
- http://parametricplayground.blogspot.com.es/2011/02/random-points-distributed-inside.html
- @param v1, v2, v3 vertices of an triangle
- @returns point
- */
-glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
-{
-    glm::vec3 point;
-    
-    double c, a, b;
-    
-    a = rand() / double(RAND_MAX);
-    b = rand() / double(RAND_MAX);
-    
-    if (a + b > 1)
-    {
-        a = 1.0f - a;
-        b = 1.0f - b;
-    }
-    c = 1.0f - a - b;
-    
-    point.x = (a * v1.x) + (b * v2.x) + (c * v3.x);
-    point.y = (a * v1.y) + (b * v2.y) + (c * v3.y);
-    point.z = (a * v1.z) + (b * v2.z) + (c * v3.z);
-    
-    return point;
-}
-
-
-
 /**
  Sample a model transforming it into a point cloud
  @param mesh model defined by GL_TRIANGLES
  @returns point cloud
  */
-struct vao sampleMesh(struct vao *mesh)
-{
-    //Init
-    struct vao sampledMesh;
-    sampledMesh.numOfTriangles = 0;
-    sampledMesh.numOfVertices = 0;
-    typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
-    CloudType::Ptr cloud (new CloudType);
-    
-    cloud->width = mesh->numOfTriangles * POINTS_PER_TRIANGLE;
-    cloud->height  = 1;
-    cloud->points.resize(cloud->width * cloud->height);
-    
-    int line;
-    for (int i = 0; i < mesh->numOfTriangles; i++) {
-        for (int j = 0; j < POINTS_PER_TRIANGLE; j++) {
-            line = i*3;
-            
-            glm::vec3 point = pickPoint(mesh->vertices[line], mesh->vertices[line+1], mesh->vertices[line+2]);
-            cloud->points[sampledMesh.numOfVertices].x = point.x;
-            cloud->points[sampledMesh.numOfVertices].y = point.y;
-            cloud->points[sampledMesh.numOfVertices].z = point.z;
-            cloud->points[sampledMesh.numOfVertices].normal_x = mesh->normals[i].x;
-            cloud->points[sampledMesh.numOfVertices].normal_y = mesh->normals[i].y;
-            cloud->points[sampledMesh.numOfVertices].normal_z = mesh->normals[i].z;
-            cloud->points[sampledMesh.numOfVertices].r = mesh->colors[line].r * 255;
-            cloud->points[sampledMesh.numOfVertices].g = mesh->colors[line].g * 255;
-            cloud->points[sampledMesh.numOfVertices].b = mesh->colors[line].b * 255;
-            
-            sampledMesh.numOfVertices++;
-        }
-    }
-    
-    sampledMesh.cloud = cloud;
-    
-    sampledMesh.mode = GL_POINTS;
-    
-    return sampledMesh;
-}
-
-
-
-struct vao sampleSphere()
-{
-    double x, y, z;
-    
-    struct vao sampledSphere;
-    sampledSphere.numOfTriangles = 0;
-    sampledSphere.numOfVertices = 0;
-    typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
-    CloudType::Ptr cloud (new CloudType);
-    
-    cloud->width = POINTS_PER_SPHERA;
-    cloud->height  = 1;
-    cloud->points.resize(cloud->width * cloud->height);
-    
-    for (int i = 0; i < POINTS_PER_SPHERA; i += 2) {
-        //x^2 + y^2 + z^2 = 1
-        
-        x = rand() / double(RAND_MAX) * 2 - 1;
-        y = rand() / double(RAND_MAX) * 2 - 1;
-        
-        while (sqrt(pow(x, 2) + pow(y, 2)) > 1.0)
-            y = rand() / double(RAND_MAX) * 2 - 1;
-            
-        z = sqrt(1 - pow(x, 2) - pow(y, 2));
-    
-        cloud->points[i].x = x;
-        cloud->points[i].y = y;
-        cloud->points[i].z = z;
-        cloud->points[i].normal_x = x;
-        cloud->points[i].normal_y = y;
-        cloud->points[i].normal_z = z;
-        cloud->points[i].r = 0;
-        cloud->points[i].g = 0;
-        cloud->points[i].b = 255;
-        
-        cloud->points[i+1].x = x;
-        cloud->points[i+1].y = y;
-        cloud->points[i+1].z = -z;
-        cloud->points[i+1].normal_x = x;
-        cloud->points[i+1].normal_y = y;
-        cloud->points[i+1].normal_z = -z;
-        cloud->points[i+1].r = 255;
-        cloud->points[i+1].g = 0;
-        cloud->points[i+1].b = 0;
-        
-        sampledSphere.numOfVertices = sampledSphere.numOfVertices + 2;
-        
-    }
-    
-    
-    sampledSphere.cloud = cloud;
-    
-    return sampledSphere;
-}
 
 
 
@@ -451,12 +319,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         string pathToFile;
         cout << "Open File: ";
         cin >> pathToFile;
-        struct vao VAO = loadCloud(pathToFile);
-        if (VAO.numOfVertices != 0 || VAO.numOfTriangles != 0) {
+        VAO VAO = loadCloud(pathToFile);
+        if (VAO.isValid() ) {
             models.push_back(VAO);
             actualVAO = models.size() - 1;
-            loadVAO(&models[models.size()-1]);
             displayVAO = &models[models.size()-1];
+            displayVAO->pushToGPU();
         }
     }
     
@@ -567,8 +435,8 @@ void display(GLFWwindow* window)
     normalMatrix = glm::inverseTranspose(glm::mat3(viewMatrix));
     
     if (displayVAO != NULL) {
-    glBindVertexArray(displayVAO->vaoID);
-    
+    glBindVertexArray(displayVAO->getVAOid());
+        
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glViewport(0, 0, windowWidth, windowHeight);
@@ -586,7 +454,7 @@ void display(GLFWwindow* window)
             glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glDepthFunc(GL_LEQUAL);
-            glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+            glDrawArrays(displayVAO->getMode(), 0, displayVAO->getCloud()->points.size());
         }
         else {
             glDepthMask(GL_TRUE);
@@ -613,7 +481,7 @@ void display(GLFWwindow* window)
                         glDepthMask(GL_TRUE);
                         GLenum attach[2] = {GL_NONE, GL_COLOR_ATTACHMENT3};
                         glDrawBuffers(2, attach);
-                        glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+                        glDrawArrays(displayVAO->getMode(), 0, displayVAO->getCloud()->points.size());
                         break;
                     }
                     case shader::BLENDING:
@@ -625,7 +493,7 @@ void display(GLFWwindow* window)
                         glDrawBuffers(2, attach);
                         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                         glClear(GL_COLOR_BUFFER_BIT);
-                        glDrawArrays(displayVAO->mode, 0, displayVAO->numOfVertices);
+                        glDrawArrays(displayVAO->getMode(), 0, displayVAO->getCloud()->points.size());
                         break;
                     }
                     case shader::NORMALIZATION:
@@ -857,11 +725,13 @@ int main(int argc, char **argv)
     cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << maxTextureImageUnits << endl;
     
     //init all models
-    models.push_back(sampleMesh(&cubeMesh));
-    models.push_back(sampleSphere());
+    cubeMesh.sampleMesh(500);
+    models.push_back(cubeMesh);
+    VAO sphere;
+    sphere.sampleSphere(2000);
+    models.push_back(sphere);
     for (unsigned int i = 0; i < models.size(); i++) {
-        loadVAO(&models[i]);
-    
+        models[i].pushToGPU();
     }
     
     displayVAO = &models[0];

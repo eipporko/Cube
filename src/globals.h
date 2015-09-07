@@ -58,11 +58,11 @@ extern bool colorEnabled;
 extern bool automaticRadiusEnabled;
 
 //Models
-extern vector<struct vao> models;
+extern vector<VAO> models;
 extern unsigned int actualVAO;
 
 //Pointer to the VAO to be rendered in display func
-extern struct vao* displayVAO;
+extern VAO* displayVAO;
 
 
 //Cube Description
@@ -75,6 +75,6 @@ extern struct vao* displayVAO;
 //  |/     |/
 //  v6----v8
 
-extern struct vao cubeMesh;
+extern VAO cubeMesh;
 
 #endif
