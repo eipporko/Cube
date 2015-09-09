@@ -10,8 +10,10 @@ uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
 uniform bool colorEnabled;
-
-uniform vec3 lightPosition;
+uniform int lightCount;
+uniform vec3 lightPosition[10];
+uniform vec3 lightColor[10];
+uniform float lightIntensity[10];
 
 in float ex_Radius;
 in  vec3 ex_Color;
@@ -69,16 +71,18 @@ void main(void)
 	float weight = (1.0f - length(dist)/ex_Radius);
 	vec3 phongNormal = normalize((q + normals) - ccPosition.xyz);
 
-	vec3 color = vec3 (0.0, 0.0f, 0.0f);
+	vec3 color = ex_Color;
+	if (colorEnabled == true)
+		color = vec3(0,0,0);
 
 	//Diffuse
-	if (colorEnabled == true) {
-		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition, 1.0f)).xyz;
+	vec3 dotValue = vec3(0,0,0);
+	for (int i = 0; i < lightCount; i++) {
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition[i], 1.0f)).xyz;
 		vec3 lithToQ = normalize(ccLightPosition - testq);
-		float dotValue = max(dot(phongNormal, lithToQ), 0.0);
-		out_Color = vec4(vec3(dotValue) + color, 1.0f * weight);
+		dotValue += vec3(max(dot(normals, lithToQ), 0.0)) * lightIntensity[i] * lightColor[i];
 	}
-	else
-		out_Color = vec4(ex_Color.rgb, 1.0f * weight);
+
+	out_Color = vec4(dotValue + color, 1.0f * weight);
 
 }

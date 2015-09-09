@@ -27,16 +27,15 @@
 #include "file.h"
 #include "vao.h"
 #include "shader.h"
+#include "orbitallight.h"
 
-//#define DEBUG
+#define DEBUG
 #define ITERATIONS 25
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
 #define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
-
-#define LIGHT_ROTATION_STEP 5.0f
 
 #define SGN(x)   (((x) < 0) ? (-1) : (1))
 #define DEG_TO_RAD(x) (x * (M_PI / 180.0))
@@ -183,15 +182,18 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
 
 void updateLightPosition()
 {
-    if (orbitalLightEnabled) {
-        lightPosition = glm::rotate(lightPosition, LIGHT_ROTATION_STEP, glm::vec3(0,1,0) );
-    }
-    else {
-        lightPosition = glm::normalize(cameraEye) * LIGHT_DISTANCE;
-    }
+    vector<OrbitalLight*> lightList = sceneLightsList[ sceneLightsArrIndex % sceneLightsList.size()];
     
-    glUniform3fv(Shader::shaderInUse->lightPositionLoc, 1, glm::value_ptr(lightPosition));
-                                
+    //ÑAPA MIENTRAS NO SE MODELA cameraLight
+    if (sceneLightsArrIndex % sceneLightsList.size() == 1) {
+        glm::vec3 newPosition = glm::normalize(cameraEye) * LIGHT_DISTANCE;
+        lightList[0]->setPosition(newPosition);
+    }
+    else
+        for (int i =0; i < lightList.size(); i++)
+            lightList[i]->update();
+    
+    OrbitalLight::pushToGPU(lightList);
 }
 
 
@@ -206,6 +208,7 @@ void updateCameraPosition()
     cameraEye.x = cameraDistance * -sinf(cameraAngleX) * cosf(cameraAngleY);
     cameraEye.y = cameraDistance * -sinf(cameraAngleY);
     cameraEye.z = -cameraDistance * cosf(cameraAngleX) * cosf(cameraAngleY);
+
 }
 
 
@@ -303,11 +306,8 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
     
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+        sceneLightsArrIndex += 1;
         orbitalLightEnabled = !orbitalLightEnabled;
-        
-        //Reset light position
-        if (orbitalLightEnabled)
-            lightPosition = glm::vec3 (0, 0, LIGHT_DISTANCE);
     }
     
     if (key == GLFW_KEY_M && action == GLFW_PRESS) {
@@ -444,12 +444,12 @@ void display(GLFWwindow* window)
     if (displayVAO != NULL) {
         
         if (!MultipassEnabled) {
-
             listOfShaders[actualShader%listOfShaders.size()].bindShader();
 
             glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
             glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
             updateProjMatrix(window);
+            //glUniform3fv(Shader::shaderInUse->lightPositionLoc, 1, glm::value_ptr(lightPosition));
             
             glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -473,6 +473,7 @@ void display(GLFWwindow* window)
                 glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
                 glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
                 updateProjMatrix(window);
+
                 
                 switch (shaderh.getMultiPass(indexMultipass)[i].getMode()) {
                         
@@ -760,6 +761,7 @@ int main(int argc, char **argv)
     glfwSetMouseButtonCallback(window, mouseCallback);
     glfwSetCursorPosCallback(window, mousePosCallback);
     reshapeCallback(window, WINDOW_WIDTH, WINDOW_HEIGHT); //callback forced
+    
     
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))

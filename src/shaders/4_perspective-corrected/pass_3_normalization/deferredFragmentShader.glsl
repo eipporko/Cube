@@ -9,13 +9,16 @@ uniform float r; //Right parameter of the viewing frustum
 uniform float l; //Left parameter of the viewing frustum
 uniform int h; 	 //Height of the viewport
 uniform int w; 	 //Width of the viewport
-uniform vec3 lightPosition;
+
+uniform bool colorEnabled;
+uniform int lightCount;
+uniform vec3 lightPosition[10];
+uniform vec3 lightColor[10];
+uniform float lightIntensity[10];
 
 uniform sampler2DRect blendTexture;
 uniform sampler2DRect normalTexture;
 uniform sampler2DRect positionTexture;
-
-uniform bool colorEnabled;
 
 out vec4 out_Color;
 
@@ -43,15 +46,17 @@ void main(void)
 	vec4 normalizedNormal = vec4(textureNormal.xyz/textureNormal.w, 1.0f);
 	vec3 q = texture(positionTexture, gl_FragCoord.xy).xyz;
 
-	vec3 blackColor = vec3(0.0f, 0.0f, 0.0f);
+	vec3 color = normalizedColor.rgb;
+	if (colorEnabled == true)
+		color = vec3(0,0,0);
 
 	//Lightning with the resultant normalized textures
-	if (colorEnabled == true) {
-		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition, 1.0f)).xyz;
+	vec3 dotValue = vec3(0,0,0);
+	for (int i = 0; i < lightCount; i++) {
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition[i], 1.0f)).xyz;
 		vec3 ligthToQ = normalize(ccLightPosition - q);
-		float dotValue = max(dot(normalize(normalizedNormal.xyz), ligthToQ), 0.0);
-		out_Color = vec4(vec3(dotValue) + blackColor, 1.0f);
+		dotValue += vec3(max(dot(normalize(normalizedNormal.xyz), ligthToQ), 0.0)) * lightIntensity[i] * lightColor[i];;
 	}
-	else
-		out_Color = normalizedColor;
+
+	out_Color = vec4(dotValue + color, 1.0f);
 }

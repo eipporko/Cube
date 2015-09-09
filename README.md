@@ -15,7 +15,7 @@ Controls
 * A: Automatic Variable Splat Radius / User Uniform Splat radius
 * C: RGB/NONE 
 * F: Activate/Deactivate FXAA
-* L: Switch between orbital light & camera light
+* L: Switch between differents set of lights (Only on Perspective Correct mode).
 * M: Switch between models  (CUBE | SPHERE | Opened Models)
 * O: Open .PCD or .PLY files
 * P: Change between Flat, Gouraud, Phong & Deferred Shading(Only on Perspective Correct mode).

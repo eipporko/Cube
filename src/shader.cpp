@@ -4,6 +4,7 @@
 #include "file.h"
 #include "globals.h"
 
+#include "orbitallight.h"
 
 Shader* Shader::shaderInUse = NULL;
 
@@ -69,7 +70,7 @@ void Shader::printShaderInfoLog(GLint shader)
 
 
 void Shader::bindShader()
-{    
+{
     program = glCreateProgram();
     
     glAttachShader(program, v);
@@ -88,6 +89,8 @@ void Shader::bindShader()
     glUseProgram(program);
     glDeleteProgram(program);
     
+    Shader::shaderInUse = this;
+    
     projMatrixLoc = glGetUniformLocation(program, "projMatrix");
     viewMatrixLoc = glGetUniformLocation(program, "viewMatrix");
     normalMatrixLoc = glGetUniformLocation(program, "normalMatrix");
@@ -102,6 +105,9 @@ void Shader::bindShader()
     radiusSplatLoc = glGetUniformLocation(program, "userRadiusFactor");
     
     lightPositionLoc = glGetUniformLocation(program, "lightPosition");
+    lightColorLoc = glGetUniformLocation(program, "lightColor");
+    lightIntensityLoc =  glGetUniformLocation(program, "lightIntensity");
+    lightCountLoc = glGetUniformLocation(program, "lightCount");
     
     renderTextureLoc = glGetUniformLocation(program, "renderTexture");
     blendTextureLoc = glGetUniformLocation(program, "blendTexture");
@@ -112,12 +118,15 @@ void Shader::bindShader()
     colorEnabledLoc = glGetUniformLocation(program, "colorEnabled");
     automaticRadiusEnabledLoc = glGetUniformLocation(program, "automaticRadiusEnabled");
     
-    glUniform3fv(lightPositionLoc, 1, glm::value_ptr(lightPosition));
+    //Lights
+    glUniform3fv(lightPositionLoc, MAX_LIGHTS , OrbitalLight::lightPosition );
+    glUniform3fv(lightColorLoc, MAX_LIGHTS , OrbitalLight::lightColor );
+    glUniform1fv(lightIntensityLoc, MAX_LIGHTS, OrbitalLight::lightIntensity);
+    glUniform1iv(lightCountLoc, 1, &OrbitalLight::lightCount);
+    
     glUniform1f(automaticRadiusEnabledLoc, automaticRadiusEnabled);
     glUniform1f(colorEnabledLoc, colorEnabled);
     glUniform1f(radiusSplatLoc, userRadiusFactor);
-    
-    Shader::shaderInUse = this;
 }
 
 

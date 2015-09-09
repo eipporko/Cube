@@ -14,6 +14,7 @@
 using namespace std;
 
 class Shader;
+class OrbitalLight;
 
 extern GLuint textureID;
 extern bool firstTime;
@@ -33,8 +34,11 @@ extern glm::vec3 cameraUp;
 extern float cameraAngleX, cameraAngleY;
 
 //Light
-extern glm::vec3 lightPosition;
 extern bool orbitalLightEnabled;
+extern vector<vector<OrbitalLight*> > sceneLightsList;
+extern int sceneLightsArrIndex;
+//extern OrbitalLight* cameraLight;
+//extern vector<OrbitalLight*> orbitalLightsList;
 
 //Mouse
 extern double lastMouseX, lastMouseY; //last mouse position pressed;

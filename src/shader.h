@@ -45,7 +45,6 @@ public:
     GLint nearFrustumLoc, farFrustumLoc, topFrustumLoc, bottomFrustumLoc, leftFrustumLoc,rightFrustumLoc;
     GLint hViewportLoc, wViewportLoc;
     GLint radiusSplatLoc;
-    GLint lightPositionLoc;
     GLint colorEnabledLoc;
     GLint automaticRadiusEnabledLoc;
     GLint renderTextureLoc;
@@ -53,6 +52,10 @@ public:
     GLint normalTextureLoc;
     GLint positionTextureLoc;
     GLint inverseTextureSizeLoc;
+    GLint lightCountLoc;
+    GLint lightPositionLoc;
+    GLint lightColorLoc;
+    GLint lightIntensityLoc;
     
     //Constructor
     Shader(string description, string vertexShaderPath, string fragmentShaderPath, enum shaderMode mode);

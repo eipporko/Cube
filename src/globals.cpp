@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "shader.h"
+#include "orbitallight.h"
 
 using namespace shader;
 
@@ -25,8 +26,25 @@ glm::vec3 cameraUp = glm::vec3(0,1,0);
 float cameraAngleX, cameraAngleY;
 
 //Light
-glm::vec3 lightPosition = glm::vec3(0, 0, LIGHT_DISTANCE);
+OrbitalLight* noneLightArr[] = {};
+vector<OrbitalLight*> noneLightsList( noneLightArr, noneLightArr + sizeof(noneLightArr) / sizeof(OrbitalLight*) );
+
+OrbitalLight* cameraLight = new OrbitalLight(1);
+OrbitalLight* cameraLightArr[] = {cameraLight};
+vector<OrbitalLight*> cameraLightList( cameraLightArr, cameraLightArr + sizeof(cameraLightArr) / sizeof(OrbitalLight*) );
+
+OrbitalLight* orb0 = new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f );
+OrbitalLight* orb1 = new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f );
+OrbitalLight* orb2 = new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.50f, glm::vec3(0,0,1), 1.25f );
+OrbitalLight* orbArr[] = { orb0, orb1, orb2 };
+vector<OrbitalLight*> orbitalLightsList( orbArr, orbArr + sizeof(orbArr) / sizeof(OrbitalLight*) );
+
+vector<OrbitalLight*> sceneLightsArr[] = {noneLightsList, cameraLightList, orbitalLightsList};
+vector<vector<OrbitalLight*> > sceneLightsList(sceneLightsArr, sceneLightsArr + sizeof(sceneLightsArr) / sizeof(vector<OrbitalLight*>) );
+int sceneLightsArrIndex = 0;
+
 bool orbitalLightEnabled = false;
+
 
 //Mouse
 double lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
