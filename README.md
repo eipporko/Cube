@@ -34,7 +34,7 @@ In order to build Cube, you need to have:
 * [git](http://git-scm.com/) 1.8.3.4 or later. 
 * [GLFW](http://www.glfw.org/) Library 3.0.3 or later.
 * [GLEW](http://glew.sourceforge.net/) Library 1.10.0 or later.
-* [GLM](http://glm.g-truc.net/) Library 0.9.4 or later.
+* [GLM](http://glm.g-truc.net/) Library 0.9.6 or later.
 * [PCL](http://pointclouds.org/) Library 1.3 or later.
 
 (Earlier versions might work OK, but are not tested.)
