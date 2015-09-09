@@ -7,7 +7,7 @@ PROJECT(CUBE)
 #########################################################
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_executable(cube main.cpp globals.h globals.cpp file.h file.cpp vao.h vao.cpp shader.h shader.cpp orbitallight.h orbitallight.cpp)
+add_executable(cube main.cpp globals.h globals.cpp file.h file.cpp vao.h vao.cpp shader.h shader.cpp orbitallight.h orbitallight.cpp camera.h camera.cpp)
 
 ########################################################
 # Linking & stuff

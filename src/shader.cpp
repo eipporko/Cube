@@ -5,6 +5,7 @@
 #include "globals.h"
 
 #include "orbitallight.h"
+#include "camera.h"
 
 Shader* Shader::shaderInUse = NULL;
 
@@ -123,6 +124,19 @@ void Shader::bindShader()
     glUniform3fv(lightColorLoc, MAX_LIGHTS , OrbitalLight::lightColor );
     glUniform1fv(lightIntensityLoc, MAX_LIGHTS, OrbitalLight::lightIntensity);
     glUniform1iv(lightCountLoc, 1, &OrbitalLight::lightCount);
+    
+    //Camera
+    glUniformMatrix4fv(viewMatrixLoc,  1, false, glm::value_ptr(Camera::viewMatrix));
+    glUniformMatrix3fv(normalMatrixLoc, 1, false, glm::value_ptr(Camera::normalMatrix));
+    glUniformMatrix4fv(projMatrixLoc,  1, false, glm::value_ptr(Camera::projMatrix));
+    glUniform1iv(hViewportLoc, 1, &Camera::h);
+    glUniform1iv(wViewportLoc, 1, &Camera::w);
+    glUniform1fv(nearFrustumLoc, 1, &Camera::n);
+    glUniform1fv(farFrustumLoc, 1, &Camera::f);
+    glUniform1fv(topFrustumLoc, 1, &Camera::top);
+    glUniform1fv(bottomFrustumLoc, 1, &Camera::bottom);
+    glUniform1fv(leftFrustumLoc, 1, &Camera::left);
+    glUniform1fv(rightFrustumLoc, 1, &Camera::right);
     
     glUniform1f(automaticRadiusEnabledLoc, automaticRadiusEnabled);
     glUniform1f(colorEnabledLoc, colorEnabled);

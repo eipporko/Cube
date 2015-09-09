@@ -15,23 +15,17 @@ using namespace std;
 
 class Shader;
 class OrbitalLight;
+class Camera;
 
 extern GLuint textureID;
 extern bool firstTime;
-
-//Projection and View Matrix
-extern glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
-extern glm::mat3 normalMatrix;
 
 //Splat's radii
 extern float userRadiusFactor;
 extern float backupUserRadiusFactor;
 
 //Camera
-extern float cameraDistance;
-extern glm::vec3 cameraEye;
-extern glm::vec3 cameraUp;
-extern float cameraAngleX, cameraAngleY;
+extern Camera orbitalCamera;
 
 //Light
 extern bool orbitalLightEnabled;

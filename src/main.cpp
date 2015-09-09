@@ -28,6 +28,7 @@
 #include "vao.h"
 #include "shader.h"
 #include "orbitallight.h"
+#include "camera.h"
 
 #define DEBUG
 #define ITERATIONS 25
@@ -125,36 +126,6 @@ void drawWindowSizedRectangle()
 
 
 
-void updateProjMatrix(GLFWwindow * window)
-{
-    float ratio;
-    float fovy = 53.13f;
-    float n = 0.1f;
-    float f = 100.0f;
-    
-    int w, h;
-    glfwGetWindowSize(window, &w, &h);
-    
-    if (h == 0)
-        h = 1;
-    
-    ratio = (1.0f * w) / h;
-    projMatrix = glm::perspective(fovy, ratio, n, f);
-    
-    GLfloat top = (GLfloat) tan( 0.5f * DEG_TO_RAD(fovy)) * n;
-    glUniformMatrix4fv(Shader::shaderInUse->projMatrixLoc,  1, false, glm::value_ptr(projMatrix));
-    glUniform1i(Shader::shaderInUse->hViewportLoc, (GLint) h);
-    glUniform1i(Shader::shaderInUse->wViewportLoc, (GLint) w);
-    glUniform1f(Shader::shaderInUse->nearFrustumLoc, (GLfloat) n);
-    glUniform1f(Shader::shaderInUse->farFrustumLoc, (GLfloat) f);
-    glUniform1f(Shader::shaderInUse->topFrustumLoc, (GLfloat) -top );
-    glUniform1f(Shader::shaderInUse->bottomFrustumLoc, (GLfloat) top );
-    glUniform1f(Shader::shaderInUse->leftFrustumLoc, (GLfloat) -top * ratio);
-    glUniform1f(Shader::shaderInUse->rightFrustumLoc, (GLfloat) top * ratio);
-
-}
-
-
 
 void reshapeCallback(GLFWwindow * window, int w, int h)
 {
@@ -175,8 +146,6 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
     
     firstTime = true;
-    
-    updateProjMatrix(window);
 }
 
 
@@ -186,7 +155,7 @@ void updateLightPosition()
     
     //ÑAPA MIENTRAS NO SE MODELA cameraLight
     if (sceneLightsArrIndex % sceneLightsList.size() == 1) {
-        glm::vec3 newPosition = glm::normalize(cameraEye) * LIGHT_DISTANCE;
+        glm::vec3 newPosition = glm::normalize(orbitalCamera.getPosition()) * LIGHT_DISTANCE;
         lightList[0]->setPosition(newPosition);
     }
     else
@@ -197,37 +166,13 @@ void updateLightPosition()
 }
 
 
-
-/**
- Reset camera position to origin.
- @returns void
- */
-void updateCameraPosition()
-{
-    // Calculate the camera position using the distance and angles
-    cameraEye.x = cameraDistance * -sinf(cameraAngleX) * cosf(cameraAngleY);
-    cameraEye.y = cameraDistance * -sinf(cameraAngleY);
-    cameraEye.z = -cameraDistance * cosf(cameraAngleX) * cosf(cameraAngleY);
-
-}
-
-
-
-void resetCameraPosition()
-{
-    cameraAngleX = 0;
-    cameraAngleY = 0;
-    updateCameraPosition();
-}
-
-
-
 void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 {
-    cameraDistance -= yoffset;
-    cameraDistance = GREATER_THAN(cameraDistance, 0.001f);
+    orbitalCamera.moveDistance( - yoffset );
     
-    updateCameraPosition();
+    int w, h;
+    glfwGetWindowSize(window, &w, &h);
+    orbitalCamera.update(w,h);
 }
 
 
@@ -235,14 +180,10 @@ void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 void mousePosCallback(GLFWwindow * window, double x, double y)
 {
     if (leftBtnPress == true) {
-        cameraAngleX += (lastMouseX - x) * CAMERA_RPP;
-        cameraAngleY += (lastMouseY - y) * CAMERA_RPP;
-        
-        //-PI/2 < cameraAngleY < PI/2
-        cameraAngleY = LESS_THAN(cameraAngleY, M_PI/2.0f);
-        cameraAngleY = GREATER_THAN(cameraAngleY, -M_PI/2.0f);
-        
-        updateCameraPosition();
+        int w, h;
+        glfwGetWindowSize(window, &w, &h);
+        orbitalCamera.rotate((lastMouseX - x) * 0.36, -(lastMouseY - y) * 0.36);
+        orbitalCamera.update(w, h);
     }
     
     lastMouseX = x;
@@ -357,7 +298,10 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
     
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        resetCameraPosition();
+        orbitalCamera.reset();
+        int w, h;
+        glfwGetWindowSize(window, &w, &h);
+        orbitalCamera.update(w, h);
     }
     
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
@@ -428,12 +372,6 @@ void display(GLFWwindow* window)
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
     
-    viewMatrix = glm::lookAt(cameraEye,
-                             glm::vec3(0,0,0),
-                             glm::cross(glm::cross(cameraEye, cameraUp), cameraEye));
-    
-    normalMatrix = glm::inverseTranspose(glm::mat3(viewMatrix));
-    
     if (displayVAO != NULL) {
     glBindVertexArray(displayVAO->getVAOid());
         
@@ -445,11 +383,6 @@ void display(GLFWwindow* window)
         
         if (!MultipassEnabled) {
             listOfShaders[actualShader%listOfShaders.size()].bindShader();
-
-            glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
-            glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
-            updateProjMatrix(window);
-            //glUniform3fv(Shader::shaderInUse->lightPositionLoc, 1, glm::value_ptr(lightPosition));
             
             glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -469,11 +402,6 @@ void display(GLFWwindow* window)
             for (unsigned int i = 0; i < shaderh.getMultiPass(indexMultipass).size(); i++) {
                 
                 shaderh.getMultiPass(indexMultipass)[i].bindShader();
-                
-                glUniformMatrix4fv(Shader::shaderInUse->viewMatrixLoc,  1, false, glm::value_ptr(viewMatrix));
-                glUniformMatrix3fv(Shader::shaderInUse->normalMatrixLoc, 1, false, glm::value_ptr(normalMatrix));
-                updateProjMatrix(window);
-
                 
                 switch (shaderh.getMultiPass(indexMultipass)[i].getMode()) {
                         
@@ -752,7 +680,9 @@ int main(int argc, char **argv)
     }
     
     listOfShaders[actualShader].bindShader();
-    updateProjMatrix(window);
+    int w, h;
+    glfwGetWindowSize(window, &w, &h);
+    orbitalCamera.update(w, h);
     
     /*glfw Callbacks*/
     glfwSetKeyCallback(window, keyboardCallback);

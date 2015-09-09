@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "shader.h"
 #include "orbitallight.h"
+#include "camera.h"
 
 using namespace shader;
 
@@ -11,19 +12,13 @@ using namespace shader;
 GLuint textureID = 0;
 bool firstTime = true;
 
-//Projection and View Matrix
-glm::mat4 projMatrix, viewMatrix;                    //transformation matrix
-glm::mat3 normalMatrix;
-
 //Splat's radii
 float userRadiusFactor = 0.0125f;
 float backupUserRadiusFactor;
 
 //Camera
-float cameraDistance = 4.0f;
-glm::vec3 cameraEye = glm::vec3(0, 0, -cameraDistance);
-glm::vec3 cameraUp = glm::vec3(0,1,0);
-float cameraAngleX, cameraAngleY;
+Camera orbitalCamera(glm::vec3(0, 0, -4.0f));
+
 
 //Light
 OrbitalLight* noneLightArr[] = {};
