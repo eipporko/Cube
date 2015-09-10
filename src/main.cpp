@@ -52,7 +52,7 @@
 #include "orbitallight.h"
 #include "camera.h"
 
-#define DEBUG
+//#define DEBUG
 #define ITERATIONS 25
 
 #define WINDOW_WIDTH 640
@@ -85,27 +85,27 @@ const char* getTitleWindow()
 {
 
     string multipass;
-    if (MultipassEnabled){
-        unsigned int indexMultipass = actualMultipass % listOfShaders[actualShader%listOfShaders.size()].getMultiPass().size();
-        multipass = listOfShaders[actualShader%listOfShaders.size()].getDescription(indexMultipass) + " Shading";
+    if (Globals::MultipassEnabled){
+        unsigned int indexMultipass = Globals::actualMultipass % Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].getMultiPass().size();
+        multipass = Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].getDescription(indexMultipass) + " Shading";
     }
     else
         multipass = "Flat Shading";
     
     string color;
-    if (colorEnabled)
+    if (Globals::colorEnabled)
         color = " | NONE ";
     else
         color = " | RGB ";
     
     string fxaa;
-    if (FXAA)
+    if (Globals::FXAA)
         fxaa = " | FXAA";
     else
         fxaa = "";
     
-    title = "CUBE | " + listOfShaders[actualShader%listOfShaders.size()].getDescription() + " | " + multipass + color + fxaa;
-    return title.c_str();
+    Globals::title = "CUBE | " + Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].getDescription() + " | " + multipass + color + fxaa;
+    return Globals::title.c_str();
 }
 
 /**
@@ -166,51 +166,52 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
     
-    orbitalCamera.update(w, h);
+    if (Camera::activeCamera != NULL)
+        Camera::activeCamera->update(w, h);
     
-    firstTime = true;
+    Globals::firstTime = true;
 }
 
 
 void updateLightPosition()
 {
-    vector<OrbitalLight*> lightList = sceneLightsList[ sceneLightsArrIndex % sceneLightsList.size()];
+    vector<Light*> lightList = Globals::sceneLightsList[ Globals::sceneLightsArrIndex % Globals::sceneLightsList.size()];
     
-    //ÑAPA MIENTRAS NO SE MODELA cameraLight
-    if (sceneLightsArrIndex % sceneLightsList.size() == 1) {
-        glm::vec3 newPosition = glm::normalize(orbitalCamera.getPosition()) * LIGHT_DISTANCE;
-        lightList[0]->setPosition(newPosition);
-    }
-    else
-        for (int i =0; i < lightList.size(); i++)
-            lightList[i]->update();
+    for (int i =0; i < lightList.size(); i++)
+        lightList[i]->update();
     
-    OrbitalLight::pushToGPU(lightList);
+    Light::pushToGPU(lightList);
 }
 
 
 void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 {
-    orbitalCamera.moveDistance( - yoffset );
+    
     
     int w, h;
     glfwGetWindowSize(window, &w, &h);
-    orbitalCamera.update(w,h);
+    
+    if (Camera::activeCamera != NULL) {
+        Camera::activeCamera->moveDistance( - yoffset );
+        Camera::activeCamera->update(w,h);
+    }
 }
 
 
 
 void mousePosCallback(GLFWwindow * window, double x, double y)
 {
-    if (leftBtnPress == true) {
+    if (Globals::leftBtnPress == true) {
         int w, h;
         glfwGetWindowSize(window, &w, &h);
-        orbitalCamera.rotate((lastMouseX - x) * CAMERA_RPP, -(lastMouseY - y) * CAMERA_RPP);
-        orbitalCamera.update(w, h);
+        if (Camera::activeCamera != NULL) {
+            Camera::activeCamera->rotate((Globals::lastMouseX - x) * CAMERA_RPP, -(Globals::lastMouseY - y) * CAMERA_RPP);
+            Camera::activeCamera->update(w, h);
+        }
     }
     
-    lastMouseX = x;
-    lastMouseY = y;
+    Globals::lastMouseX = x;
+    Globals::lastMouseY = y;
 
 }
 
@@ -220,9 +221,9 @@ void mouseCallback(GLFWwindow * window, int btn, int action, int mods)
 {
 	if(btn == GLFW_MOUSE_BUTTON_LEFT) {
         if (action == GLFW_RELEASE)
-            leftBtnPress = false;
+            Globals::leftBtnPress = false;
         else if (action == GLFW_PRESS)
-            leftBtnPress = true;
+            Globals::leftBtnPress = true;
     }
 }
 
@@ -234,49 +235,48 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         glfwSetWindowShouldClose(window, GL_TRUE);
     
     if (key == GLFW_KEY_UP) {
-        userRadiusFactor += 0.001f;
-        glUniform1f(Shader::shaderInUse->radiusSplatLoc, userRadiusFactor);
+        Globals::userRadiusFactor += 0.001f;
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, Globals::userRadiusFactor);
     }
     
     if (key == GLFW_KEY_DOWN) {
-        userRadiusFactor -= 0.001f;
-        glUniform1f(Shader::shaderInUse->radiusSplatLoc, userRadiusFactor);
+        Globals::userRadiusFactor -= 0.001f;
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, Globals::userRadiusFactor);
     }
     
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        automaticRadiusEnabled = !automaticRadiusEnabled;
+        Globals::automaticRadiusEnabled = !Globals::automaticRadiusEnabled;
         
-        if (automaticRadiusEnabled) {
-            backupUserRadiusFactor = userRadiusFactor;
-            userRadiusFactor = 1.0f;
+        if (Globals::automaticRadiusEnabled) {
+            Globals::backupUserRadiusFactor = Globals::userRadiusFactor;
+            Globals::userRadiusFactor = 1.0f;
         }
         else
-            userRadiusFactor = backupUserRadiusFactor;
+            Globals::userRadiusFactor = Globals::backupUserRadiusFactor;
         
-        glUniform1f(Shader::shaderInUse->radiusSplatLoc, userRadiusFactor);
-        glUniform1i(Shader::shaderInUse->automaticRadiusEnabledLoc, automaticRadiusEnabled?1:0);
+        glUniform1f(Shader::shaderInUse->radiusSplatLoc, Globals::userRadiusFactor);
+        glUniform1i(Shader::shaderInUse->automaticRadiusEnabledLoc, Globals::automaticRadiusEnabled?1:0);
     }
     
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-        colorEnabled = !colorEnabled;
-        glUniform1i(Shader::shaderInUse->colorEnabledLoc, colorEnabled?1:0);
+        Globals::colorEnabled = !Globals::colorEnabled;
+        glUniform1i(Shader::shaderInUse->colorEnabledLoc, Globals::colorEnabled?1:0);
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-        FXAA = !FXAA;
+        Globals::FXAA = !Globals::FXAA;
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
     
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
-        sceneLightsArrIndex += 1;
-        orbitalLightEnabled = !orbitalLightEnabled;
+        Globals::sceneLightsArrIndex += 1;
     }
     
     if (key == GLFW_KEY_M && action == GLFW_PRESS) {
-        actualVAO++;
-        displayVAO = &models[actualVAO%models.size()];
+        Globals::actualVAO++;
+        Globals::displayVAO = &Globals::models[Globals::actualVAO%Globals::models.size()];
     }
     
     if (key == GLFW_KEY_O && action == GLFW_PRESS) {
@@ -285,28 +285,28 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         cin >> pathToFile;
         VAO VAO = loadCloud(pathToFile);
         if (VAO.isValid() ) {
-            models.push_back(VAO);
-            actualVAO = models.size() - 1;
-            displayVAO = &models[models.size()-1];
-            displayVAO->pushToGPU();
+            Globals::models.push_back(VAO);
+            Globals::actualVAO = Globals::models.size() - 1;
+            Globals::displayVAO = &Globals::models[Globals::models.size()-1];
+            Globals::displayVAO->pushToGPU();
         }
     }
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         
-        int indexShader = actualShader % listOfShaders.size();
+        int indexShader = Globals::actualShader % Globals::listOfShaders.size();
         
-        if (MultipassEnabled) {
-            actualMultipass++;
+        if (Globals::MultipassEnabled) {
+            Globals::actualMultipass++;
             
-            int indexMultiPass = actualMultipass % listOfShaders[indexShader].getMultiPass().size();
+            int indexMultiPass = Globals::actualMultipass % Globals::listOfShaders[indexShader].getMultiPass().size();
             
             if (indexMultiPass == 0)
-                MultipassEnabled = false;
+                Globals::MultipassEnabled = false;
         }
         else
-            if (listOfShaders[indexShader].getMultiPass().size() > 0 )
-                MultipassEnabled = true;
+            if (Globals::listOfShaders[indexShader].getMultiPass().size() > 0 )
+                Globals::MultipassEnabled = true;
         
 #ifdef DEBUG
         itCounter = 0;
@@ -317,22 +317,24 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
     
     if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-        listOfShaders[actualShader%listOfShaders.size()].compileShader();
+        Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].compileShader();
     }
     
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        orbitalCamera.reset();
         int w, h;
         glfwGetWindowSize(window, &w, &h);
-        orbitalCamera.update(w, h);
+        if (Camera::activeCamera != NULL) {
+            Camera::activeCamera->reset();
+            Camera::activeCamera->update(w, h);
+        }
     }
     
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-        actualShader++;
+        Globals::actualShader++;
         
-        if (listOfShaders[actualShader%listOfShaders.size()].getMultiPass().empty()) {
-            MultipassEnabled = false;
-            actualMultipass = 0;
+        if (Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].getMultiPass().empty()) {
+            Globals::MultipassEnabled = false;
+            Globals::actualMultipass = 0;
         }
         
 #ifdef DEBUG
@@ -354,15 +356,15 @@ void applyFXAA(GLFWwindow * window)
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
     
     //fxaaFilter.compileShader();
-    fxaaFilter.bindShader();
+    Globals::fxaaFilter->bindShader();
     
     //Copy framebuffer to a Texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
+    glBindTexture(GL_TEXTURE_RECTANGLE, Globals::textureID);
     glEnable(GL_TEXTURE_RECTANGLE);
-    if (firstTime){
+    if (Globals::firstTime){
         glCopyTexImage2D(GL_TEXTURE_RECTANGLE,0, GL_RGBA16F, 0, 0, windowWidth, windowHeight, 0);
-        firstTime = false;
+        Globals::firstTime = false;
     }
     else
         glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, windowWidth, windowHeight);
@@ -395,22 +397,22 @@ void display(GLFWwindow* window)
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
     
-    if (displayVAO != NULL) {
-    glBindVertexArray(displayVAO->getVAOid());
+    if (Globals::displayVAO != NULL) {
+    glBindVertexArray(Globals::displayVAO->getVAOid());
         
     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glViewport(0, 0, windowWidth, windowHeight);
 
-    if (displayVAO != NULL) {
+    if (Globals::displayVAO != NULL) {
         
-        if (!MultipassEnabled) {
-            listOfShaders[actualShader%listOfShaders.size()].bindShader();
+        if (!Globals::MultipassEnabled) {
+            Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].bindShader();
             
             glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glDepthFunc(GL_LEQUAL);
-            glDrawArrays(displayVAO->getMode(), 0, displayVAO->getCloud()->points.size());
+            glDrawArrays(Globals::displayVAO->getMode(), 0, Globals::displayVAO->getCloud()->points.size());
         }
         else {
             glDepthMask(GL_TRUE);
@@ -419,8 +421,8 @@ void display(GLFWwindow* window)
             //glDrawBuffers(4, attach);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
-            Shader shaderh = listOfShaders[actualShader%listOfShaders.size()];
-            unsigned int indexMultipass = actualMultipass % shaderh.getMultiPass().size();
+            Shader shaderh = Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()];
+            unsigned int indexMultipass = Globals::actualMultipass % shaderh.getMultiPass().size();
             
             for (unsigned int i = 0; i < shaderh.getMultiPass(indexMultipass).size(); i++) {
                 
@@ -433,7 +435,7 @@ void display(GLFWwindow* window)
                         glDepthMask(GL_TRUE);
                         GLenum attach[2] = {GL_NONE, GL_COLOR_ATTACHMENT3};
                         glDrawBuffers(2, attach);
-                        glDrawArrays(displayVAO->getMode(), 0, displayVAO->getCloud()->points.size());
+                        glDrawArrays(Globals::displayVAO->getMode(), 0, Globals::displayVAO->getCloud()->points.size());
                         break;
                     }
                     case shader::BLENDING:
@@ -445,7 +447,7 @@ void display(GLFWwindow* window)
                         glDrawBuffers(2, attach);
                         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                         glClear(GL_COLOR_BUFFER_BIT);
-                        glDrawArrays(displayVAO->getMode(), 0, displayVAO->getCloud()->points.size());
+                        glDrawArrays(Globals::displayVAO->getMode(), 0, Globals::displayVAO->getCloud()->points.size());
                         break;
                     }
                     case shader::NORMALIZATION:
@@ -482,7 +484,7 @@ void display(GLFWwindow* window)
     
     glBindVertexArray(0);
     
-    if (FXAA)
+    if (Globals::FXAA)
         applyFXAA(window);
     
     //Blit framebuffer resultant to window
@@ -596,6 +598,8 @@ void buildFBO()
 
 int main(int argc, char **argv)
 {
+    Globals::init();
+    
     GLFWwindow* window;
     
     /* Initialize the library */
@@ -649,7 +653,7 @@ int main(int argc, char **argv)
     buildFBO();
     
     //Texture used for normalize
-    glGenTextures(1, &textureID);
+    glGenTextures(1, &Globals::textureID);
     
     glClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
     glClampColor(GL_CLAMP_VERTEX_COLOR, GL_FALSE);
@@ -677,35 +681,38 @@ int main(int argc, char **argv)
     cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << maxTextureImageUnits << endl;
     
     //init all models
+    int w, h;
+    glfwGetWindowSize(window, &w, &h);
+    
+    if (Camera::activeCamera != NULL)
+        Camera::activeCamera->update(w, h);
+    
     cubeMesh.sampleMesh(500);
-    models.push_back(cubeMesh);
+    Globals::models.push_back(cubeMesh);
     VAO sphere;
     sphere.sampleSphere(2000);
-    models.push_back(sphere);
-    for (unsigned int i = 0; i < models.size(); i++) {
-        models[i].pushToGPU();
+    Globals::models.push_back(sphere);
+    for (unsigned int i = 0; i < Globals::models.size(); i++) {
+        Globals::models[i].pushToGPU();
     }
     
-    displayVAO = &models[0];
+    Globals::displayVAO = &Globals::models[0];
     
     
-    fxaaFilter.compileShader();
+    Globals::fxaaFilter->compileShader();
     
-    for (unsigned int i = 0; i < listOfShaders.size(); i ++) {
-        listOfShaders[i].compileShader();
+    for (unsigned int i = 0; i < Globals::listOfShaders.size(); i ++) {
+        Globals::listOfShaders[i].compileShader();
         
-        if ( !listOfShaders[i].getMultiPass().empty()) {
-            for (unsigned int ii = 0; ii < listOfShaders[i].getMultiPass().size(); ii ++)
-                for (unsigned int iii = 0; iii < listOfShaders[i].getMultiPass(ii).size(); iii ++)
-                    listOfShaders[i].getMultiPass(ii)[iii].compileShader();
+        if ( !Globals::listOfShaders[i].getMultiPass().empty()) {
+            for (unsigned int ii = 0; ii < Globals::listOfShaders[i].getMultiPass().size(); ii ++)
+                for (unsigned int iii = 0; iii < Globals::listOfShaders[i].getMultiPass(ii).size(); iii ++)
+                    Globals::listOfShaders[i].getMultiPass(ii)[iii].compileShader();
         }
         
     }
     
-    listOfShaders[actualShader].bindShader();
-    int w, h;
-    glfwGetWindowSize(window, &w, &h);
-    orbitalCamera.update(w, h);
+    Globals::listOfShaders[Globals::actualShader].bindShader();
     
     /*glfw Callbacks*/
     glfwSetKeyCallback(window, keyboardCallback);

@@ -1,3 +1,30 @@
+/*
+ *
+ * CUBE
+ *
+ * Copyright (c) David Antunez Gonzalez 2013-2015 <dantunezglez@gmail.com>
+ * Copyright (c) Luis Omar Alvarez Mures 2013-2015 <omar.alvarez@udc.es>
+ * Copyright (c) Emilio Padron Gonzalez 2013-2015 <emilioj@gmail.com>
+ *
+ * All rights reserved.
+ *
+ * This file is part of ToView.
+ *
+ * CUBE is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this library.
+ *
+ */
+
 #include "camera.h"
 
 #include <GL/glew.h>
@@ -6,6 +33,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+Camera* Camera::activeCamera;
 glm::mat4 Camera::projMatrix, Camera::viewMatrix;
 glm::mat3 Camera::normalMatrix;
 int Camera::h, Camera::w;
@@ -30,9 +58,11 @@ Camera::Camera(glm::vec3 cameraPosition) {
 
 };
 
+
 void Camera::moveDistance(float amount) {
     this->distanceToOrigin += amount;
 };
+
 
 void Camera::reset() {
     this->fovy = this->initialFovy;

@@ -1,172 +1,183 @@
+/*
+ *
+ * CUBE
+ *
+ * Copyright (c) David Antunez Gonzalez 2013-2015 <dantunezglez@gmail.com>
+ * Copyright (c) Luis Omar Alvarez Mures 2013-2015 <omar.alvarez@udc.es>
+ * Copyright (c) Emilio Padron Gonzalez 2013-2015 <emilioj@gmail.com>
+ *
+ * All rights reserved.
+ *
+ * This file is part of ToView.
+ *
+ * CUBE is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this library.
+ *
+ */
+
 #include "globals.h"
 #include "shader.h"
+#include "light.h"
 #include "orbitallight.h"
+#include "cameralight.h"
 #include "camera.h"
 
 using namespace shader;
 
-//Texture
-GLuint textureID = 0;
-bool firstTime = true;
 
-//Splat's radii
-float userRadiusFactor = 0.0125f;
-float backupUserRadiusFactor;
+float Globals::userRadiusFactor;
+float Globals::backupUserRadiusFactor;
+vector<vector<Light*> > Globals::sceneLightsList;
+int Globals::sceneLightsArrIndex;
+string Globals::title;
+Camera* Globals::mainCamera;
+double Globals::lastMouseX, Globals::lastMouseY;
+bool Globals::leftBtnPress;
+Shader* Globals::fxaaFilter;
+GLuint Globals::textureID;
+bool Globals::firstTime;
+unsigned int Globals::actualShader;
+unsigned int Globals::actualMultipass;
+vector<Shader> Globals::listOfShaders;
+bool Globals::MultipassEnabled;
+bool Globals::FXAA;
+bool Globals::colorEnabled;
+bool Globals::automaticRadiusEnabled;
+vector<VAO> Globals::models;
+unsigned int Globals::actualVAO;
+VAO* Globals::displayVAO;
 
-//Camera
-Camera orbitalCamera(glm::vec3(0, 0, -4.0f));
-
-
-//Light
-//OrbitalLight* noneLightArr[];
-vector<OrbitalLight*> noneLightsList;
-
-OrbitalLight* cameraLight = new OrbitalLight(1);
-OrbitalLight* cameraLightArr[] = {cameraLight};
-vector<OrbitalLight*> cameraLightList( cameraLightArr, cameraLightArr + sizeof(cameraLightArr) / sizeof(OrbitalLight*) );
-
-OrbitalLight* orb0 = new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f );
-OrbitalLight* orb1 = new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f );
-OrbitalLight* orb2 = new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.50f, glm::vec3(0,0,1), 1.25f );
-OrbitalLight* orbArr[] = { orb0, orb1, orb2 };
-vector<OrbitalLight*> orbitalLightsList( orbArr, orbArr + sizeof(orbArr) / sizeof(OrbitalLight*) );
-
-vector<OrbitalLight*> sceneLightsArr[] = {noneLightsList, cameraLightList, orbitalLightsList};
-vector<vector<OrbitalLight*> > sceneLightsList(sceneLightsArr, sceneLightsArr + sizeof(sceneLightsArr) / sizeof(vector<OrbitalLight*>) );
-int sceneLightsArrIndex = 0;
-
-bool orbitalLightEnabled = false;
-
-
-//Mouse
-double lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
-bool leftBtnPress = false;
-
-//Shaders
-Shader fxaaFilter("FXAA",
-                  "0_fxaa/vertexShader.glsl",
-                  "0_fxaa/fragmentShader.glsl",
-                  SINGLEPASS);
-
-
-Shader sizedFixedShaderShader("Sized-Fixed Points",
-                              "1_fixed-sized-points/vertexShader.glsl",
-                              "1_fixed-sized-points/fragmentShader.glsl",
-                              SINGLEPASS);
-
-Shader squareSizedCorrectedShader("Square Size - Corrected by Depth",
-                                  "2_square-Sized-corrected/vertexShader.glsl",
-                                  "2_square-Sized-corrected/fragmentShader.glsl",
-                                  SINGLEPASS);
-
-Shader affinelyProjectedShader("Affinely Projected Point Sprites" ,
-                               "3_affinely-projected-point-sprites/vertexShader.glsl",
-                               "3_affinely-projected-point-sprites/fragmentShader.glsl",
-                               SINGLEPASS);
-
-Shader perspectiveCorrectedShaderMPVisibility("Gouraud",
-                                              "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
-                                              "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
-                                              DEPTH_MASK);
-
-Shader perspectiveCorrectedShaderMPBlending("Gouraud",
-                                            "4_perspective-corrected/pass_2_blending/gouraudVertexShader.glsl",
-                                            "4_perspective-corrected/pass_2_blending/gouraudFragmentShader.glsl",
-                                            BLENDING);
-
-Shader perspectiveCorrectedShaderMPNormalization("Gouraud",
-                                                 "4_perspective-corrected/pass_3_normalization/vertexShader.glsl",
-                                                 "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
-                                                 NORMALIZATION);
-
-
-static const Shader gouraud[] =   {perspectiveCorrectedShaderMPVisibility,
-                                perspectiveCorrectedShaderMPBlending,
-                                perspectiveCorrectedShaderMPNormalization};
-vector<Shader> vecGouraud (gouraud, gouraud + sizeof(gouraud) / sizeof(gouraud[0]) );
-
-Shader perspectiveCorrectedShaderPhongVisibility("Phong",
-                                                 "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
-                                                 "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
-                                                 DEPTH_MASK);
-
-Shader perspectiveCorrectedShaderPhongBlending("Phong",
-                                               "4_perspective-corrected/pass_2_blending/phongVertexShader.glsl",
-                                               "4_perspective-corrected/pass_2_blending/phongFragmentShader.glsl",
-                                               BLENDING);
-
-Shader perspectiveCorrectedShaderPhongNormalization("Phong",
-                                                    "4_perspective-corrected/pass_3_normalization/vertexShader.glsl",
-                                                    "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
-                                                    NORMALIZATION);
-
-static const Shader phong[] =   {perspectiveCorrectedShaderPhongVisibility,
-                                 perspectiveCorrectedShaderPhongBlending,
-                                 perspectiveCorrectedShaderPhongNormalization};
-vector<Shader> vecPhong (phong, phong + sizeof(phong) / sizeof(phong[0]) );
-
-
-
-//PERSPECTIVE CORRECT RASTERIZATION  - DEFERRED
-Shader perspectiveCorrectedShaderDeferredVisibility("Deferred",
-                                                    "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
-                                                    "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
-                                                    DEPTH_MASK);
-
-Shader perspectiveCorrectedShaderDeferredBlending("Deferred",
-                                                  "4_perspective-corrected/pass_2_blending/deferredVertexShader.glsl",
-                                                  "4_perspective-corrected/pass_2_blending/deferredFragmentShader.glsl",
-                                                  BLENDING);
-
-Shader perspectiveCorrectedShaderDeferredNormalization("Deferred",
-                                                       "4_perspective-corrected/pass_3_normalization/deferredVertexShader.glsl",
-                                                       "4_perspective-corrected/pass_3_normalization/deferredFragmentShader.glsl",
-                                                       NORMALIZATION);
-
-static const Shader deferred[] =   {perspectiveCorrectedShaderDeferredVisibility,
-                                    perspectiveCorrectedShaderDeferredBlending,
-                                    perspectiveCorrectedShaderDeferredNormalization};
-vector<Shader> vecDeferred (deferred, deferred + sizeof(deferred) / sizeof(deferred[0]) );
-
-
-
-//PERSPECTIVE CORRECT RASTERIZATION - SINGLEPASS
-static const vector<Shader> multipassArray[] = {vecGouraud, vecPhong, vecDeferred};
-vector<vector <Shader> > vec (multipassArray, multipassArray + sizeof(multipassArray) / sizeof(multipassArray[0]) );
-
-Shader perspectiveCorrectedShader("Perspective Correct Rasterization",
-                                  "4_perspective-corrected/vertexShader.glsl",
-                                  "4_perspective-corrected/fragmentShader.glsl",
-                                  SINGLEPASS,
-                                  vec);
-
-static const Shader arr2[] =   {sizedFixedShaderShader,
-                                squareSizedCorrectedShader,
-                                affinelyProjectedShader,
-                                perspectiveCorrectedShader};
-
-vector<Shader> vec2 (arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]) );
-
-
-string title;
-unsigned int actualShader = 0;
-unsigned int actualMultipass = 0;
-vector<Shader> listOfShaders = vec2;
-
-bool MultipassEnabled = false;
-
-bool FXAA = false;
-
-bool colorEnabled = false;
-
-bool automaticRadiusEnabled = false;
-
-//Models
-vector<VAO> models;
-unsigned int actualVAO = 0;
-
-//Pointer to the VAO to be rendered in display func
-VAO* displayVAO = NULL;
+void Globals::init() {
+    
+    //Splat's radii
+    userRadiusFactor = 0.0125f;
+    
+    
+    mainCamera = new Camera(glm::vec3(0, 0, -4.0f));
+    mainCamera->setActive();
+    
+    
+    //Lights
+    vector<Light*> noneLightsList;
+    
+    vector<Light*> cameraLightList;
+    cameraLightList.push_back(new CameraLight(Camera::activeCamera, glm::vec3 (1,1,1), 1.f));
+    
+    vector<Light*> orbitalLightsList;
+    orbitalLightsList.push_back(new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f )) ;
+    orbitalLightsList.push_back(new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f ));
+    orbitalLightsList.push_back(new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.50f, glm::vec3(0,0,1), 1.25f ));
+    
+    sceneLightsList.push_back(noneLightsList);
+    sceneLightsList.push_back(cameraLightList);
+    sceneLightsList.push_back(orbitalLightsList);
+    sceneLightsArrIndex = 0;
+    
+    
+    //Mouse
+    lastMouseX = INT_MAX, lastMouseY = 0.0f; //last mouse position pressed;
+    leftBtnPress = false;
+    
+    
+    //Shaders
+    fxaaFilter = new Shader("FXAA",
+                            "0_fxaa/vertexShader.glsl",
+                            "0_fxaa/fragmentShader.glsl",
+                            SINGLEPASS);
+    textureID = 0;
+    firstTime = true;
+    actualShader = 0;
+    actualMultipass = 0;
+    
+    listOfShaders.push_back(Shader("Sized-Fixed Points",
+                                    "1_fixed-sized-points/vertexShader.glsl",
+                                    "1_fixed-sized-points/fragmentShader.glsl",
+                                    SINGLEPASS) );
+    listOfShaders.push_back(Shader("Square Size - Corrected by Depth",
+                                   "2_square-Sized-corrected/vertexShader.glsl",
+                                   "2_square-Sized-corrected/fragmentShader.glsl",
+                                   SINGLEPASS));
+    listOfShaders.push_back(Shader("Affinely Projected Point Sprites" ,
+                                   "3_affinely-projected-point-sprites/vertexShader.glsl",
+                                   "3_affinely-projected-point-sprites/fragmentShader.glsl",
+                                   SINGLEPASS));
+    vector<Shader> gouraud;
+    gouraud.push_back(Shader("Gouraud",
+                             "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                             "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                             DEPTH_MASK));
+    gouraud.push_back(Shader("Gouraud",
+                             "4_perspective-corrected/pass_2_blending/gouraudVertexShader.glsl",
+                             "4_perspective-corrected/pass_2_blending/gouraudFragmentShader.glsl",
+                             BLENDING));
+    gouraud.push_back(Shader("Gouraud",
+                             "4_perspective-corrected/pass_3_normalization/vertexShader.glsl",
+                             "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
+                             NORMALIZATION));
+    
+    vector<Shader> phong;
+    phong.push_back(Shader("Phong",
+                           "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                           "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                           DEPTH_MASK));
+    phong.push_back(Shader("Phong",
+                           "4_perspective-corrected/pass_2_blending/phongVertexShader.glsl",
+                           "4_perspective-corrected/pass_2_blending/phongFragmentShader.glsl",
+                           BLENDING));
+    phong.push_back(Shader("Phong",
+                           "4_perspective-corrected/pass_3_normalization/vertexShader.glsl",
+                           "4_perspective-corrected/pass_3_normalization/fragmentShader.glsl",
+                           NORMALIZATION));
+    
+    vector<Shader> deferred;
+    deferred.push_back(Shader("Deferred",
+                              "4_perspective-corrected/pass_1_visibility/vertexShader.glsl",
+                              "4_perspective-corrected/pass_1_visibility/fragmentShader.glsl",
+                              DEPTH_MASK));
+    deferred.push_back(Shader("Deferred",
+                              "4_perspective-corrected/pass_2_blending/deferredVertexShader.glsl",
+                              "4_perspective-corrected/pass_2_blending/deferredFragmentShader.glsl",
+                              BLENDING));
+    deferred.push_back(Shader("Deferred",
+                              "4_perspective-corrected/pass_3_normalization/deferredVertexShader.glsl",
+                              "4_perspective-corrected/pass_3_normalization/deferredFragmentShader.glsl",
+                              NORMALIZATION));
+    
+    vector<vector <Shader> > vec;
+    vec.push_back(gouraud);
+    vec.push_back(phong);
+    vec.push_back(deferred);
+    
+    listOfShaders.push_back(Shader("Perspective Correct Rasterization",
+                                   "4_perspective-corrected/vertexShader.glsl",
+                                   "4_perspective-corrected/fragmentShader.glsl",
+                                   SINGLEPASS,
+                                   vec) );
+    
+    textureID = 0;
+    firstTime = true;
+    
+    //Flags
+    MultipassEnabled = false;
+    FXAA = false;
+    colorEnabled = false;
+    automaticRadiusEnabled = false;
+    
+    //Models
+    actualVAO = 0;
+    displayVAO = NULL;
+    
+};
 
 //Cube Description
 //

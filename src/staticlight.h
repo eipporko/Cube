@@ -25,31 +25,26 @@
  *
  */
 
-#ifndef __CUBE__file__
-#define __CUBE__file__
+#ifndef __CUBE__staticlight__
+#define __CUBE__staticlight__
 
 #include <iostream>
+
 #include <GL/glew.h>
 
-#include "vao.h"
+#include "light.h"
 
 using namespace std;
 
-/**
- Returns a buffer with file data
- @param[in] fname path to file
- @param[out] fSize file size
- @returns memblock
- */
-char* loadFile(string fname, GLint &fSize);
+class StaticLight : public Light {
+    
+public:
+    
+    //Constructor
+    StaticLight(glm::vec3 position, glm::vec3 color, float intensity) : Light(position, color, intensity) { };
+    
+    void update() {};
+    
+};
 
-
-/**
- Returns a buffer with file data
- @param[in] fname path to file
- @param[out] fSize file size
- @returns memblock
- */
-VAO loadCloud(string pathFile);
-
-#endif
+#endif /* defined(__CUBE__staticlight__) */

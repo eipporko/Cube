@@ -25,31 +25,32 @@
  *
  */
 
-#ifndef __CUBE__file__
-#define __CUBE__file__
+#ifndef __CUBE__cameralight__
+#define __CUBE__cameralight__
 
 #include <iostream>
+
 #include <GL/glew.h>
 
-#include "vao.h"
+#include "light.h"
+#include "camera.h"
 
 using namespace std;
 
-/**
- Returns a buffer with file data
- @param[in] fname path to file
- @param[out] fSize file size
- @returns memblock
- */
-char* loadFile(string fname, GLint &fSize);
+class CameraLight : public Light {
 
+private:
+    Camera* cameraAttached;
+    
+public:
+    
+    //Constructor
+    CameraLight(Camera* camera, glm::vec3 color, float intensity) : Light(glm::vec3(0,0,0), color, intensity) {
+        this->cameraAttached = camera;
+    };
+    
+    void update();
+    
+};
 
-/**
- Returns a buffer with file data
- @param[in] fname path to file
- @param[out] fSize file size
- @returns memblock
- */
-VAO loadCloud(string pathFile);
-
-#endif
+#endif /* defined(__CUBE__cameralight__) */

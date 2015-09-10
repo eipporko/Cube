@@ -1,105 +1,56 @@
-#ifndef __CUBE__light__
-#define __CUBE__light__
+/*
+ *
+ * CUBE
+ *
+ * Copyright (c) David Antunez Gonzalez 2013-2015 <dantunezglez@gmail.com>
+ * Copyright (c) Luis Omar Alvarez Mures 2013-2015 <omar.alvarez@udc.es>
+ * Copyright (c) Emilio Padron Gonzalez 2013-2015 <emilioj@gmail.com>
+ *
+ * All rights reserved.
+ *
+ * This file is part of ToView.
+ *
+ * CUBE is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this library.
+ *
+ */
+
+#ifndef __CUBE__orbitallight__
+#define __CUBE__orbitallight__
 
 #include <iostream>
-#include <vector>
 
 #include <GL/glew.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-
-#include "shader.h"
-
-#define MAX_LIGHTS 16
+#include "light.h"
 
 using namespace std;
 
-struct light {
-    glm::vec4 position;
-    glm::vec4 color;
-    float intensity;
-};
-
-class OrbitalLight {
+class OrbitalLight : public Light {
 
 private:
-    static vector<OrbitalLight*> lights;
-    
-    glm::vec3 initialPosition;
-    glm::vec3 position;
-    glm::vec3 color;
     glm::vec3 axisRotation;
     float stepRotation;
-    float intensity;
+    
 public:
-
-    static float lightPosition[MAX_LIGHTS*3];
-    static float lightColor[MAX_LIGHTS*3];
-    static float lightIntensity[MAX_LIGHTS];
-    static int lightCount;
     
     //Constructor
-    OrbitalLight(int intensity) {
-        this->intensity = intensity;
-        this->color = glm::vec3(1,1,1);
-        lights.push_back(this);
-    };
-    OrbitalLight(glm::vec3 position, glm::vec3 color, float intensity, glm::vec3 axis, float step) {
-        this->initialPosition = position;
-        this->position = position;
-        this->color = color;
-        this->intensity = intensity;
+    OrbitalLight(glm::vec3 position, glm::vec3 color, float intensity, glm::vec3 axis, float step) : Light(position, color, intensity) {
         this->axisRotation = axis;
         this->stepRotation = step;
-        
-        lights.push_back(this);
     };
-    
-    ~OrbitalLight()
-    {
-        auto iter = find(lights.begin(), lights.end(), this);
-        
-        if (iter != lights.end())
-            lights.erase(iter);
-    }
-    
-    
-    //Getters & Setters
-    void setPosition(glm::vec3 newPosition) { this->position = newPosition; };
-    
     
     void update();
-    void pushToGPU();
-    
-    static int maxLights() {return MAX_LIGHTS; };
-    
-    static void resetAll() {
-        for (int i = 0; i < lights.size(); i++)
-            lights[i]->position = lights[i]->initialPosition;
-    }
-    static void pushAllToGPU() { pushToGPU(lights); };
-    
-    static void pushToGPU(vector<OrbitalLight*> listOfLights) {
-
-        int counter = 0;
-        for (int i = 0; i < listOfLights.size()*3 ; i = i+3){
-            lightPosition[i] = listOfLights[counter]->position.x;
-            lightPosition[i+1] = listOfLights[counter]->position.y;
-            lightPosition[i+2] = listOfLights[counter]->position.z;
-            
-            lightColor[i] = listOfLights[counter]->color.r;
-            lightColor[i+1] = listOfLights[counter]->color.g;
-            lightColor[i+2] = listOfLights[counter]->color.b;
-            
-            lightIntensity[counter] = listOfLights[counter]->intensity;
-
-            counter++;
-        }
-
-        lightCount = listOfLights.size();
-        
-    };
     
 };
 
