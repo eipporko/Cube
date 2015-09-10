@@ -12,11 +12,6 @@
 #include <GL/glew.h>
 
 #include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -36,10 +31,9 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
-#define CAMERA_RPP 2*M_PI/1000.0 //resolution 1000px = 2PI
+#define CAMERA_RPP 360.0/1000.0 //resolution 1000px = 2PI
 
 #define SGN(x)   (((x) < 0) ? (-1) : (1))
-#define DEG_TO_RAD(x) (x * (M_PI / 180.0))
 #define LESS_THAN(x, limit) ((x > limit) ? (limit) : (x))
 #define GREATER_THAN(x, limit) ((x < limit) ? (limit) : (x))
 
@@ -145,6 +139,8 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
     
+    orbitalCamera.update(w, h);
+    
     firstTime = true;
 }
 
@@ -182,7 +178,7 @@ void mousePosCallback(GLFWwindow * window, double x, double y)
     if (leftBtnPress == true) {
         int w, h;
         glfwGetWindowSize(window, &w, &h);
-        orbitalCamera.rotate((lastMouseX - x) * 0.36, -(lastMouseY - y) * 0.36);
+        orbitalCamera.rotate((lastMouseX - x) * CAMERA_RPP, -(lastMouseY - y) * CAMERA_RPP);
         orbitalCamera.update(w, h);
     }
     
@@ -692,6 +688,9 @@ int main(int argc, char **argv)
     glfwSetCursorPosCallback(window, mousePosCallback);
     reshapeCallback(window, WINDOW_WIDTH, WINDOW_HEIGHT); //callback forced
     
+#ifdef GLM_FORCE_RADIANS
+    cout << "puta mierda de radianes" << endl;
+#endif
     
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))

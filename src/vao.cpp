@@ -169,7 +169,8 @@ void VAO::sampleMesh(int samplesPerTriangle) {
     
     if (mode == GL_TRIANGLES) {
     
-
+        this->numOfVertices = 0;
+        
         CloudType::Ptr cloud (new CloudType);
     
         cloud->width = this->numOfTriangles * samplesPerTriangle;

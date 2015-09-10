@@ -6,8 +6,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#define DEG_TO_RAD(x) (x * (M_PI / 180.0))
-
 glm::mat4 Camera::projMatrix, Camera::viewMatrix;
 glm::mat3 Camera::normalMatrix;
 int Camera::h, Camera::w;
@@ -31,11 +29,14 @@ void Camera::reset() {
 
 
 void Camera::rotate(float amountX, float amountY) {
-    this->lookVector = glm::rotate(this->lookVector, amountX, glm::vec3(0,1,0) );
-    this->lookVector = glm::rotate(this->lookVector, amountY, glm::vec3(1,0,0) );
     
-    this->upVector = glm::rotate(this->upVector, amountX, glm::vec3(0,1,0) );
-    this->upVector = glm::rotate(this->upVector, amountY, glm::vec3(1,0,0) );
+    glm::vec3 rightVector = glm::cross(this->lookVector, this->upVector);
+    
+    this->lookVector = glm::rotate(this->lookVector, glm::radians(amountX), this->upVector );
+    this->lookVector = glm::rotate(this->lookVector, glm::radians(amountY), rightVector );
+    
+    this->upVector = glm::rotate(this->upVector, glm::radians(amountX), this->upVector );
+    this->upVector = glm::rotate(this->upVector, glm::radians(amountY), rightVector );
 };
 
 
@@ -56,9 +57,9 @@ void Camera::update(int width, int height) {
     float ratio;
     ratio = (1.0f * width) / height;
     
-    Camera::projMatrix = glm::perspective(this->fovy, ratio, this->nearClipping, this->farClipping);
+    Camera::projMatrix = glm::perspective(glm::radians(this->fovy), ratio, this->nearClipping, this->farClipping);
     
-    GLfloat realTop = (GLfloat) tan( 0.5f * DEG_TO_RAD(this->fovy)) * this->nearClipping;
+    GLfloat realTop = (GLfloat) tan( 0.5f * glm::radians(this->fovy)) * this->nearClipping;
     
     Camera::n = this->nearClipping;
     Camera::f = this->farClipping;

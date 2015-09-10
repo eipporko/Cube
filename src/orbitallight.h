@@ -11,7 +11,7 @@
 
 #include "shader.h"
 
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 16
 
 using namespace std;
 

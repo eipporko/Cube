@@ -12,9 +12,9 @@ uniform int w; 	 //Width of the viewport
 
 uniform bool colorEnabled;
 uniform int lightCount;
-uniform vec3 lightPosition[10];
-uniform vec3 lightColor[10];
-uniform float lightIntensity[10];
+uniform vec3 lightPosition[16];
+uniform vec3 lightColor[16];
+uniform float lightIntensity[16];
 
 uniform sampler2DRect blendTexture;
 uniform sampler2DRect normalTexture;

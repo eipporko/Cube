@@ -7,7 +7,7 @@ float OrbitalLight::lightIntensity[MAX_LIGHTS];
 int OrbitalLight::lightCount;
 
 void OrbitalLight::update(){
-    this->position = glm::rotate(this->position, this->stepRotation, this->axisRotation );
+    this->position = glm::rotate(this->position, glm::radians(this->stepRotation), this->axisRotation );
 };
 
 void OrbitalLight::pushToGPU()  {

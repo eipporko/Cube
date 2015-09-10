@@ -5,9 +5,6 @@
 
 using namespace shader;
 
-//FBO
-
-
 //Texture
 GLuint textureID = 0;
 bool firstTime = true;
