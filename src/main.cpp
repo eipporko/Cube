@@ -38,8 +38,6 @@
 
 #include <GL/glew.h>
 
-#include <glm/glm.hpp>
-
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
@@ -417,8 +415,6 @@ void display(GLFWwindow* window)
         else {
             glDepthMask(GL_TRUE);
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            //GLenum attach[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
-            //glDrawBuffers(4, attach);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             Shader shaderh = Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()];
@@ -721,10 +717,6 @@ int main(int argc, char **argv)
     glfwSetMouseButtonCallback(window, mouseCallback);
     glfwSetCursorPosCallback(window, mousePosCallback);
     reshapeCallback(window, WINDOW_WIDTH, WINDOW_HEIGHT); //callback forced
-    
-#ifdef GLM_FORCE_RADIANS
-    cout << "puta mierda de radianes" << endl;
-#endif
     
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))

@@ -30,6 +30,7 @@
 #include "light.h"
 #include "orbitallight.h"
 #include "cameralight.h"
+#include "staticlight.h"
 #include "camera.h"
 
 using namespace shader;
@@ -68,19 +69,31 @@ void Globals::init() {
     
     
     //Lights
-    vector<Light*> noneLightsList;
+    vector<Light*> noneLights;
     
-    vector<Light*> cameraLightList;
-    cameraLightList.push_back(new CameraLight(Camera::activeCamera, glm::vec3 (1,1,1), 1.f));
+    vector<Light*> cameraLights;
+    cameraLights.push_back(new CameraLight(Camera::activeCamera, glm::vec3 (1,1,1), 1.f));
     
-    vector<Light*> orbitalLightsList;
-    orbitalLightsList.push_back(new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f )) ;
-    orbitalLightsList.push_back(new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f ));
-    orbitalLightsList.push_back(new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.50f, glm::vec3(0,0,1), 1.25f ));
+    vector<Light*> orbitalWhiteLights;
+    orbitalWhiteLights.push_back(new OrbitalLight(glm::vec3(0, 0, -LIGHT_DISTANCE), glm::vec3(1,1,1), 0.25f, glm::vec3(0,1,0), 5.f ));
     
-    sceneLightsList.push_back(noneLightsList);
-    sceneLightsList.push_back(cameraLightList);
-    sceneLightsList.push_back(orbitalLightsList);
+    vector<Light*> axisOrbitalLights;
+    axisOrbitalLights.push_back(new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f )) ;
+    axisOrbitalLights.push_back(new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f ));
+    axisOrbitalLights.push_back(new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.50f, glm::vec3(0,0,1), 1.25f ));
+    
+    vector<Light*> mixedLights;
+    mixedLights.push_back(new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f )) ;
+    mixedLights.push_back(new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f ));
+    mixedLights.push_back(new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.30f, glm::vec3(0,0,1), 1.25f ));
+    mixedLights.push_back(new StaticLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
+    mixedLights.push_back(new StaticLight(glm::vec3(0, 0, -LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
+    
+    sceneLightsList.push_back(noneLights);
+    sceneLightsList.push_back(orbitalWhiteLights);
+    sceneLightsList.push_back(cameraLights);
+    sceneLightsList.push_back(axisOrbitalLights);
+    sceneLightsList.push_back(mixedLights);
     sceneLightsArrIndex = 0;
     
     

@@ -83,7 +83,6 @@ void Camera::rotate(float amountX, float amountY) {
     this->lookVector = glm::rotate(this->lookVector, glm::radians(amountX), this->upVector );
     this->lookVector = glm::rotate(this->lookVector, glm::radians(amountY), rightVector );
     
-    this->upVector = glm::rotate(this->upVector, glm::radians(amountX), this->upVector );
     this->upVector = glm::rotate(this->upVector, glm::radians(amountY), rightVector );
 };
 
