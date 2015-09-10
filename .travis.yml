@@ -6,8 +6,7 @@ compiler:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository --yes ppa:v-launchpad-jochen-sprickerhof-de/pcl; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update && sudo apt-get install -y libpcl-all libglew-dev libglm-dev; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update && sudo apt-get install -y libpcl-all libglew-dev libglm-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update && sudo apt-get install -y libpcl-all libglew-dev libglm-dev libXxf86vm-dev; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then git clone https://github.com/glfw/glfw.git; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd glfw; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then git checkout 3.0.3; fi
