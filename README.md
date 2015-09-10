@@ -1,4 +1,4 @@
-Cube
+Cube [![Build Status](https://travis-ci.org/eipporko/Cube.svg?branch=master)](https://travis-ci.org/eipporko/Cube)
 ========================
 
 Test it and you could see an awesome colored cube in your screen.
