@@ -18,8 +18,8 @@ Camera orbitalCamera(glm::vec3(0, 0, -4.0f));
 
 
 //Light
-OrbitalLight* noneLightArr[] = {};
-vector<OrbitalLight*> noneLightsList( noneLightArr, noneLightArr + sizeof(noneLightArr) / sizeof(OrbitalLight*) );
+//OrbitalLight* noneLightArr[];
+vector<OrbitalLight*> noneLightsList;
 
 OrbitalLight* cameraLight = new OrbitalLight(1);
 OrbitalLight* cameraLightArr[] = {cameraLight};

@@ -12,6 +12,24 @@ int Camera::h, Camera::w;
 float Camera::n, Camera::f;
 float Camera::top, Camera::bottom, Camera::right, Camera::left;
 
+Camera::Camera(glm::vec3 cameraPosition) {
+
+	this->initialFovy = 53.13f;
+	this->initialNearClipping = 0.1f;
+	this->initialFarClipping = 100;
+	this->fovy = 53.13f;
+	this->nearClipping = 0.1f;
+    this->farClipping = 100;
+    this->rotationXAxis = 0;
+    this->rotationYAxis = 0;
+	this->distanceToOrigin = glm::length(cameraPosition);
+	this->lookVector = glm::normalize(cameraPosition);
+	this->upVector = glm::vec3(0,1,0);
+	this->initialPosition = cameraPosition;
+	this->initialUpVector = this->upVector;
+
+};
+
 void Camera::moveDistance(float amount) {
     this->distanceToOrigin += amount;
 };
