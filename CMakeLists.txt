@@ -16,6 +16,7 @@ include_directories(${GLFW_INCLUDE_DIR})
 # FIND GLM
 #########################################################
 find_package(GLM)
+include_directories(${GLM_INCLUDE_PATH})
 #########################################################
 # FIND GLEW
 #########################################################

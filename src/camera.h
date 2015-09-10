@@ -8,21 +8,21 @@
 class Camera {
     
 private:
-    float initialFovy = 53.13f;
+    float initialFovy;
     glm::vec3 initialPosition;
     glm::vec3 initialUpVector;
-    float initialNearClipping = 0.1f;
-    float initialFarClipping = 100;
+    float initialNearClipping;
+    float initialFarClipping;
     
-    float fovy = 53.13f;
+    float fovy;
     glm::vec3 position;
     glm::vec3 lookVector;
     glm::vec3 upVector;
     float distanceToOrigin;
-    float nearClipping = 0.1f;
-    float farClipping = 100;
-    float rotationXAxis = 0;
-    float rotationYAxis = 0;
+    float nearClipping;
+    float farClipping;
+    float rotationXAxis;
+    float rotationYAxis;
     
 public:
     
@@ -32,13 +32,7 @@ public:
     static float n, f;
     static float top, bottom, right, left;
     
-    Camera(glm::vec3 cameraPosition) {
-        this->distanceToOrigin = glm::length(cameraPosition);
-        this->lookVector = glm::normalize(cameraPosition);
-        this->upVector = glm::vec3(0,1,0);
-        this->initialPosition = cameraPosition;
-        this->initialUpVector = this->upVector;
-    };
+    Camera(glm::vec3 cameraPosition);
     
     //Getter & Setter
     void moveDistance(float amount);
