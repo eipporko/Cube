@@ -114,7 +114,7 @@ const char* getTitleWindow()
         int width = Camera::w;
         int height = Camera::h;
         int numOfLights = Globals::sceneLightsList[ Globals::sceneLightsArrIndex % Globals::sceneLightsList.size()].size();
-        int numOfPoints = Globals::Globals::displayVAO->getCloud()->points.size();
+        int numOfPoints = Globals::displayVAO->getCloud()->points.size();
         logStream << getTitleWindow() << "| " << numOfPoints << " Points | " << numOfLights << " Lights | " << width << "x" << height << endl;
     }
 #endif
