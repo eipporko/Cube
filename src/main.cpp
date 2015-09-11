@@ -50,7 +50,7 @@
 #include "orbitallight.h"
 #include "camera.h"
 
-//#define DEBUG
+#define DEBUG
 #define ITERATIONS 25
 
 #define WINDOW_WIDTH 640
@@ -66,8 +66,12 @@
 using namespace std;
 
 #ifdef DEBUG
+#include <fstream>
 std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
 int itCounter = 0;
+int numOfLights = 0;
+int numOfPoints = 0;
+ofstream logStream;
 #endif
 
 GLuint FramebufferName = 0;
@@ -105,6 +109,16 @@ const char* getTitleWindow()
     Globals::title = "CUBE | " + Globals::listOfShaders[Globals::actualShader%Globals::listOfShaders.size()].getDescription() + " | " + multipass + color + fxaa;
     return Globals::title.c_str();
 }
+
+#ifdef DEBUG
+    void writeTitleLog(){
+        numOfLights = Globals::sceneLightsList[ Globals::sceneLightsArrIndex % Globals::sceneLightsList.size()].size();
+        numOfPoints = Globals::Globals::displayVAO->getCloud()->points.size();
+        itCounter = 0;
+        logStream << getTitleWindow() << "| " << numOfPoints << " Points | " << numOfLights << " Lights" << endl;
+    }
+#endif
+
 
 /**
  Sample a model transforming it into a point cloud
@@ -229,6 +243,7 @@ void mouseCallback(GLFWwindow * window, int btn, int action, int mods)
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
     
@@ -260,21 +275,40 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         Globals::colorEnabled = !Globals::colorEnabled;
         glUniform1i(Shader::shaderInUse->colorEnabledLoc, Globals::colorEnabled?1:0);
         glfwSetWindowTitle(window, getTitleWindow());
+        
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
+        
     }
     
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         Globals::FXAA = !Globals::FXAA;
         
         glfwSetWindowTitle(window, getTitleWindow());
+        
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
+        
     }
     
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
         Globals::sceneLightsArrIndex += 1;
+        
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
+        
     }
     
     if (key == GLFW_KEY_M && action == GLFW_PRESS) {
         Globals::actualVAO++;
         Globals::displayVAO = &Globals::models[Globals::actualVAO%Globals::models.size()];
+        
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
     }
     
     if (key == GLFW_KEY_O && action == GLFW_PRESS) {
@@ -288,6 +322,11 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
             Globals::displayVAO = &Globals::models[Globals::models.size()-1];
             Globals::displayVAO->pushToGPU();
         }
+        
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
+        
     }
     
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
@@ -306,12 +345,12 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
             if (Globals::listOfShaders[indexShader].getMultiPass().size() > 0 )
                 Globals::MultipassEnabled = true;
         
-#ifdef DEBUG
-        itCounter = 0;
-        cout << getTitleWindow() << endl;
-#endif
-        
         glfwSetWindowTitle(window, getTitleWindow());
+        
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
+        
     }
     
     if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
@@ -335,10 +374,9 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
             Globals::actualMultipass = 0;
         }
         
-#ifdef DEBUG
-        itCounter = 0;
-        cout << getTitleWindow() << endl;
-#endif
+        #ifdef DEBUG
+        writeTitleLog();
+        #endif
         
         glfwSetWindowTitle(window, getTitleWindow());
     }
@@ -496,7 +534,7 @@ void display(GLFWwindow* window)
     if (itCounter >= ITERATIONS) {
         endTime = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = endTime-startTime;
-        cout << elapsed_seconds.count()/ITERATIONS << endl;
+        logStream << elapsed_seconds.count()/ITERATIONS << endl;
         itCounter = 0;
     }
 
@@ -594,6 +632,10 @@ void buildFBO()
 
 int main(int argc, char **argv)
 {
+#ifdef DEBUG
+    logStream.open ("log.txt");
+#endif
+    
     Globals::init();
     
     GLFWwindow* window;
@@ -732,7 +774,10 @@ int main(int argc, char **argv)
         /* Poll for and process events */
         glfwPollEvents();
     }
-    
+#ifdef DEBUG
+    logStream.close();
+#endif
+
     glfwTerminate();
     return 0;
 
