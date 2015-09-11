@@ -89,11 +89,35 @@ void Globals::init() {
     mixedLights.push_back(new StaticLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
     mixedLights.push_back(new StaticLight(glm::vec3(0, 0, -LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
     
+    vector<Light*> sevenLights;
+    sevenLights.push_back(new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f )) ;
+    sevenLights.push_back(new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f ));
+    sevenLights.push_back(new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.30f, glm::vec3(0,0,1), 1.25f ));
+    sevenLights.push_back(new StaticLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
+    sevenLights.push_back(new StaticLight(glm::vec3(0, 0, -LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
+    sevenLights.push_back(new StaticLight(glm::vec3(-LIGHT_DISTANCE, 0, 0), glm::vec3(1,1,0), 0.30f));
+    sevenLights.push_back(new StaticLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,1,1), 0.30f));
+    
+    vector<Light*> nineLights;
+    nineLights.push_back(new OrbitalLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(0,1,0), 0.30f, glm::vec3(0,1,0), 5.0f )) ;
+    nineLights.push_back(new OrbitalLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(1,0,0), 0.30f, glm::vec3(1,0,0), 2.5f ));
+    nineLights.push_back(new OrbitalLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,0,1), 0.30f, glm::vec3(0,0,1), 1.25f ));
+    nineLights.push_back(new StaticLight(glm::vec3(0, 0, LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
+    nineLights.push_back(new StaticLight(glm::vec3(0, 0, -LIGHT_DISTANCE), glm::vec3(1,1,1), 0.30f));
+    nineLights.push_back(new StaticLight(glm::vec3(-LIGHT_DISTANCE, 0, 0), glm::vec3(1,1,0), 0.30f));
+    nineLights.push_back(new StaticLight(glm::vec3(LIGHT_DISTANCE, 0, 0), glm::vec3(0,1,1), 0.30f));
+    nineLights.push_back(new StaticLight(glm::vec3(0, -LIGHT_DISTANCE, 0), glm::vec3(1,0,1), 0.30f));
+    nineLights.push_back(new StaticLight(glm::vec3(0, LIGHT_DISTANCE, 0), glm::vec3(0,1,0), 0.30f));
+    
+    
+    
     sceneLightsList.push_back(noneLights);
     sceneLightsList.push_back(orbitalWhiteLights);
     sceneLightsList.push_back(cameraLights);
     sceneLightsList.push_back(axisOrbitalLights);
     sceneLightsList.push_back(mixedLights);
+    sceneLightsList.push_back(sevenLights);
+    sceneLightsList.push_back(nineLights);
     sceneLightsArrIndex = 0;
     
     
