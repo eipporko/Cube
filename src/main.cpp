@@ -69,8 +69,6 @@ using namespace std;
 #include <fstream>
 std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
 int itCounter = 0;
-int numOfLights = 0;
-int numOfPoints = 0;
 ofstream logStream;
 #endif
 
@@ -112,10 +110,12 @@ const char* getTitleWindow()
 
 #ifdef DEBUG
     void writeTitleLog(){
-        numOfLights = Globals::sceneLightsList[ Globals::sceneLightsArrIndex % Globals::sceneLightsList.size()].size();
-        numOfPoints = Globals::Globals::displayVAO->getCloud()->points.size();
         itCounter = 0;
-        logStream << getTitleWindow() << "| " << numOfPoints << " Points | " << numOfLights << " Lights" << endl;
+        int width = Camera::w;
+        int height = Camera::h;
+        int numOfLights = Globals::sceneLightsList[ Globals::sceneLightsArrIndex % Globals::sceneLightsList.size()].size();
+        int numOfPoints = Globals::Globals::displayVAO->getCloud()->points.size();
+        logStream << getTitleWindow() << "| " << numOfPoints << " Points | " << numOfLights << " Lights | " << width << "x" << height << endl;
     }
 #endif
 
@@ -180,6 +180,10 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     
     if (Camera::activeCamera != NULL)
         Camera::activeCamera->update(w, h);
+    
+    #ifdef DEBUG
+    writeTitleLog();
+    #endif
     
     Globals::firstTime = true;
 }
