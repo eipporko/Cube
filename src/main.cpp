@@ -100,7 +100,7 @@ const char* getTitleWindow()
     
     string fxaa;
     if (Globals::FXAA)
-        fxaa = " | FXAA";
+        fxaa = "| FXAA ";
     else
         fxaa = "";
     
