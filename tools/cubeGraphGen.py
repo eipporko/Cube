@@ -3,6 +3,7 @@
 import sys, getopt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+from matplotlib.mlab import griddata
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import numpy as np
@@ -178,17 +179,23 @@ def drawLightningComparative():
 					fpsList = db.query('SELECT AVG(fps) as avrg FROM data WHERE render = \'Perspective Correct Rasterization\' AND lights = ' + str(lights['lights'])+ ' AND fxaa = 0 AND resolution =\'' + resolution['resolution'] + '\' AND blending=\''+ blend['blending'] +'\' AND points = ' + str(points['points']))
 					for fps in fpsList:
 						avrgArray.append(fps['avrg'])
+			
+			if ( min(pointsArray) != max(pointsArray) and min(lightsArray) != max(lightsArray) ):
+				AD = np.linspace(min(pointsArray), max(pointsArray))
+				MD = np.linspace(min(lightsArray), max(lightsArray))
+				X,Y = np.meshgrid(AD, MD)
+				Z = griddata(pointsArray,lightsArray,avrgArray,AD,MD,'linear')
+				surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0)
+				ax.set_xlabel('Number of Points')
+				ax.set_ylabel('Number of Lights')
+				ax.set_zlabel('FPS') 
+				plt.title('Lightning Comparative in ' + blend['blending'] + ' ('+resolution['resolution']+')')
+				plt.grid(True)
+				fig.colorbar(surf, shrink=0.5, aspect=10)
+				plt.show()
+			else: 
+				print "ERROR: Input is less than 3-dimensional (same numOfPoints or numOfLights)"
 
-			pointsArray, lightsArray = np.meshgrid(pointsArray, lightsArray)
-			surf = ax.plot_surface(pointsArray, lightsArray, avrgArray, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-			#surf = ax.plot_trisurf(pointsArray, lightsArray, avrgArray, cmap=cm.jet, linewidth=0.2)
-			ax.set_xlabel('Number of Points')
-			ax.set_ylabel('Number of Lights')
-			ax.set_zlabel('FPS') 
-			plt.title('Lightning Comparative in ' + blend['blending'] + ' ('+resolution['resolution']+')')
-			plt.grid(True)
-			fig.colorbar(surf, shrink=0.5, aspect=10)
-			plt.show()
 
 
 
