@@ -6,8 +6,46 @@
 	\label{nombre_referencia_al_capitulo_060}
 }
 
-Proin sit amet est. Nunc vel sem sed ligula accumsan cursus. Nunc tincidunt purus non elit accumsan vestibulum. Proin ultrices metus non nisl. Duis feugiat enim et sapien. Suspendisse lectus. Aliquam erat volutpat. Vestibulum ullamcorper. Nullam augue urna, pharetra nec, feugiat at, pellentesque a, nibh. Curabitur nulla.
+En este capítulo se comentará brevemente las conclusiones alcanzadas luego de la finalización de este proyecto fin de carrera. Continuando con las posibles lineas de trabajo que se podrían seguir.
 
+\section[Conclusiones]{Conclusiones}
+
+Se podría decir que los siguientes objetivos fueron alcanzados:
+\begin{itemize}
+	\item Aprendizaje en el uso de una librería gráfica como OpenGL.
+	\item Programación de programas para GPU con GLSL.
+	\item Implementación de un visualizador multiplataforma de modelos de puntos en tiempo real con el propósito de estudiar los diferentes algoritmos en \textit{GPU} que existen.
+	\item Diseño de herramientas para el análisis de resultados mediante lenguajes ágiles.
+\end{itemize}
+
+Luego de la finalización de este proyecto, otras conclusiones alcanzadas fueron:
+\begin{itemize}
+	\item \textbf{El mismo tamaño para todos los puntos es un error:} El tiempo necesario para calcular como mínimo la corrección de profundidad garantiza un mejora en la percepción visual además de mejoras en el tiempo de renderizado para nubes de alta densidad. 
+	
+	\item \textbf{El aumento en la cantidad de puntos no siempre es mejor:} Al representar nubes con una muy alta densidad de puntos, implica un aumento desproporcionado del esfuerzo computacional necesario para acabar en muchos de los casos con resultados semejantes al renderizado con algoritmos simples. Incluso provocando que los algoritmos de \textit{blending} no tengan efecto al probocar superfices de solape ínfimas impidiendo que funcionen los algoritmos correctamente.
+	
+	\item \textbf{Investigar en sistemas de render que no usen normales:} A pesar de que los resultados obtenidos del render mediante algoritmos como \textit{deferred} son muy buenos. Las nubes de puntos en mucho de los \textit{datasets} carecen de este dato. Por lo que se exige de una precomputación que una vez superando cierto tamaño empieza a no ser abordable, además de que las normales obtenidas en muchos de los casos son erroneas probocando que las imágenes resultantes no se vean correctamente.
+	
+\end{itemize} 
+
+\section[Posibles vías de desarrollo]{Posibles vías de desarrollo}
+
+Luego de finalizar el desarrollo de este proyecto, surgieron diferentes ideas para continuar con el crecimiento de este proyecto:
+
+\begin{itemize}
+	\item \textbf{Rendimiento:} A pesar de que se intentó que el rendimiento obtenido del programa fuera lo más eficiente posible, habría que repasar y analizar bien las especificaciones del \textit{hardware} gráfico para que las transacciones de datos fuera mas eficientes, intentando evitar sobrecomputación evitable con buenas praxis.
+ 
+	\item \textbf{Interfaz de usuario:} Hacer una migración de \textit{GLFW} a \textit{Qt} con la idea de añadir una interfaz de usuario y poder ofrecer más información y opciones al usuario.
+	
+	\item \textbf{Shaders:} Permitir al usuario el escribir sus propios shaders y probarlos online con los modelos cargados.
+	
+	\item \textbf{Cámara:} Mejorar el funcionamiento de la cámara orbital, además de añadir mejoras en esta para poder moverse con más libertad por la escena.
+
+	\item \textbf{Frustum culling:} Ahora mismo todos los puntos de la nube son enviados a GPU, sería interesante en desarrollar algún sistema para filtrar  estos datos mediante algún método de \textit{hashing} espacial en función de la cámara antes de ser enviados para dibujar.
+	
+	\item \textbf{Order-independent transparency:} Implementar un sistema para intentar simplificar el \textit{blending} en tres pases a un sistema en un único pase que además pueda ser aplicado a todos los algoritmos de rasterización.
+	
+\end{itemize}
 %
 % FIN DEL CAPÍTULO
 %

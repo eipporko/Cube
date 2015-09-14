@@ -24,7 +24,7 @@ El primer paso en el render de nubes de puntos, es determinar según la proyecció
 glDrawArrays(GL_POINTS, &splats[0], splats.size());
 \end{lstlisting}
 
-\subsection[Sized-Fixed Points] {Sized-Fixed Points}
+\subsection[Sized-Fixed Points] {Sized-Fixed Points \label{ss_sized}}
 
 De una forma un poco primitiva y puesto que un punto a priori puede no tener un tamaño definido, a la hora de mostrar una representación de la nube, se podría dibujar cada coordenada del conjunto de puntos, con un cuadrado de un tamaño definido. Para ello basta con activar en el programa.
 \\
@@ -107,7 +107,7 @@ En comparación con la propuesta de \textit{Image-aligned Squares}, este método o
 	\label{figure_affinely_holes}
 \end{figure}
 
-\subsection[Perspective Correct Rasterization]{Perspective Correct Rasterization}
+\subsection[Perspective Correct Rasterization]{Perspective Correct Rasterization \label{ss_perspective_correct}}
 
 El método de \textit{Affinely Projected Point Sprites} (\ref{ss_affinely}) causaba errores debido a la proyección paralela que en esta se asumía. Puesto que la proyección puede o no ser paralela, se tendrá que usar una aproximación mas precisa. Esta técnica fué la propuesta por \textit{Bosch et al.} . 
 
@@ -160,11 +160,11 @@ Finalmente el pixel será descartado si $ \| q - p \| > r $. Por otro lado el val
 Luego de determinar los pixels que son cubiertos por la proyección de los \textit{splats} en el anterior paso de rasterización, el siguiente implica iluminación y en general el acabado estético de la superficie \textit{shading}.
 
 % Subsección
-\subsection[Flat Shading] {Flat Shading}
+\subsection[Flat Shading] {Flat Shading \label{ss_flat}}
 
 Puesto que cada punto tiene asociado un vector normal \textbf{n}, para unas ciertas propiedades de material y reflectancia una iluminación local puede ser evaluada por \textit{splat}. Como resultado se obtendrá una constante de color $ \mathbf{c_{i}} $ para cada splat, similar al \textit{flat shading} en modelos poligonales. Ya que los puntos tienden a intersecar unos con otros, las representaciones mediante \textit{flat shading} conllevan a discontinuidades en el color.
 
-\subsection[Gouraud Shading] {Gouraud Shading}
+\subsection[Gouraud Shading] {Gouraud Shading \label{ss_gouraud}}
 
 \begin{figure}
 	\centering
@@ -220,7 +220,7 @@ draw_rectangle();
 \end{lstlisting}
 
 
-\subsection[Phong Shading] {Phong Shading}
+\subsection[Phong Shading] {Phong Shading \label{ss_phong}}
 
 Cuando se comparan los resultado de las diferentes técnicas en la figura \ref{figure_blending_comparative}, \textit{Gouraud} realmente elimina las indeseadas discontinuidades de color provocadas en el \textit{Flat Shading}, pero también añade cierto emborrone a la imagen notablemente. Para renderizado de polígonos es bien conocido que \textit{Phong} es superior que \textit{Gouraud Shading}. En lugar de calcular la iluminación por cada vértice y linealmente interpolar el color resultante dentro de los triángulos, \textit{Phong} interpola las normales en los vértices, seguido de una iluminación por píxel basada en la resultante función definida a trozos.
 
@@ -241,7 +241,7 @@ n_{i} = \dfrac{(q + n) - p}{\|(q + n) - p\|}
 
 Donde \textbf{q} es el punto 3D del \textit{splat} calculado al igual que en el método de \textit{Perspective Correct Rasterization} (Ecuación \ref{q}), \textbf{n} es la normal del \textit{splat} y \textbf{p} es el centro de este en coordenadas de la cámara.
 
-\subsection[Deferred Shading] {Deferred Shading}
+\subsection[Deferred Shading] {Deferred Shading \label{ss_deferred}}
 
 Básicamente existen dos formas para generar interpolaciones suavizadas de vectores de normales. La primera es \textit{Phong} que como se comentó en el anterior apartado, utiliza funciones para calcular el campo de normales de un \textit{splat}. Una segunda opción pasaría por la denominada como \textit{deferred} en la que en lugar de mezclar en un misma fase color y normales, estas se calculan de forma separada.
 
