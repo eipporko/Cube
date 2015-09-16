@@ -9,15 +9,13 @@
 	Introducción
 }
 
-One for all and all for one, Muskehounds are always ready. One for all and all for one, helping everybody. One for all and all for one, it's a pretty story. Sharing everything with fun, that's the way to be. One for all and all for one, Muskehounds are always ready. One for all and all for one, helping everybody. One for all and all for one, can sound pretty corny. If you've got a problem chum, think how it could be.
+Cada vez más, las nubes de puntos están tomando una mayor relevancia debido a la popularización de los métodos de escaneo tridimensional, provocando que sea mas económico y sencillo obtener estos escaneos. Debido a que el resultado de estos métodos de escaneado son nubes de puntos, se destaca la falta de aplicativos que trabajan de forma nativa con este tipo de datos.
 
-Hong Kong Phooey, number one super guy. Hong Kong Phooey, quicker than the human eye. He's got style, a groovy style, and a car that just won't stop. When the going gets tough, he's really rough, with a Hong Kong Phooey chop (Hi-Ya!). Hong Kong Phooey, number one super guy. Hong Kong Phooey, quicker than the human eye. Hong Kong Phooey, he's fan-riffic!
+Estos tienen diferentes aplicaciones, desde el campo de la Ingeniería: con Sistemas de Información Geográfica (GIS) o control industrial o incluso el ámbito de la medicina con el propara diagnóstico en medicina.
 
-Ten years ago a crack commando unit was sent to prison by a military court for a crime they didn't commit. These men promptly escaped from a maximum security stockade to the Los Angeles underground. Today, still wanted by the government, they survive as soldiers of fortune. If you have a problem and no one else can help, and if you can find them, maybe you can hire the A-team.
+Se encontró una problemática respecto a la reconstrucción de los objetos escaneados representados por estas nubes de puntos a causa de la falta de relación que los puntos tienen entre si. A día de hoy en el mayor de los casos para poder reconstruir una superficie, las aplicaciones continúan generando malla de polígonos a partir del análisis de las nubes, obteniendo en la mayor parte de los casos errores debidos al ruido en los \textit{samples}.
 
-This is my boss, Jonathan Hart, a self-made millionaire, he's quite a guy. This is Mrs H., she's gorgeous, she's one lady who knows how to take care of herself. By the way, my name is Max. I take care of both of them, which ain't easy, 'cause when they met it was MURDER!
-
-Top Cat! The most effectual Top Cat! Who's intellectual close friends get to call him T.C., providing it's with dignity. Top Cat! The indisputable leader of the gang. He's the boss, he's a pip, he's the championship. He's the most tip top, Top Cat.
+En este proyecto, se presentarán diferentes opciones para la visualización de nubes de puntos y reconstrucción de su superficie sin necesidad de generar malla de polígonos, aprovechándose del \textit{hardware} gráfico actual.
 
 
 %
@@ -44,29 +42,25 @@ Los objetivos concretos que cubre la elaboración de este proyecto fin de carrera
 %
 \subsection*{Estructura de la memoria}
 
-La memoria está constituida por un total de 6 capítulos, en los que ser irán desarrollando diferentes git
-In a dolor sed odio eleifend varius. Nam ullamcorper. Curabitur ut erat vulputate nisi molestie tempus. Sed aliquam rutrum odio. In mollis. Fusce consectetuer lorem nec diam. Sed mollis lacinia purus. Curabitur feugiat hendrerit neque. Quisque auctor laoreet diam. Curabitur sit amet nisi. Fusce velit massa, dignissim quis, bibendum eget, vehicula mattis, leo. Morbi auctor leo sit amet nibh. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Nullam enim. Pellentesque hendrerit, augue non vulputate semper, sem lorem pharetra nibh, sit amet egestas massa diam ac augue. In dui nulla, egestas nec, pulvinar suscipit, tincidunt ornare, nisi. Duis tristique tortor quis magna. Vestibulum faucibus lorem nec neque. Sed nec nibh. Nunc condimentum. Maecenas neque. Nullam pretium est non risus. Etiam gravida. Maecenas nisl. Fusce pharetra odio in tortor. Integer orci turpis, interdum eget, vulputate sed, tristique a, metus. Duis vitae dui quis lectus pretium aliquam. Praesent quam.
-
-Aliquam sed orci. Cras adipiscing nisl quis pede. Ut rhoncus. Donec viverra laoreet purus. Phasellus nulla. Vivamus eget eros. In mollis aliquam orci. Proin ullamcorper. Nullam sollicitudin vestibulum lorem. Nunc malesuada sagittis augue. Donec tellus velit, dapibus a, aliquam ac, tincidunt id, lectus. 
-
+La memoria está constituida por un total de 6 capítulos, en los que ser irán desarrollando los diferentes apartados: 
 
 \paragraph*{Capítulo 1.}
-Phasellus tempor velit nec velit. Proin vitae dui a sapien commodo blandit. Etiam aliquam, sapien vitae fringilla venenatis, lectus sem accumsan orci, eget blandit orci odio et magna. Quisque malesuada, eros vel tempus eleifend, velit enim porttitor sem, eget consequat nulla neque et sapien. Morbi leo. Sed vestibulum lacus. Fusce ut lacus. Phasellus pellentesque pede eu eros. Duis turpis felis, eleifend ut, semper ac, porta nec, sem. Praesent odio. Sed laoreet mollis purus. Praesent vestibulum, velit ut mollis aliquam, quam lectus varius urna, sed ultricies erat nisl ac tortor. Vivamus tempor mauris sit amet nulla. Integer venenatis. Integer sagittis euismod ante. Suspendisse at elit. Duis eget purus nec pede adipiscing auctor. Proin ac est.
+Se detallará la planificación y la metodología usada en el desarrollo del proyecto. Se hablará de métodos ágiles de desarrollo de \textit{software} y se presentará su aplicación en este caso concreto. Además de representar el histórico en un diagrama de \textit{Gantt} y un prespuesto del proyecto.
 
 \paragraph*{Capítulo 2.}
-Proin condimentum. Maecenas sodales. In ornare nunc a leo. Nam sit amet ligula. Nunc quis urna ac metus imperdiet lobortis. Sed quis ligula. Maecenas blandit pede. Donec lacinia rutrum ligula. Vivamus in metus vel elit pharetra molestie.
+En este capítulo se explicarán los fundamentos tecnológicos necesario para comprender el proyecto. Empezando por la explicación de nubes de puntos, OpenGL y la libreria PCL.
 
 \paragraph*{Capítulo 3.}
-Nullam ante lorem, placerat et, egestas nec, pellentesque non, sapien. Donec semper, felis id posuere faucibus, nibh ipsum tincidunt quam, et varius ipsum odio ac neque. In tincidunt dignissim diam. Sed lacus lorem, ornare ut, eleifend vel, pellentesque tempus, augue. Duis eu magna. Mauris libero ante, porttitor vel, lobortis a, mollis ac, sem. Nunc at lectus. Integer ac libero a nisl dignissim mollis. Donec velit neque, vestibulum eget, pulvinar vel, malesuada ut, nisi. Praesent congue tempus quam. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+Se introducirán los fundamentos básicos en la programación gráfica: tipos de render, modelos 3D, espacios Euclideos y transformaciones, Cámaras y sus matrices.
 
 \paragraph*{Capítulo 4.}
-Mauris ut odio. Nulla accumsan. Morbi condimentum fermentum purus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nunc dignissim, neque eget convallis pretium, diam tortor fringilla lacus, a laoreet nisl metus eu magna. Cras ut lectus. Etiam accumsan feugiat elit.
+Este capítulo es el núcleo de la memoria, presentándose los diferentes algoritmos y métodos que serán implementados para el dibujado de las nubes de puntos, presentando tanto algoritmos de rasterización como de \textit{blending}.
 
-\paragraph*{Capítulo ...}
-Donec a pede. Proin dolor. Ut nunc ligula, tempor id, ornare sit amet, aliquam et, nibh. In mollis iaculis pede. Vivamus gravida orci eu nisl. Sed nibh sem, consequat at, iaculis non, placerat in, ligula. Praesent id nisi. Nunc pellentesque justo non libero. Sed quis est sit amet purus lobortis blandit. Sed arcu justo, rhoncus condimentum, ullamcorper iaculis, viverra et, nisl.
+\paragraph*{Capítulo 5.}
+En este capítulo se analizarán los resultados obtenidos de la ejecución de los diferentes algoritmos presentado en el anterior capítulo.
 
-\paragraph*{Capítulo N.}
-Fusce luctus gravida leo. Nullam dignissim arcu ac risus hendrerit rhoncus. Aliquam erat volutpat. Ut mollis, mauris non aliquam luctus, nulla sem aliquam tellus, in consequat augue odio in urna.
+\paragraph*{Capítulo 6.}
+Capítulo que almacena las conclusiones alcanzadas tras la finalización del proyecto.
 
 
 

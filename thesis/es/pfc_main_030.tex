@@ -17,7 +17,7 @@ En este capítulo se introducirán algunos conceptos involucrados en el \textit{re
 	\label{s_render}
 }
 
-Tradicionalmente la Programación Gráfica ha sido definida como la disciplina dedicada a sintetizar imagenes algoritmicamente mediante ordenadores. Actualmente se pueden encontrar mas temas acerca del hiper realismo, técnicas de animación, realidad virtual, etc. Para generar images a partir de escenar tridimensionales un proceso denominado \textit{render} es usado. Este conjunto de acciones está al cargo del modelado y sus propiedades, iluminación y si es necesario la cámara que capturará todo.
+Tradicionalmente la Programación Gráfica ha sido definida como la disciplina dedicada a sintetizar imágenes algoritmicamente mediante ordenadores. Actualmente se pueden encontrar mas temas acerca del hiper realismo, técnicas de animación, realidad virtual, etc. Para generar imágenes a partir de escenas tridimensionales un proceso denominado \textit{render} es usado. Este conjunto de acciones está al cargo del modelado y sus propiedades, iluminación y si es necesario la cámara que capturará todo.
 
 Como bien se dijo antes, el \textit{render} es el proceso computacional de generar una imagen a partir de un modelo. Desde esta definición, se podría sacar diferentes interpretaciones, desde crear una película de animación 3D a un diagrama de barras, y todas ellas serían igualmente válidas. Aunque el término que normalmente es usado es referido a un modelo tiene una naturaleza espacial y mas específicamente tridimensional
 
@@ -26,7 +26,7 @@ Diferentes clasificaciones de técnicas de \textit{render} puede ser definidas, p
 \begin{itemize}
 	\item \textbf{Fotorealístico} que intenta ser lo más fiel como sea posible a la realidad. Este tipo de \textit{render} puede ser subdivido en:
 	\begin{itemize}
-		\item \textbf{Render básado en Físicas} Intentando calcular una simulación lo más autética posible del tratamiento de la luz a través de la escena y su interacción con materiales y objetos. La precisión de la simulación dependera de los modelos físicos y matemáticos escogidos.
+		\item \textbf{Render basado en Físicas} Intentando calcular una simulación lo más auténtica posible del tratamiento de la luz a través de la escena y su interacción con materiales y objetos. La precisión de la simulación dependerá de los modelos físicos y matemáticos escogidos.
 		
 		\item \textbf{Falseados} que utiliza trucos para reducir tiempos de renderizado.
 	\end{itemize}
@@ -45,9 +45,9 @@ La Figura \ref{figure_comparacion_render} muestra la diferencia entre ambas apro
 
 Por otro lado, si se comparan las opciones de interacción de la aplicación con el usuario final, se podría dividir las técnicas en 2 apartados:
 \begin{itemize}
-	\item \textbf{Render Offline} Donde el proceso de generar la imagen es demasiado lento para responder instantaneamente a las interacciones del usuario. Una escala de tiempo de segundos a incluso días podría considerarse "lento". Esto ocurre por ejemplo cuando se generan fotogramas para una película.
+	\item \textbf{Render Offline} Donde el proceso de generar la imagen es demasiado lento para responder instantáneamente a las interacciones del usuario. Una escala de tiempo de segundos a incluso días podría considerarse "lento". Esto ocurre por ejemplo cuando se generan fotogramas para una película.
 	
-	\item \textbf{Render Online o Reak-time} Donde el tiempo para la obtención de las imágenes es suficientemente corto como para responder a la interacción del usuario en la aplicación, teniendo este una sensación de continuidad. Una escala de \textit{milisegundos} tendría que ser alcanzada para obtener este efecto. Normalmente medida en \textit{frames per second} (FPS). Un buen ejemplo de este grupo podrían ser los videojuegos.
+	\item \textbf{Render Online o Real-time} Donde el tiempo para la obtención de las imágenes es suficientemente corto como para responder a la interacción del usuario en la aplicación, teniendo este una sensación de continuidad. Una escala de \textit{milisegundos} tendría que ser alcanzada para obtener este efecto. Normalmente medida en \textit{frames per second} (FPS). Un buen ejemplo de este grupo podrían ser los videojuegos.
 \end{itemize}
 
 La mayor parte del trabajo realizado en este documento es centrado en conseguir un render online, incluso si esto significa sacrificar un mejor aproximación fotorealística.
@@ -58,13 +58,13 @@ La mayor parte del trabajo realizado en este documento es centrado en conseguir 
 El modelado describe el proceso de formar la figura de un objeto virtual en un ordenador. Existen realmente tres tipos diferentes de Modelos 3D:
 	
 \begin{itemize}
-	\item \textbf{Basado en Polígonos:} Donde se describe la superficie de un objeto mediante un conjunto de polígonos. La forma triangular es la mas comunmente usada para esta tarea, puesto que son planos y trivialmente convexos. Practicamente la totalidad del \textit{hardware} gráfico esta optimizado pensando en esta primitiva.
+	\item \textbf{Basado en Polígonos:} Donde se describe la superficie de un objeto mediante un conjunto de polígonos. La forma triangular es la mas comunmente usada para esta tarea, puesto que son planos y trivialmente convexos. Prácticamente la totalidad del \textit{hardware} gráfico esta optimizado pensando en esta primitiva.
 	
-	Aunque en el proceso del modelado de un objeto, este no tiene porque estar construido usando triangulos. En última instancia, es convertido a un conjunto de triángulos mediante un proceso conocido como teselación.
+	Aunque en el proceso del modelado de un objeto, este no tiene porque estar construido usando triángulos. En última instancia, es convertido a un conjunto de triángulos mediante un proceso conocido como teselación.
 	
-	\item \textbf{Basado en Voxels:} Divide el espacio tridimensional en una rejilla donde el \textit{voxel} es la mínima unidad de medida. Cada una de estas celdas es rellenada o no, dependiendo de si se pretende que sea renderizada. La memoria necesaria aumenta en función de la precisión necesaria. Este tipo de procesoes usualmente utilizado en Informática Biomédica.
+	\item \textbf{Basado en Voxels:} Divide el espacio tridimensional en una rejilla donde el \textit{voxel} es la mínima unidad de medida. Cada una de estas celdas es rellenada o no, dependiendo de si se pretende que sea renderizada. La memoria necesaria aumenta en función de la precisión necesaria. Este tipo de procesos usualmente utilizado en Informática Biomédica.
 	
-	\item \textbf{Basada en Puntos:} Los objetos son representados mediante puntos que son producto de un muestreo de su superficie. Cada punto tiene una posición y alguna información relativa a la superficie a la que pertenece. Comparado con el modelo tradicional basado en polígonosm esta primitiva necesita sus propias técnicas de \textit{render}. Este es nuestro caso de estudio.
+	\item \textbf{Basada en Puntos:} Los objetos son representados mediante puntos que son producto de un muestreo de su superficie. Cada punto tiene una posición y alguna información relativa a la superficie a la que pertenece. Comparado con el modelo tradicional basado en polígonos esta primitiva necesita sus propias técnicas de \textit{render}. Este es nuestro caso de estudio.
 	
 \end{itemize}
 
@@ -73,24 +73,24 @@ El modelado describe el proceso de formar la figura de un objeto virtual en un o
 
 En gráficos por computación normalmente trabajamos con espacios tridimensionales de geometría Euclídea, el termino ``Euclídeo'' es usado con motivo de distinguir estos espacios y los espacios curvos de geometría no Euclídea. Las operaciones mas típicas en geometría Euclídea puede ser representada con matrices de transformación si se usan sistemas de coordenadas homogeneos. Debido a esto una transformación \textbf{T} puede ser usada para diferentes motivos.
 
-Usando conceptos básicos de algebra lineal, una matriz $4 \times 4$ puede ser usada para expresar transformaciones lineales de un punto o un vector. Una transformación entonces será representada por los elementos de la matriz $4 \times 4$. Ellas puede ser tambien usadas para realizar algunas transformaciones no lineales en espacios Euclídeos. Por esta razon, las matrices de ransformación son altamente usadas en esta disciplina.
+Usando conceptos básicos de álgebra lineal, una matriz $4 \times 4$ puede ser usada para expresar transformaciones lineales de un punto o un vector. Una transformación entonces será representada por los elementos de la matriz $4 \times 4$. Ellas puede ser también usadas para realizar algunas transformaciones no lineales en espacios Euclídeos. Por esta razón, las matrices de transformación son altamente usadas en esta disciplina.
 
 Generalmente una transformación es una función de puntos a puntos o vectores a vectores, por ejemplo:
  \begin{equation}p' = \textbf{T}(p) \;\;\;\;\; v' = \textbf{T}(v)\end{equation} 
 
-Para transformar los puntos o vectores siemplemente se tiene que realizar las apropiadas multiplicaciones de matrices. Esto también permite la composición de transformaciones, multiplicando las matrices de transformación.
+Para transformar los puntos o vectores simplemente se tiene que realizar las apropiadas multiplicaciones de matrices. Esto también permite la composición de transformaciones, multiplicando las matrices de transformación.
 
 Las transformaciones mas utilizadas comunmente son:
 \begin{itemize}
 	\item \textbf{Rotación}, con el que se podrá rotar un punto o vector según un ángulo dado alrededor de un eje arbitrario o los ejes $x$, $y$ o $z$.
 	\item \textbf{Escalado}, para un punto o vector dado, esta transformación escalará los componentes $x$, $y$ y $z$ por un factor.
 	\item \textbf{Translación}, únicamente afecta a puntos y podrá transladar las coordenadas $x$, $y$ y $z$ una cantidad.
-	\item \textbf{Modelo}, esta matriz es útil para transformaciones del modelo localmente.this matrix is useful for transforming the model locally. De estar compuesto por un conjunto de matrices de rotación, escalado o translación. Cuando sea aplicada esta matriz a todos los puntos, los tendremos en coordenadas del mundo. 
-	\item \textbf{Vista}, inicialmente la cámara es localizada en el origen del espacio mundo. Para poder moverla alrededor del espacio mundo esta matriz es utilizada. Esta matriz tambien es denominada como ``mirar a''. Luego de que esta tarnsformación sea aplicada, tendremos los puntos en coordenadas de la cámara.
+	\item \textbf{Modelo}, esta matriz es útil para transformaciones del modelo localmente. De estar compuesto por un conjunto de matrices de rotación, escalado o translación. Cuando sea aplicada esta matriz a todos los puntos, los tendremos en coordenadas del mundo. 
+	\item \textbf{Vista}, inicialmente la cámara es localizada en el origen del espacio mundo. Para poder moverla alrededor del espacio mundo esta matriz es utilizada. Esta matriz también es denominada como ``mirar a''. Luego de que esta transformación sea aplicada, tendremos los puntos en coordenadas de la cámara.
 	\item \textbf{Proyección}, puesto que la escena tiene que ser proyectada tanto en una pantalla como en una imagen 2D, necesitamos otro proceso que convierta los puntos desde las coordenadas de la cámara a coordenadas homogeneas de modo que estas puedan ser proyectadas en pantalla.
 \end{itemize}
 
-Normalmente la composición de las matrices del modelo, vista y proyección es llamado \textit{MVP} y es aplicada a cada punto que querramos dibujar.
+Normalmente la composición de las matrices del modelo, vista y proyección es llamado \textit{MVP} y es aplicada a cada punto que queramos dibujar.
 
 Para ilustrar como las transformaciones son representadas por una matriz $4 \times 4$, la ecuación \ref{eq_trans} muestra la matriz genérica para la translación:
 
@@ -122,7 +122,7 @@ z+\Delta z\\
 
 \section{Camera model}\label{camera_model}
 
-Casi todo el mundo actualmente ha usado una cámara y conoce su propósito: se quiere obtener una imagen del mundo (normalmente presionando un botón) y la imagen es entonces almacenzada en un \textit{film}. Una de las cámaras mas simples es la cámara estenopeica. Este tipo de cámaras están compuestas por: una caja estanca, un pequeño orificio por donde entra la luz (estenopo) y un material fotosensible. De modo que cuando el pequeño orificio es descubierto la luz entra a través de el y alcanza la pieza de material fotosensible que está dispuesto al otro lado de la caja (ver Figura \ref{figure_pinhole_camera}). Hoy en dia, las cámaras son mucho mas complejas de funcionamiento que esta simple cámara, pero es un buen comienzo para explicar como el funcionamiento de nuestra simulación.\\
+Casi todo el mundo actualmente ha usado una cámara y conoce su propósito: se quiere obtener una imagen del mundo (normalmente presionando un botón) y la imagen es entonces almacenada en un \textit{film}. Una de las cámaras mas simples es la cámara estenopeica. Este tipo de cámaras están compuestas por: una caja estanca, un pequeño orificio por donde entra la luz (estenopo) y un material fotosensible. De modo que cuando el pequeño orificio es descubierto la luz entra a través de el y alcanza la pieza de material fotosensible que está dispuesto al otro lado de la caja (ver Figura \ref{figure_pinhole_camera}). Hoy en día, las cámaras son mucho mas complejas de funcionamiento que esta simple cámara, pero es un buen comienzo para explicar como el funcionamiento de nuestra simulación.\\
 
 \begin{figure} [H]
 	\centering
@@ -139,7 +139,7 @@ El modelo de la cámara usado en este proyecto soporta diferentes configuraciones
 
 \subsection{Parámetros de la Cámera}
 
-El primer parámetro que el modelo de la cámara soporta es la \textbf{posición}. Este parámetro establece donde la cámara tendra que estar situada en el espacio de coordenadas del mundo (\textit{x,y,z}). 
+El primer parámetro que el modelo de la cámara soporta es la \textbf{posición}. Este parámetro establece donde la cámara tendrá que estar situada en el espacio de coordenadas del mundo (\textit{x,y,z}). 
 
 El siguiente parámetro soportado es el de la rotación. Este parámetro es un punto en el mundo hacia donde la cámara estará mirando.
 También necesitamos saber cómo orientar la cámara a lo largo de la dirección de visión implícita por los dos primeros parámetros .
@@ -163,7 +163,7 @@ El usuario también tiene la opción de usar entre una cámara con proyección \text
 	\label{figure_diferencia_camara}
 \end{figure}
 
-La proyección ortográfica es mas comunmente utilizada en ingeniería puesto que las dimensiones son mostradas de forma inequívoca, si hay alguna linea de unidad en cualquier lado de la escena, esta se mostrara con la misma longitud en cualquier lado. También cualquier par de lineas que sean paralelas lo serán también en la realidad. Con la proyección en perspectiva, lineas de identico tamaño en la vida real podrán aparecer de longitud diferente debido al \textit{escorzo}.\footnote{Los objetos se vuelven más pequeños en la imágen en cuanto estén situados en un plano más lejano.}. Esto hace que sea dificil juzgar las dimensiones relativas de un objeto cuando está lejano.     
+La proyección ortográfica es mas comunmente utilizada en ingeniería puesto que las dimensiones son mostradas de forma inequívoca, si hay alguna linea de unidad en cualquier lado de la escena, esta se mostrara con la misma longitud en cualquier lado. También cualquier par de lineas que sean paralelas lo serán también en la realidad. Con la proyección en perspectiva, lineas de idéntico tamaño en la vida real podrán aparecer de longitud diferente debido al \textit{escorzo}.\footnote{Los objetos se vuelven más pequeños en la imagen en cuanto estén situados en un plano más lejano.}. Esto hace que sea difícil juzgar las dimensiones relativas de un objeto cuando está lejano.     
 
 \subsection{Funcionamiento interno de la cámara}
 
@@ -201,7 +201,7 @@ r_{z} & u'_{z} & f_{z} & -p_{z}\\
 
 La ecuación \ref{view} es la resultante  matriz \textit{mirar a} \textbf{\textit{V}} que será usada para transformar los puntos del espacio mundo a coordenadas de la cámara.
 
-La siguiente fase dependerá del tipo de cámara que el usuario elija, ortogonal o perspectiva. En función de esta elección una matriz de proyección será escojida.
+La siguiente fase dependerá del tipo de cámara que el usuario elija, ortogonal o perspectiva. En función de esta elección una matriz de proyección será escogida.
 
 Si es escogida una cámara perspectiva, tendremos que tener en cuenta el efecto del escorzo mencionado anteriormente. Esta proyección no conserva distancias, ángulos, y paralelismo entre lineas.\emph{x} e \emph{y} serán modificadas de acuerdo al correspondiente valor de \textit{z}, que establece como de cerca a la cámara está un punto. Para obtener este efecto, una matriz perspectiva será utilizada. Una matriz comunmente utilizada es la matriz \textit{frustum}. En ella el espacio homogeneo obtiene la forma de una pirámide truncada. Los parámetros usados para la construcción de esta matriz serían el \textbf{izquidara} ($l$), \textbf{derecha} ($r$), \textbf{arriba} ($t$), \textbf{abajo} ($b$), plano \textbf{near} ($n$) y \textbf{far} ($f$) del \textit{frustum}.
 
@@ -213,7 +213,7 @@ Luego, $r$ es obtenida usando el ancho ($w$) y alto ($h$) de la ventana:
 
 \begin{equation}r = t \cdot w / h \end{equation}   
 
-Puesto que el \textit{frustum} es simétrico, $l$ y $b$ serán lo mismo que $r$ y $l$ pero de signo opuesto. Una vez se tienen todos los parámetros se podrá construir las matrices de perspectiva u otrográfica:
+Puesto que el \textit{frustum} es simétrico, $l$ y $b$ serán lo mismo que $r$ y $l$ pero de signo opuesto. Una vez se tienen todos los parámetros se podrá construir las matrices de perspectiva u ortográfica:
 
 \begin{equation}\label{pers}P = \begin{bmatrix}
 \frac{2 \cdot n}{r - l} & 0 & \frac{r + l}{r - l} & 0\\ 
@@ -222,8 +222,7 @@ Puesto que el \textit{frustum} es simétrico, $l$ y $b$ serán lo mismo que $r$ y 
 0 & 0 & -1 & 0
 \end{bmatrix}\end{equation}
 
-En contraste, si la cámara requerida es la ortográfica, 
-In contrast, if a orthographic camera is required, una matriz algo más simple se puede usar. Los puntos serán proyectados al plano \textit{near}. Este tipo de transformaciones no da el efecto de escorzo, manteniendo paralelas y manteniendo la distancia relativa entre objetos. Esta tranformación mantiene \textit{x} e \textit{y} invariables, pero cambia el valor de \textit{z} al plano \textit{near}. Los parámetros para la construcción de esta matriz son también \textbf{izquierda} ($l$), \textbf{derecha} ($r$), \textbf{arriba} ($t$), \textbf{abajo} ($b$) y plano \textbf{near} ($n$) del \textit{frustum}:
+En contraste, si la cámara requerida es la ortográfica, una matriz algo más simple se puede usar. Los puntos serán proyectados al plano \textit{near}. Este tipo de transformaciones no da el efecto de escorzo, manteniendo paralelas y manteniendo la distancia relativa entre objetos. Esta transformación mantiene \textit{x} e \textit{y} invariables, pero cambia el valor de \textit{z} al plano \textit{near}. Los parámetros para la construcción de esta matriz son también \textbf{izquierda} ($l$), \textbf{derecha} ($r$), \textbf{arriba} ($t$), \textbf{abajo} ($b$) y plano \textbf{near} ($n$) del \textit{frustum}:
 
 \begin{equation}\label{ortho}P = \begin{bmatrix}
 \frac{2}{r - l} & 0 & 0 &  \frac{l + r}{l - r}\\ 
@@ -245,7 +244,7 @@ La composición de estas matrices producirá la matriz MVP. Esta es la expresión m
 
 \begin{equation}\begin{split}v' & = \textbf{\textit{P}}\cdot \textbf{\textit{V}} \cdot \textbf{\textit{M}} \cdot v \\ & = \textbf{\textit{MVP}} \cdot v\end{split}\end{equation}    
 
-Estos son los paso necesarios para la creación de un frame, pero puesto que le visualizador es interactivo, tendremos que repetir este proceso varias veces por segundo. 
+Estos son los paso necesarios para la creación de un \textit{frame}, pero puesto que le visualizador es interactivo, tendremos que repetir este proceso varias veces por segundo. 
 %
 % FIN DEL CAPÍTULO
 %

@@ -17,7 +17,7 @@ Este capítulo se presenta como un resumen a los diferentes métodos de render bas
 	\label{s_rasterizacion}
 }
 
-El primer paso en el render de nubes de puntos, es determinar según la proyección de los splats que píxeles en el framebuffer serán cubiertos por ellos. Puesto que no existe soporte el las librerias actuales para representar este tipo de primitivas, los splats tendrán que ser representados por otras como puntos o triángulos. De entre esas dos opciones, se  considera como más eficiente los puntos por delante de los triángulos, ya que por cada splat unicamente hay que almacenar la posición de un vértice en lugar de tres. Finalmente para renderizar la nube, habrá que dibujar el \textit{VBO}, pasándole el tipo \textit{GL\_POINTS}
+El primer paso en el render de nubes de puntos, es determinar según la proyección de los splats que píxeles en el framebuffer serán cubiertos por ellos. Puesto que no existe soporte el las librerías actuales para representar este tipo de primitivas, los splats tendrán que ser representados por otras como puntos o triángulos. De entre esas dos opciones, se  considera como más eficiente los puntos por delante de los triángulos, ya que por cada splat unicamente hay que almacenar la posición de un vértice en lugar de tres. Finalmente para renderizar la nube, habrá que dibujar el \textit{VBO}, pasándole el tipo \textit{GL\_POINTS}
 \\
 \lstset{language=C, breaklines=true, basicstyle=\footnotesize}
 \begin{lstlisting}[frame=single]
