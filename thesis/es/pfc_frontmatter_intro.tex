@@ -9,13 +9,27 @@
 	Introducción
 }
 
-Cada vez más, las nubes de puntos están tomando una mayor relevancia debido a la popularización de los métodos de escaneo tridimensional, provocando que sea mas económico y sencillo obtener estos escaneos. Debido a que el resultado de estos métodos de escaneado son nubes de puntos, se destaca la falta de aplicativos que trabajan de forma nativa con este tipo de datos.
+Cada vez más, la gestión y visualización de grandes \emph{datasets} basados en nubes de puntos está adquiriendo una mayor relevancia con la popularización de distintos métodos de escaneo tridimensional, lo que además ha ayudado a que hoy sea mas económico y sencillo obtener estos escaneos. Curiosamente, a pesar de que el resultado de estos métodos de escaneado son nubes de puntos, es destacable la todavía carencia de aplicaciones potentes que trabajen de forma nativa con este tipo de datos.
 
-Estos tienen diferentes aplicaciones, desde el campo de la Ingeniería: con Sistemas de Información Geográfica (GIS) o control industrial o incluso el ámbito de la medicina con el propara diagnóstico en medicina.
+El uso de este tipo de tecnologías está en la actualidad muy presente en diferentes aplicaciones, desde distintos campos de la Ingeniería y la Arquitectura, como la topografía, la ingeniería civil, los sistemas de información geográfica (GIS) o el control industrial; hasta su empleo en arqueología y la propia industria del entretenimiento, pasando también incluso por su aplicación en medicina, sobre todo en lo referente al diagnóstico médico.
 
-Se encontró una problemática respecto a la reconstrucción de los objetos escaneados representados por estas nubes de puntos a causa de la falta de relación que los puntos tienen entre si. A día de hoy en el mayor de los casos para poder reconstruir una superficie, las aplicaciones continúan generando malla de polígonos a partir del análisis de las nubes, obteniendo en la mayor parte de los casos errores debidos al ruido en los \textit{samples}.
+Toda la gestión del gran volumen de datos que supone trabajar con el
+resultado de un escaneo 3D supone ya un problema en si mismo, con
+soluciones dentro del ámbito de la computación de altas prestaciones
+(HPC, \emph{High Performance Computing}). No obstante, en este
+proyecto nos centraremos en la resolución del también importante
+problema de la visualización de este tipo de datos.
 
-En este proyecto, se presentarán diferentes opciones para la visualización de nubes de puntos y reconstrucción de su superficie sin necesidad de generar malla de polígonos, aprovechándose del \textit{hardware} gráfico actual.
+La «reconstrucción» de un objeto escaneado para poder ser \emph{renderizado} presenta toda una serie de dificultades, motivadas por la falta de relación que los puntos tienen entre si. Así, nos encontramos con que, a día de hoy, en general, en muchas de las aplicaciones en las que es necesaria la visualización de estos datos se continúan usando mallas de triángulos, generadas a partir del análisis de las nubes de puntos, con los consiguientes errores debidos al ruido en los muestreos y la construcción de una topología poligonal, ante la ausencia de herramientas adecuadas para el trabajo con la primitiva punto.
+
+En este proyecto, se presentan diferentes opciones para la
+visualización de nubes de puntos y la reconstrucción de su superficie
+sin necesidad de generar malla de polígonos, aprovechándose del
+\textit{hardware} gráfico actual. Todas las técnicas empleadas forman
+parte del estado del arte más novedoso en el campo del
+\emph{point-based rendering} y han sido implementadas usando C++ y la API
+gráfica multiplataforma OpenGL, lo que ha permitido obtener una
+herramienta portable y fácilmente extensible.
 
 
 %
@@ -23,17 +37,17 @@ En este proyecto, se presentarán diferentes opciones para la visualización de nu
 %
 \subsection*{Contexto y Objetivos}
 
-Los objetivos concretos que cubre la elaboración de este proyecto fin de carrera son:
+Los objetivos concretos que cubre la elaboración de este Proyecto Fin de Carrera son:
 \begin{enumerate}
-	\item Aprendizaje de la API gráfica OpenGL, que permite un render interactivo multiplataforma.
+	\item Aprendizaje de la API gráfica OpenGL, que permite un \emph{render} interactivo multiplataforma.
 	\item Visualización básica: Desarrollo de un visualizador multiplataforma de nubes de puntos 3D. Se hará una primera versión básica que irá evolucionando durante todo el proyecto, incorporando las distintas técnicas que se vayan estudiando e implementando.
-	\item Implementación de técnicas avanzadas de visualización de nubes de puntos
+	\item Implementación de técnicas avanzadas de visualización de nubes de puntos:
 	 \begin{enumerate}
-	 	\item Basadas en rasterización: discos orientados, correción de perspectiva
-		 \item Basadas en blending
+         \item Basadas en \emph{rasterización}: discos orientados, correción de perspectiva
+         \item Basadas en \emph{blending}, para conseguir un acabado suave en el \emph{render}
 	 \end{enumerate}
-	\item Propuesta de un algoritmo novedoso para la visualización de puntos con blending en un único pase.
-	\item Integración del visualizador con la libtería PCL, especializada en la gestión de nubes de puntos. Esto nos permitirá acceder a un importante abanico de métodos y estructuras para el trabajo eficiente con grandes conjuntos de datos.
+	\item Propuesta de un algoritmo novedoso para la visualización avanzada de puntos con blending en un único pase, frente a los habituales 3 pases de las técnicas de blending más usadas
+	\item Integración del visualizador con la libtería PCL, especializada en la gestión de nubes de puntos. Esto nos permitirá acceder a un importante abanico de métodos y estructuras para el trabajo eficiente con grandes conjuntos de datos basados en la primitiva punto.
 \end{enumerate}
 
 
@@ -42,28 +56,28 @@ Los objetivos concretos que cubre la elaboración de este proyecto fin de carrera
 %
 \subsection*{Estructura de la memoria}
 
-La memoria está constituida por un total de 6 capítulos, en los que ser irán desarrollando los diferentes apartados: 
+La memoria está constituida por un total de 7 capítulos, además de esta introducción, en los que se desarrollan los siguientes contenidos:
 
-\paragraph*{Capítulo 1.}
-Se detallará la planificación y la metodología usada en el desarrollo del proyecto. Se hablará de métodos ágiles de desarrollo de \textit{software} y se presentará su aplicación en este caso concreto. Además de representar el histórico en un diagrama de \textit{Gantt} y un prespuesto del proyecto.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo}.}
+Se detalla la planificación y la metodología de desarrollo usadas en la realización del proyecto. Se introducen los métodos ágiles de desarrollo de \textit{software} y se presenta su aplicación en este caso concreto. Además, se describe cómo fue el desarrollo del trabajo con un «histórico» en un diagrama de \textit{Gantt}, incluyendo también una estimación de presupuesto para un proyecto como este.
 
-\paragraph*{Capítulo 2.}
-En este capítulo se explicarán los fundamentos tecnológicos necesario para comprender el proyecto. Empezando por la explicación de nubes de puntos, OpenGL y la libreria PCL.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo_020}.}
+En este capítulo se explican algunos de los principales fundamentos tecnológicos necesarios para comprender el proyecto, empezando por una descripción de la naturaleza de las nubes de puntos, la API OpenGL y la libreria PCL.
 
-\paragraph*{Capítulo 3.}
-Se introducirán los fundamentos básicos en la programación gráfica: tipos de render, modelos 3D, espacios Euclideos y transformaciones, Cámaras y sus matrices.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo_030}.}
+Se introducen los fundamentos básicos de la programación gráfica: tipos de \emph{render}, modelos 3D, espacios Euclídeos y transformaciones, cámaras y la naturaleza matricial de todas las matemáticas que hay destrás de una visualización 3D.
 
-\paragraph*{Capítulo 4.}
-Se mostrará el diseño de clases definido para la construcción del visualizador.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo_040}.}
+Se muestra el análisis y diseño realizado de la herramienta necesaria, previo a la construcción del visualizador 3D.
 
-\paragraph*{Capítulo 5.}
-Este capítulo es el núcleo de la memoria, presentándose los diferentes algoritmos y métodos que serán implementados para el dibujado de las nubes de puntos, presentando tanto algoritmos de rasterización como de \textit{blending}.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo_050}.}
+Este capítulo constituye el núcleo de este trabajo, presentándose los diferentes algoritmos y métodos que se han implementado para el dibujado de las nubes de puntos en pantalla, describiendo tanto algoritmos de rasterización como de \textit{blending}.
 
-\paragraph*{Capítulo 6.}
-En este capítulo se analizarán los resultados obtenidos de la ejecución de los diferentes algoritmos presentado en el anterior capítulo.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo_060}.}
+En este capítulo se analizan los resultados obtenidos de la ejecución de los diferentes algoritmos presentado en el anterior capítulo, tanto en términos de calidad de los \emph{renders} obtenidos como de rendimiento.
 
-\paragraph*{Capítulo 7.}
-Capítulo que almacena las conclusiones alcanzadas tras la finalización del proyecto.
+\paragraph*{Capítulo~\ref{nombre_referencia_al_capitulo_070}.}
+Por último, se muestran las principales conclusiones alcanzadas tras la finalización del proyecto, así como posibles líneas futuras a explorar como continuación del trabajo realizado.
 
 
 
