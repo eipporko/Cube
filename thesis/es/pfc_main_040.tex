@@ -12,9 +12,9 @@ En este capítulo se presentará el resumen de diseño que se siguió en la creación
 %
 % SECCION - Técnicas de rasterización
 %
-\section[Estructura]{
-	Estructura
-	\label{s_estructura}
+\section[Análisis de requisitos]{
+	Análisis de requisitos
+	\label{s_analisis}
 }
 
 Ante la necesidad de un visualizador en el que poder probar los algoritmos que se iban a implementar, se pensó que sería buena idea el desarrollo de uno propio de manera que fuera simple, sencillo y fácilmente modificable. 
@@ -29,7 +29,28 @@ El visualizador tendría que cumplir los siguiente requisitos:
 	\item Un \textit{framebuffer} donde almacenar los resultados.
 \end{itemize}
 
-Una vez definidos los requerimientos, se pasó a diseñar un esqueleto el cual se podrá ver en el siguiente diagrama de clases (ver Figura \ref{figure_diagram_class}):
+\subsection{Casos de uso}
+\begin{figure}
+	\centering
+	\includegraphics[width=11 cm]{../figures/casosdeuso.pdf}
+	\caption{Casos de uso de la aplicación.}
+	\label{figure_casos_de_uso}
+\end{figure}
+
+Se establecerán los siguientes casos de uso (ver Figura \ref{figure_casos_de_uso}), siendo los más significativos:
+\begin{itemize}
+	\item La carga de modelos mediante ficheros externos (formatos .PLY o .PCD) destinados al almacenamiento de este tipo de datos.
+	\item La opción para desactivar el color RGB de los puntos, de manera que sea mas claro evaluar si la reconstrucción de la superficie es correcta.
+	\item La capacidad de moverse por el espacio tridimensional.
+	\item Modificar el radio de los puntos manualmente o que el programa estipule un radio de manera automatica.
+	\item Poder escoger entre los diferentes métodos de rasterización o \textit{blending} implementados para variar la visualización de la nube.
+	\item Cambiar el sistema de iluminación.
+\end{itemize}
+ 
+
+
+\section{Diagrama de clases}
+Una vez definidos los requisitos, se pasó a diseñar un esqueleto el cual se podrá ver en el siguiente diagrama de clases (ver Figura \ref{figure_diagram_class}):
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{../figures/cubeUML.pdf}
