@@ -6,21 +6,19 @@
 	\label{nombre_referencia_al_capitulo}
 }
 
-Este capítulo explica el método escogido para el desarrollo de este proyecto. Ya que fundamentalmente tiene una base de carácter investigativa, se pensó que encajaría perfectamente un sistema ágil como el que a continuación se comentará para el desarrollo del proyecto. Seguidamente de la exposición de un diagrama de \textit{Gantt} con los plazos e hitos que se siguieron en este caso concreto.
+Este capítulo explica la metodología escogida para el desarrollo de este proyecto. Al tener este una importante componente investigadora, que complicaba una planificación y seguimiento tradicionales, basados en metodologías clásicas, se pensó que encajaría perfectamente un sistema ágil como el que a continuación se describe para el desarrollo del proyecto. Se incluye también un diagrama de \textit{Gantt} con los plazos e hitos que se siguieron en este trabajo.
 
 
 \section{Desarrollo ágil de software}
 
 El desarrollo ágil de software refiere a métodos de ingeniería del software basados en el desarrollo iterativo e incremental, donde los requisitos y soluciones evolucionan mediante la colaboración de grupos auto organizados y multidisciplinarios. Existen muchos métodos de desarrollo ágil; la mayoría minimiza riesgos desarrollando software en lapsos cortos. El software desarrollado en una unidad de tiempo es llamado una iteración, la cual debe durar de una a cuatro semanas. Cada iteración del ciclo de vida incluye: planificación, análisis de requisitos, diseño, codificación, revisión y documentación. Una iteración no debe agregar demasiada funcionalidad para justificar el lanzamiento del producto al mercado, sino que la meta es tener una «demo» (sin errores) al final de cada iteración. Al final de cada iteración el equipo vuelve a evaluar las prioridades del proyecto.
 
-Los métodos ágiles enfatizan las comunicaciones cara a cara en vez de la documentación. La mayoría de los equipos ágiles están localizados en una simple oficina abierta, a veces llamadas "plataformas de lanzamiento" (bullpen en inglés). La oficina debe incluir revisores, escritores de documentación y ayuda, diseñadores de iteración y directores de proyecto. Los métodos ágiles también enfatizan que el software funcional es la primera medida del progreso. Combinado con la preferencia por las comunicaciones cara a cara, generalmente los métodos ágiles son criticados y tratados como "indisciplinados" por la falta de documentación técnica.
+Los métodos ágiles enfatizan las comunicaciones cara a cara en vez de la documentación. La mayoría de los equipos ágiles están localizados en una simple oficina abierta, a veces llamadas «plataformas de lanzamiento» (\emph{bullpen} en inglés). La oficina debe incluir revisores, escritores de documentación y ayuda, diseñadores de iteración y directores de proyecto. Los métodos ágiles también enfatizan que el software funcional es la primera medida del progreso. Combinado con la preferencia por las comunicaciones cara a cara, generalmente los métodos ágiles son criticados y tratados como «indisciplinados» por la falta de documentación técnica.
 
-Los métodos de desarrollo ágiles e iterativos pueden ser vistos como un retroceso a las prácticas observadas en los primeros años del desarrollo de software (aunque en ese tiempo no había metodologías formales). Inicialmente, los métodos ágiles fueron llamados métodos de "peso liviano".
+Los métodos de desarrollo ágiles e iterativos pueden ser vistos como un retroceso a las prácticas observadas en los primeros años del desarrollo de software (aunque en ese tiempo no había metodologías formales). Inicialmente, los métodos ágiles fueron llamados métodos de «peso liviano».
 
 \subsection[Agile Manifesto]{Agile Manifesto}
-En el año 2001, miembros prominentes de la comunidad se reunieron en Snowbird, Utah, para discutir métodos de desarrollo ligero, publicando lo que denominaron \textit{Manifesto for Agile Software Development} con motivo de sentar las bases de lo que ahora se conoce como Desarrollo ágil de software.
-
-Siendo sus ideas principales:
+En el año 2001, miembros prominentes de la comunidad se reunieron en Snowbird, Utah, para discutir métodos de desarrollo ligero, publicando lo que denominaron \textit{Manifesto for Agile Software Development} y sentando las bases de lo que ahora se conoce como Desarrollo ágil de software. Las principales ideas sobre las que se sostiene son:
 \begin{itemize}
 	\item \textbf{Individuos e interacciones} auto-organización y la motivación son importantes. Otros valores promovidos son la co-ubicación y la programación en parejas.
 	\item \textbf{Software funcionando} priorizando el tener \textit{demos} funcionales frente a documentación. 
@@ -82,13 +80,30 @@ Este manifesto está basado en los siguientes 12 principios:
 
 \subsection[Aplicación]{Aplicación}
 
-En gran parte del proyecto, fueron aplicadas premisas e ideas propuestas en este \textit{Agile Manifesto}. Se hicieron reuniones semanales en las que se discutían las siguientes tareas a llevar a cabo, dividiendo objetivos principales en tareas simples que no supusiesen más de 2 semanas de desarrollo. El trabajo en cada iteración era constante, centrándose siempre en completar la tarea y no asumiendo cambios si no eran profundamente necesario.
+En gran parte del proyecto fueron aplicadas premisas e ideas propuestas en este \textit{Agile Manifesto}. Se hicieron reuniones semanales en las que se discutían las siguientes tareas a llevar a cabo, dividiendo objetivos principales en tareas simples que no supusiesen más de 2 semanas de desarrollo. El trabajo en cada iteración era constante, centrándose siempre en completar la tarea y no asumiendo cambios si no eran profundamente necesarios.
 
-El diseño incremental fué presente, puesto que en cada momento el diseño era revisado para adaptarlo a los nuevos requerimientos.
+El diseño incremental también estuvo fuertemente presente, puesto que en cada momento el diseño era revisado para adaptarlo a los nuevos requesitos.
 
-Las revisiones con mis dos directores fueron siempre cara a cara mientras fue posible. En cada reunión se comentaba que objetivos habían sido cumplidos desde la última vez, y que objetivos se intentarían abordar en la siguiente iteración. Cuando estas reuniones no eran posibles, sistemas como el correo electrónico o plataformas de \textit{chat} como \textit{Hangouts} o \textit{Telegram} fueron utilizados.
+Las revisiones con las dos personas a cargo de la dirección de proyecto fueron, siempre que fue posible, cara a cara. En cada reunión se comentaba qué objetivos habían sido cumplidos desde la última vez, y qué objetivos se intentarían abordar en la siguiente iteración. Cuando estas reuniones no eran posibles, sistemas como el correo electrónico o plataformas de \textit{chat} como \textit{Hangouts} o \textit{Telegram} fueron utilizados.
 
-Para mantener el código accesible en todo el momento, desde el comienzo del desarrollo se utilizaron sistemas de control de versiones como \textit{Git}. Que es un sistema libre de administración de código fuente y distribución. De modo que además de servir como un sistema de \textit{backup} era fácil llevar el seguimiento del desarrollo, facilitando la creación de nuevas ramas paralelas a la versión estable, con motivo de prueba para nuevos algoritmos.
+Para una adecuada gestión de las nuevas versiones producidas con la
+incorporación de las nuevas características introducidas en la
+aplicación durante cada iteración se empleó un sistema de control de
+versiones moderno, libre y distribuido: \texttt{Git}. Este sistema
+de administración de código fuente y distribución permite un trabajo
+eficiente con múltiples ramas de desarrollo, lo que resultó muy útil
+para el proyecto, facilitando la creación de nuevas ramas paralelas a
+la versión estable, con pruebas para nuevos algoritmos. Además, para
+mantener el código accesible en todo momento, desde el comienzo del
+desarrollo se utilizó un servicio de \texttt{Git} en la «nube»,
+\textit{github}\footnote{\url{https://github.com/eipporko/Cube}}, lo que no
+solo favoreció una interacción fluida entre estudiante y directores,
+sino que sirvió además como un sistema de \textit{backup} que permitía
+también llevar el seguimiento del desarrollo. Destacar también el
+aprovechamiento de la herramienta de integración continua
+\texttt{travis}\footnote{\url{https://travis-ci.org/eipporko/Cube}}, también
+en la «nube», que ayudó a mantener versiones compilables en las distintas
+plataformas del repositorio en \textit{github}.
 
 A pesar de que el evidente componente de investigación que tiene este
 proyecto, en el que se van a emplear técnicas que son ahora mismo
