@@ -1,51 +1,152 @@
 %
-% CONCLUSIONES
+% RESULTADOS Y RENDIMIENTO
 %
-\chapter[Conclusiones]{
-	Conclusiones
+\chapter[Resultados y rendimiento]{
+	Resultados y rendimiento
 	\label{nombre_referencia_al_capitulo_060}
 }
 
-En este capítulo se comentará brevemente las conclusiones alcanzadas luego de la finalización de este proyecto fin de carrera. Continuando con las posibles lineas de trabajo que se podrían seguir.
+En este capítulo se pasarán a analizar los resultados obtenidos de la ejecución de los diferentes algoritmos de visualización. Se empezará por los 4 métodos de rasterización: \textit{Sized-Fixed} (ver. \ref{ss_sized}), \textit{Image-aligned Squares} (ver. \ref{ss_image-aligned_squares}), \textit{Affinely Projected} (ver. \ref{ss_affinely}) y \textit{Perspective Correct} (ver.\ref{ss_perspective_correct}). Seguidamente se comentarán los resultados obtenidos de la comparación de los 4 sistemas de \textit{blending}: \textit{Flat} (ver. \ref{ss_flat}), \textit{Gouraud} (ver. \ref{ss_gouraud}), \textit{Phong} (ver. \ref{ss_phong}), \textit{Deferred} (ver. \ref{ss_deferred}) y la estabilidad de estos algoritmos en temas de iluminación.
 
-\section[Conclusiones]{Conclusiones}
+\section[Preparación de la prueba] {Preparación de la prueba}
+Se dispuso del mismo equipo (ver Tabla. \ref{computer_specifications}) para la obtención de los datos necesarios con motivo de analizar el rendimiento que presentan los diferentes algoritmos mencionados anteriormente. Así mismo se dispuso de un conjunto de 6 modelos que fueron sampleados a diferentes densidades (ver Tabla. \ref{models_specifications}).
 
-Se podría decir que los siguientes objetivos fueron alcanzados:
+\begin{table}
+	\centering
+	\begin{tabular}{l r}
+		\hline
+		\textbf{Equipo de Test} \\
+		\hline \hline
+		CPU: & Intel Core i7-4930K \\
+		Tarjeta Gráfica: & NVIDIA GTX 780Ti \\
+		RAM: & 16 GB DDR3 a 2133 MHz \\
+		HDD: & WD Caviar Black HDD \\
+		SO: & Windows 7 \\
+		\hline
+	\end{tabular}
+	\caption {Resumen de las características del equipo de Test.}
+	\label{computer_specifications}
+\end{table}
+
+\begin{table}
+	\centering
+	\begin{tabular}{l r}
+		\hline
+		\textbf{Modelo} & \textbf{Número de puntos}\\
+		\hline \hline
+		Suzanne & 473672\\
+		Head (Ten24) & 1223693 \\
+		Dorna & 2585907 \\
+		Dragon & 8628877 \\
+		Happy Budha & 26519484 \\
+		Lucy & 43982232 \\
+		\hline
+	\end{tabular}
+	\caption {Los modelos utilizados en el test.}
+	\label{models_specifications}
+\end{table}
+
+El parámetro que se estudiará será el tiempo (en segundos) que se tarda en renderizar un \textit{frame}. El visualizador consta con un modo \textit{DEBUG} en el que automáticamente escribe en un \textit{log} los datos resultantes de la sesión. Este fichero tendrá el siguiente formato:
+
+\begin{lstlisting}[frame=single, basicstyle=\tiny]
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 640x480
+0.0152009
+0.016681
+0.016721
+0.016681
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1920x1058
+0.0144408
+0.016641
+0.016681
+0.016641
+0.016641
+0.016681
+\end{lstlisting}
+
+Este consta de una linea cabecera en la que se resume el escenario actual, continuando de los tiempos medios resultantes de los últimos 25 \textit{frames}.
+
+Con motivo de facilitar el análisis de los datos obtenidos, se creó una herramienta con el propósito de automatizar el análisis de este fichero \textit{log} y generar automáticamente las gráficas necesarias para su comprensión. \\
+
+\begin{lstlisting}[frame=single, basicstyle=\tiny]
+CUBE GRAPH GENERATOR
+
+USAGE: cubeGraphGen.py [options] logFile
+
+OPTIONS:
+-h        Display available options
+--help    Display available options
+-v        Run in verbose mode
+May the Force be with you :)
+\end{lstlisting}
+
+\section[Análisis de los métodos de rasterización] {Análisis de los métodos de rasterización}
+
+Se renderizaron los 6 modelos (ver. Tabla \ref{models_specifications}) mediante los 4 métodos de rasterización, sin filtro de antialiasing, iluminación o \textit{blending}. El resultado de este análisis lo podemos ver en la siguiente gráfica (ver Figura \ref{figure_rasterization_graph}).
+
+Se encontró que en cuanto aumentó notablemente el número de puntos a dibujar, el rendimiento del supuestamente más ligero de todos los algoritmos \textit{Sized-Fixed} cayó estrepitosamente, debido a que al tener el tamaño de punto definido de forma constante este estaría generando más fragmentos en comparación con los otros 3 que corrigen su tamaño en función de la profundidad y de la distancia con los n-vecinales.
+
+Además en comparación con los algoritmos que utilizan las normales para la representación, en el algoritmo \textit{Affinely Projected} al no poder hacer \textit{backface culling} aumentan el número de puntos a mostrar aumentando el tiempo de \textit{render}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/rasterization_graph.pdf}
+	\caption{Gráfica comparativa de los 4 sistemas de rasterización.}
+	\label{figure_rasterization_graph}
+\end{figure}
+
+Con respecto al aspecto visual (ver Figura \ref{figure_rasterization_comparative}), encontramos que:
+
 \begin{itemize}
-	\item Aprendizaje en el uso de una librería gráfica como OpenGL.
-	\item Programación de programas para GPU con GLSL.
-	\item Implementación de un visualizador multiplataforma de modelos de puntos en tiempo real con el propósito de estudiar los diferentes algoritmos en \textit{GPU} que existen.
-	\item Diseño de herramientas para el análisis de resultados mediante lenguajes ágiles.
+	\item  El algoritmo \textit{Sized-Fixed} crea agujeros de forma incontrolable, ya que dependiendo de la distancia a la que en la que se encuentren los puntos, puede dar sensación de superficie cerrada o de nube dispersa.
+	\item El algoritmo de \textit{Square Aligned} consigue cerrar la superficie pero deforma los contornos notablemente.
+	\item El algoritmo \textit{Affinely Projected} da una sensación buena, pero da lugar a fallos con discos con algulos perpendiculares al plano \textit{near} de la cámara. (ver Figura \ref{figure_affinely_holes})
+	\item El método de \textit{Perspective Correct} consigue mantener el contorno, ademas de evitar los agujeros de la anterior aproximación.
 \end{itemize}
 
-Luego de la finalización de este proyecto, otras conclusiones alcanzadas fueron:
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/comparacion_raster.eps}
+	\caption{Comparativa de los resultados de render. \textit{Sized-fixed} (\textbf{izquierda}), \textit{Square-aligned} (\textbf{centro izquierda}), \textit{Affinely} (\textbf{centro derecha}) y \textit{Perspective Correct} (\textbf{derecha}).}
+	\label{figure_rasterization_comparative}
+\end{figure}
+
+\section[Análisis de los métodos de blending empleados] {Análisis de los métodos de blend empleados}
+
+Se renderizaron los seis modelos (ver. Tabla \ref{models_specifications}) mediante los cuatro métodos de \textit{blending}, sin filtro de \textit{antialiasing} ni iluminación. El resultado de este análisis lo podemos ver en la siguiente gráfica (ver Figura \ref{figure_blending_graph}).
+
+Se concluyó que como se esperaba, el método de renderizado en un pase (sin \textit{blending}) alcanza mejores tiempos de \textit{render} en comparación con los otros tres algoritmos que constan de tres pases para su dibujado. Teniendo estos tres un resultado bastante similar y peor con respecto al \textit{Flat Shading}.
+
+Comparando al acabado visual de los algoritmos (ver Figura \ref{figure_blending_comparative}) encontramos que:
 \begin{itemize}
-	\item \textbf{El mismo tamaño para todos los puntos es un error:} El tiempo necesario para calcular como mínimo la corrección de profundidad garantiza un mejora en la percepción visual además de mejoras en el tiempo de renderizado para nubes de alta densidad. 
-	
-	\item \textbf{El aumento en la cantidad de puntos no siempre es mejor:} Al representar nubes con una muy alta densidad de puntos, implica un aumento desproporcionado del esfuerzo computacional necesario para acabar en muchos de los casos con resultados semejantes al renderizado con algoritmos simples. Incluso provocando que los algoritmos de \textit{blending} no tengan efecto al probocar superfices de solape ínfimas impidiendo que funcionen los algoritmos correctamente.
-	
-	\item \textbf{Investigar en sistemas de render que no usen normales:} A pesar de que los resultados obtenidos del render mediante algoritmos como \textit{deferred} son muy buenos. Las nubes de puntos en mucho de los \textit{datasets} carecen de este dato. Por lo que se exige de una precomputación que una vez superando cierto tamaño empieza a no ser abordable, además de que las normales obtenidas en muchos de los casos son erroneas probocando que las imágenes resultantes no se vean correctamente.
-	
-\end{itemize} 
-
-\section[Posibles vías de desarrollo]{Posibles vías de desarrollo}
-
-Luego de finalizar el desarrollo de este proyecto, surgieron diferentes ideas para continuar con el crecimiento de este proyecto:
-
-\begin{itemize}
-	\item \textbf{Rendimiento:} A pesar de que se intentó que el rendimiento obtenido del programa fuera lo más eficiente posible, habría que repasar y analizar bien las especificaciones del \textit{hardware} gráfico para que las transacciones de datos fuera mas eficientes, intentando evitar sobrecomputación evitable con buenas praxis.
- 
-	\item \textbf{Interfaz de usuario:} Hacer una migración de \textit{GLFW} a \textit{Qt} con la idea de añadir una interfaz de usuario y poder ofrecer más información y opciones al usuario.
-	
-	\item \textbf{Shaders:} Permitir al usuario el escribir sus propios shaders y probarlos online con los modelos cargados.
-	
-	\item \textbf{Cámara:} Mejorar el funcionamiento de la cámara orbital, además de añadir mejoras en esta para poder moverse con más libertad por la escena.
-
-	\item \textbf{Frustum culling:} Ahora mismo todos los puntos de la nube son enviados a GPU, sería interesante en desarrollar algún sistema para filtrar  estos datos mediante algún método de \textit{hashing} espacial en función de la cámara antes de ser enviados para dibujar.
-	
-	\item \textbf{Order-independent transparency:} Implementar un sistema para intentar simplificar el \textit{blending} en tres pases a un sistema en un único pase que además pueda ser aplicado a todos los algoritmos de rasterización.
-	
+	\item \textit{Flat Shading} no elimina las discontinuidades consecuencia de la intersección y solape de los discos.
+	\item \textit{Gouraud Shading} elimina las discontinuidades añadiendo cierto desenfoque en su acabado.
+	\item \textit{Phong} como \textit{Deferred Shading} eliminan las discontinuidades, añadiendo mas definición que el anterior, puesto que se hace una interpolación de las normales. Siendo el resultado de estos dos métodos es prácticamente similar.
 \end{itemize}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/blending_graph.pdf}
+	\caption{Gráfica comparativa de los 4 sistemas de blending.}
+	\label{figure_blending_graph}
+\end{figure}
+
+\subsection[Comparación de los sistemas de blend con puntos de luz] {Comparación de los sistemas de blend con puntos de luz}
+
+Para esta prueba, los seis modelos fueron renderizados con los cuatro algoritmos de \textit{blending} sin antialiasing. Bajo la influencia de diferentes conjuntos de luces radiales. Contando estos conjuntos de un numero de luces variable de 0, 1, 3, 5, 7 o 9 luces. (ver. Figura \ref{figure_blend_vs_light})
+
+Como resultado se concluyó que la iluminación con \textit{Deferred Shading} es mas estable en cuanto se aumentan los puntos de luz. De esta forma se evidencia la superioridad de la iluminación por \textit{pixel} en contrapuesta con los algoritmos que iluminan por \textit{fragmento}.
+
+\begin{figure}    
+	\centering
+    \subcaptionbox{Flat Shading} {\includegraphics[width=0.48\columnwidth]{../figures/flat_graph.pdf}}    
+    \subcaptionbox{Gouraud Shading} {\includegraphics[width=0.48\columnwidth]{../figures/gouraud_graph.pdf}}
+    \subcaptionbox{Phong Shading} {\includegraphics[width=0.48\columnwidth]{../figures/phong_graph.pdf}} 
+    \subcaptionbox{Deferred Shading} {\includegraphics[width=0.48\columnwidth]{../figures/deferred_graph.pdf}} 
+	\caption{Comparación de los diferentes sistemas de blending, comparando luces con millones de puntos.}
+	\label{figure_blend_vs_light}
+\end{figure}
+
+
 %
 % FIN DEL CAPÍTULO
 %

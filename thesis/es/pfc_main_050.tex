@@ -1,151 +1,266 @@
 %
-% RESULTADOS Y RENDIMIENTO
+% VISUALIZACIÓN DE NUBES DE PUNTOS
 %
-\chapter[Resultados y rendimiento]{
-	Resultados y rendimiento
+\chapter[Visualización de nubes de puntos con GPU]{
+	Visualización de nubes de puntos con GPU
 	\label{nombre_referencia_al_capitulo_050}
 }
 
-En este capítulo se pasarán a analizar los resultados obtenidos de la ejecución de los diferentes algoritmos de visualización. Se empezará por los 4 métodos de rasterización: \textit{Sized-Fixed} (ver. \ref{ss_sized}), \textit{Image-aligned Squares} (ver. \ref{ss_image-aligned_squares}), \textit{Affinely Projected} (ver. \ref{ss_affinely}) y \textit{Perspective Correct} (ver.\ref{ss_perspective_correct}). Seguidamente se comentarán los resultados obtenidos de la comparación de los 4 sistemas de \textit{blending}: \textit{Flat} (ver. \ref{ss_flat}), \textit{Gouraud} (ver. \ref{ss_gouraud}), \textit{Phong} (ver. \ref{ss_phong}), \textit{Deferred} (ver. \ref{ss_deferred}) y la estabilidad de estos algoritmos en temas de iluminación.
+Este capítulo se presenta como un resumen a los diferentes métodos de render basados en GPU. La sección \ref{s_rasterizacion} empieza mostrando los diferentes algoritmos que existen para la rasterización de splats. La sección \ref{s_blending} se centra en el blending de los diferentes splats, rasterizados en el paso previo, teniendo en cuenta la implicación que toman diferentes aspectos como la iluminación.
 
-\section[Preparación de la prueba] {Preparación de la prueba}
-Se dispuso del mismo equipo (ver Tabla. \ref{computer_specifications}) para la obtención de los datos necesarios con motivo de analizar el rendimiento que presentan los diferentes algoritmos mencionados anteriormente. Así mismo se dispuso de un conjunto de 6 modelos que fueron sampleados a diferentes densidades (ver Tabla. \ref{models_specifications}).
 
-\begin{table}
-	\centering
-	\begin{tabular}{l r}
-		\hline
-		\textbf{Equipo de Test} \\
-		\hline \hline
-		CPU: & Intel Core i7-4930K \\
-		Tarjeta Gráfica: & NVIDIA GTX 780Ti \\
-		RAM: & 16 GB DDR3 a 2133 MHz \\
-		HDD: & WD Caviar Black HDD \\
-		SO: & Windows 7 \\
-		\hline
-	\end{tabular}
-	\caption {Resumen de las características del equipo de Test.}
-	\label{computer_specifications}
-\end{table}
+%
+% SECCION - Técnicas de rasterización
+%
+\section[Técnicas de rasterización]{
+	Técnicas de rasterización
+	\label{s_rasterizacion}
+}
 
-\begin{table}
-	\centering
-	\begin{tabular}{l r}
-		\hline
-		\textbf{Modelo} & \textbf{Número de puntos}\\
-		\hline \hline
-		Suzanne & 473672\\
-		Head (Ten24) & 1223693 \\
-		Dorna & 2585907 \\
-		Dragon & 8628877 \\
-		Happy Budha & 26519484 \\
-		Lucy & 43982232 \\
-		\hline
-	\end{tabular}
-	\caption {Los modelos utilizados en el test.}
-	\label{models_specifications}
-\end{table}
-
-El parámetro que se estudiará será el tiempo (en segundos) que se tarda en renderizar un \textit{frame}. El visualizador consta con un modo \textit{DEBUG} en el que automáticamente escribe en un \textit{log} los datos resultantes de la sesión. Este fichero tendrá el siguiente formato:
-
-\begin{lstlisting}[frame=single, basicstyle=\tiny]
-CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 640x480
-0.0152009
-0.016681
-0.016721
-0.016681
-CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1920x1058
-0.0144408
-0.016641
-0.016681
-0.016641
-0.016641
-0.016681
+El primer paso en el render de nubes de puntos, es determinar según la proyección de los splats que píxeles en el framebuffer serán cubiertos por ellos. Puesto que no existe soporte el las librerías actuales para representar este tipo de primitivas, los splats tendrán que ser representados por otras como puntos o triángulos. De entre esas dos opciones, se  considera como más eficiente los puntos por delante de los triángulos, ya que por cada splat unicamente hay que almacenar la posición de un vértice en lugar de tres. Finalmente para renderizar la nube, habrá que dibujar el \textit{VBO}, pasándole el tipo \textit{GL\_POINTS}
+\\
+\lstset{language=C, breaklines=true, basicstyle=\footnotesize}
+\begin{lstlisting}[frame=single]
+glDrawArrays(GL_POINTS, &splats[0], splats.size());
 \end{lstlisting}
 
-Este consta de una linea cabecera en la que se resume el escenario actual, continuando de los tiempos medios resultantes de los últimos 25 \textit{frames}.
+\subsection[Sized-Fixed Points] {Sized-Fixed Points \label{ss_sized}}
 
-Con motivo de facilitar el análisis de los datos obtenidos, se creó una herramienta con el propósito de automatizar el análisis de este fichero \textit{log} y generar automáticamente las gráficas necesarias para su comprensión. \\
-
-\begin{lstlisting}[frame=single, basicstyle=\tiny]
-CUBE GRAPH GENERATOR
-
-USAGE: cubeGraphGen.py [options] logFile
-
-OPTIONS:
--h        Display available options
---help    Display available options
--v        Run in verbose mode
-May the Force be with you :)
+De una forma un poco primitiva y puesto que un punto a priori puede no tener un tamaño definido, a la hora de mostrar una representación de la nube, se podría dibujar cada coordenada del conjunto de puntos, con un cuadrado de un tamaño definido. Para ello basta con activar en el programa.
+\\
+\lstset{language=C, breaklines=true, basicstyle=\footnotesize}
+\begin{lstlisting}[frame=single]
+glEnable(GL_PROGRAM_POINT_SIZE);
 \end{lstlisting}
 
-\section[Análisis de los métodos de rasterización] {Análisis de los métodos de rasterización}
-
-Se renderizaron los 6 modelos (ver. Tabla \ref{models_specifications}) mediante los 4 métodos de rasterización, sin filtro de antialiasing, iluminación o \textit{blending}. El resultado de este análisis lo podemos ver en la siguiente gráfica (ver Figura \ref{figure_rasterization_graph}).
-
-Se encontró que en cuanto aumentó notablemente el número de puntos a dibujar, el rendimiento del supuestamente más ligero de todos los algoritmos \textit{Sized-Fixed} cayó estrepitosamente, debido a que al tener el tamaño de punto definido de forma constante este estaría generando más fragmentos en comparación con los otros 3 que corrigen su tamaño en función de la profundidad y de la distancia con los n-vecinales.
-
-Además en comparación con los algoritmos que utilizan las normales para la representación, en el algoritmo \textit{Affinely Projected} al no poder hacer \textit{backface culling} aumentan el número de puntos a mostrar aumentando el tiempo de \textit{render}.
+Mientras que en el \textit{vertex shader}, se define con \textit{gl\_PointSize} el tamaño en pixels que se pretente que ocupe el punto al ser rasterizado. Este cuadrado tendrá como centro las coordenadas del punto \textbf{p}.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{../figures/rasterization_graph.pdf}
-	\caption{Gráfica comparativa de los 4 sistemas de rasterización.}
-	\label{figure_rasterization_graph}
+	\includegraphics[width=\textwidth]{../figures/fixed-sized.png}
+	\caption{Todos los puntos de la nube son renderizados con un cuadrado del mismo tamaño para toda la nube.}
 \end{figure}
 
-Con respecto al aspecto visual (ver Figura \ref{figure_rasterization_comparative}), encontramos que:
+Como resultado, se obtiene una representación en la que cada punto de la nube se renderizará con el tamaño descrito.
 
-\begin{itemize}
-	\item  El algoritmo \textit{Sized-Fixed} crea agujeros de forma incontrolable, ya que dependiendo de la distancia a la que en la que se encuentren los puntos, puede dar sensación de superficie cerrada o de nube dispersa.
-	\item El algoritmo de \textit{Square Aligned} consigue cerrar la superficie pero deforma los contornos notablemente.
-	\item El algoritmo \textit{Affinely Projected} da una sensación buena, pero da lugar a fallos con discos con algulos perpendiculares al plano \textit{near} de la cámara. (ver Figura \ref{figure_affinely_holes})
-	\item El método de \textit{Perspective Correct} consigue mantener el contorno, ademas de evitar los agujeros de la anterior aproximación.
-\end{itemize}
+\subsection[Image-aligned Squares] {Image-aligned Squares \label{ss_image-aligned_squares}}
+
+En el anterior paso, el tamaño de la representación que cada punto tomaba en el \textit{framebuffer} era de alguna forma independiente a la cámara y al modelo.
+
+De esta manera, si en lugar de entender el tamaño del punto como los pixeles que va a ocupar en la imagen final, se interpreta como una medida dentro del modelo, que podría ser el radio \textbf{r} del splat, al representarse, estos puntos tendrían que ser coherentes con su proyección.
+
+Así que el tamaño en el \textit{screen-space} del punto OpenGL proyectado, tiene que ser ajustado en el \textit{vertex shader}. El tamaño \cite{perspcorrect} se aproxima haciendo el escorzo \textit{(perspective foreshort)} del radio $ r $ del splat usando el \textit{depth value} del centro \textbf{p} que ha de estar en coordenadas de la cámara.
+
+\begin{eqnarray}
+gl\_PointSize = 2r \cdot \dfrac{n}{p_{z}} \cdot \dfrac{g}{t - b'}
+\end{eqnarray}
+
+Donde $ n $, $ t $ y $ b $ son los parametros \textit{near/top/bottom} del \textit{view frustum} y $ h $ denota la altura (en pixels) del \textit{viewport}. En esta fórmula el término $ n/z $ corresponde a la proyección en el plano \textit{near}, mientras que $ f/(t- b) $ escala el resultado desde el plano \textit{near} a coordenadas de la imagen.
+
+Todos los pixels, generados de un punto, tienen el mismo \textit{depth value} lo que imposibilita hacer uso de las técnicas blending en zonas que visualmente se esten superponiendo. (ver sección \ref{s_blending})
+
+\subsection[Affinely Projected Point Sprites] {Affinely Projected Point Sprites \label{ss_affinely}}
+
+Una mejor aproximación para representar superfices afines a nubes de puntos, es con discos orientados según un vector normal \textbf{n}, este método fue presentado en \textit{Bosch and Kobbelt} \cite{affinely} .
+
+Para ello se tendría que ajustar el tamaño del punto en el \textit{vertex shader} de la misma forma que en el paso anterior \ref{ss_image-aligned_squares}. Pero añadiendo a mayores en el \textit{fragment shader} alguna manera de determinar si este se corresponde con un fragmento de la proyección de un disco orientado con centro en la posición \textbf{p}, de radio \textbf{r} y con la normal \textbf{n}. 
+
+Para cada uno de los pixeles $ (x, y)  \in  [-r \;,\; r] $, se puede calcular un valor de desplazamiento en profundidad $ \delta z $ como una función lineal dependiente del vector en coordenadas de la cámara \textbf{n} = $(n_{x}, n_{y}, n_{z})^{T}$ :
+
+\begin{equation}
+	\delta z = - \dfrac{n_{x}}{n_{z}} \cdot x - \dfrac{n_{y}}{n_{z}} \cdot y
+	\label{delta_z}
+\end{equation}
+
+
+
+Este desplazamiento es usado para calcular la distancia 3D desde el centro del punto \textbf{p}, de manera que el fragmento $ (x,y) $ corresponde al punto si $ ||(x,y,\delta z)|| \leq r $. Los que no cumplan esta condición pueden ser fácilmente descartados usando el comando \textit{discard}. 
+
+La variable vector \textit{gl\_PointCoord} del \textit{fragment shader} contiene las coordenadas bidimensionales que indican donde dentro de un punto OpenGL el fragmento está situado, con valores desde el $ 0.0 $ al $ 1.0 $ estos han de desplazarse a un rango $ [-0.5 \;,\; 0.5] $ para usarse en el cálculo de $ \delta z $.
+
+Una posible implementación de este algoritmo en \textit{GLSL} sería:
+\\
+\begin{lstlisting}[frame=single]
+vec3 test;
+
+test.x = gl_PointCoord.x - 0.5;
+test.y = gl_PointCoord.y - 0.5;
+test.z = -(normal.x/normal.z) * test.x - (normal.y/normal.z) * test.y;
+
+if (length(test) > 0.5)
+    discard;
+\end{lstlisting}
+
+Uno de los inconvenientes usando Image-aligned Squares \ref{ss_image-aligned_squares} era que el valor de profundidad era constante por splat. Pero $ \delta z $ puede ser usado también para corregir esto. Partiendo de un valor de profundidad en espacio de la cámara $ z' = p_{z} + \delta z $ y el frustum el valor de profundidad del $ zbuffer(x,y) $ puede ser modificado
+
+\begin{equation}
+zbuffer(x,y) = \dfrac{1}{z'} \cdot \dfrac{fn}{f - n} + \dfrac{f}{f - n}
+\label{z_buffer}
+\end{equation} 
+
+En comparación con la propuesta de \textit{Image-aligned Squares}, este método ofrece una mejor aproximación, especialmente en los contornos del objeto. Sin embargo el valor de profundidad $ \delta z $ es solo una aproximación, ya que se asume una proyección paralela (\ref{delta_z}), causando errores que provocan que los discos se vuelvan demasiado finos cuando estos son mirados bajo ángulos planos, lo que puede resultar en huecos en la imagen renderizada (ver Figura \ref{figure_affinely_holes}). 
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{../figures/comparacion_raster.eps}
-	\caption{Comparativa de los resultados de render. \textit{Sized-fixed} (\textbf{izquierda}), \textit{Square-aligned} (\textbf{centro izquierda}), \textit{Affinely} (\textbf{centro derecha}) y \textit{Perspective Correct} (\textbf{derecha}).}
-	\label{figure_rasterization_comparative}
+	\includegraphics[width=\textwidth]{../figures/affinely-holes.png}
+	\caption{Dragon, modelo de 845,281 puntos renderizado mediante Affinely Projected Point Sprites. Este método causa huecos en ángulos extremos.}
+	\label{figure_affinely_holes}
 \end{figure}
 
-\section[Análisis de los métodos de blending empleados] {Análisis de los métodos de blend empleados}
+\subsection[Perspective Correct Rasterization]{Perspective Correct Rasterization \label{ss_perspective_correct}}
 
-Se renderizaron los seis modelos (ver. Tabla \ref{models_specifications}) mediante los cuatro métodos de \textit{blending}, sin filtro de \textit{antialiasing} ni iluminación. El resultado de este análisis lo podemos ver en la siguiente gráfica (ver Figura \ref{figure_blending_graph}).
+El método de \textit{Affinely Projected Point Sprites} (\ref{ss_affinely}) causaba errores debido a la proyección paralela que en esta se asumía. Puesto que la proyección puede o no ser paralela, se tendrá que usar una aproximación mas precisa. Esta técnica fué la propuesta por \textit{Bosch et al.} \cite{perspective} . 
 
-Se concluyó que como se esperaba, el método de renderizado en un pase (sin \textit{blending}) alcanza mejores tiempos de \textit{render} en comparación con los otros tres algoritmos que constan de tres pases para su dibujado. Teniendo estos tres un resultado bastante similar y peor con respecto al \textit{Flat Shading}.
-
-Comparando al acabado visual de los algoritmos (ver Figura \ref{figure_blending_comparative}) encontramos que:
-\begin{itemize}
-	\item \textit{Flat Shading} no elimina las discontinuidades consecuencia de la intersección y solape de los discos.
-	\item \textit{Gouraud Shading} elimina las discontinuidades añadiendo cierto desenfoque en su acabado.
-	\item \textit{Phong} como \textit{Deferred Shading} eliminan las discontinuidades, añadiendo mas definición que el anterior, puesto que se hace una interpolación de las normales. Siendo el resultado de estos dos métodos es prácticamente similar.
-\end{itemize}
+La idea principal de este procedimiento parte en determinar el punto 3D correspondiente al pixel 2D mediante un \textit{ray casting} local.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{../figures/blending_graph.pdf}
-	\caption{Gráfica comparativa de los 4 sistemas de blending.}
-	\label{figure_blending_graph}
+	\includegraphics[width=\textwidth]{../figures/perspective-correct.eps}
+	\caption{Proyección y Ray Casting.}
+	\label{figure_perspective_correct}
 \end{figure}
 
-\subsection[Comparación de los sistemas de blend con puntos de luz] {Comparación de los sistemas de blend con puntos de luz}
+Fijándose en el \textit{pipeline} de transformaciones de OpenGL el primer paso para calcular \textbf{q} es invertir la transformación \textit{window-to-viewport}, de esta manera se mapeará el pixel \textit{(x,y)} a un punto 3D {$ \mathbf{q_{n}} $} en el plano \textit{near}. 
 
-Para esta prueba, los seis modelos fueron renderizados con los cuatro algoritmos de \textit{blending} sin antialiasing. Bajo la influencia de diferentes conjuntos de luces radiales. Contando estos conjuntos de un numero de luces variable de 0, 1, 3, 5, 7 o 9 luces. (ver. Figura \ref{figure_blend_vs_light})
+\begin{eqnarray}
+q_{n} = 
+\begin{pmatrix} 
+	x \cdot \dfrac{r-l}{w} - \dfrac{r-l}{2} \\ 
+	y \cdot \dfrac{t-b}{h} - \dfrac{t-b}{2} \\ 
+	-n 
+\end{pmatrix}
+\end{eqnarray} 
 
-Como resultado se concluyó que la iluminación con \textit{Deferred Shading} es mas estable en cuanto se aumentan los puntos de luz. De esta forma se evidencia la superioridad de la iluminación por \textit{pixel} en contrapuesta con los algoritmos que iluminan por \textit{fragmento}.
+Donde \textit{x/y} son las coordenadas relativas a la ventana \textit{gl\_FragCoord.xy}, \textit{b/t/l/r} son los parámetros \textit{bottom/top/left/right} del \textit{viewing frustum}, y \textit{w/h} denotan la \textit{altura/anchura} del \textit{viewport} (ver Figura \ref{figure_perspective_correct}).
 
-\begin{figure}    
+Se proyectará un rayo desde el origen (el ojo de la cámara) a traves de {$ \mathbf{q_{n}} $} y la intersección con el plano del \textit{splat} \textbf{p} dará como resultado el punto \textbf{q}. En caso de que $ q_{n} \cdot n = 0 $ se determinará que el el ángulo el por lo que se podrá descartar el \textit{splat}. 
+
+\begin{equation}
+q = q_{n} * \dfrac{p \cdot n}{q_{n} \cdot n}
+\label{q}
+\end{equation} 
+
+Finalmente el pixel será descartado si $ \| q - p \| > r $. Por otro lado el valor de profundidad del \textit{z-buffer} puede ser ajustado insertando $ q_{z} $ como valor de $ z' $ en la ecuación (\ref{z_buffer}). 
+
+\begin{figure}
 	\centering
-    \subcaptionbox{Flat Shading} {\includegraphics[width=0.48\columnwidth]{../figures/flat_graph.pdf}}    
-    \subcaptionbox{Gouraud Shading} {\includegraphics[width=0.48\columnwidth]{../figures/gouraud_graph.pdf}}
-    \subcaptionbox{Phong Shading} {\includegraphics[width=0.48\columnwidth]{../figures/phong_graph.pdf}} 
-    \subcaptionbox{Deferred Shading} {\includegraphics[width=0.48\columnwidth]{../figures/deferred_graph.pdf}} 
-	\caption{Comparación de los diferentes sistemas de blending, comparando luces con millones de puntos.}
-	\label{figure_blend_vs_light}
+	\includegraphics[width=\textwidth]{../figures/perspective-correct-flat.png}
+	\caption{Suzanne, modelo de 7,958 puntos renderizado mediante Perspective Correct Rasterization.}
+	\label{figure_perspective_correct_render}
 \end{figure}
 
+%
+% SECCION - Técnicas de Blending
+%
+\section[Técnicas de Blending]{
+	Técnicas de Blending
+	\label{s_blending}
+}
+
+Luego de determinar los pixels que son cubiertos por la proyección de los \textit{splats} en el anterior paso de rasterización, el siguiente implica iluminación y en general el acabado estético de la superficie \textit{shading}.
+
+% Subsección
+\subsection[Flat Shading] {Flat Shading \label{ss_flat}}
+
+Puesto que cada punto tiene asociado un vector normal \textbf{n}, para unas ciertas propiedades de material y reflectancia una iluminación local puede ser evaluada por \textit{splat}. Como resultado se obtendrá una constante de color $ \mathbf{c_{i}} $ para cada splat, similar al \textit{flat shading} en modelos poligonales. Ya que los puntos tienden a intersecar unos con otros, las representaciones mediante \textit{flat shading} conllevan a discontinuidades en el color.
+
+\subsection[Gouraud Shading] {Gouraud Shading \label{ss_gouraud}}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/comparacion_blending.png}
+	\caption{Lucy, modelo de 397,664 puntos. Renderizado mediante \textit{Flat Shading} (\textbf{izquierda}), \textit{Gouraud Shading} (\textbf{centro}), y \textit{Phong Shading} (\textbf{derecha}).}
+	\label{figure_blending_comparative}
+\end{figure}
+
+Para conseguir un render mas fino, las discontinuidades en el color provocadas por el \textit{shading} pueden ser emborronadas mediante \textit{blending} de los valores de color $ \mathbf{c_{i}} $ de los puntos que se están superponiendo. Puesto que los cálculos de iluminación todavía son computados por \textit{splat}, este tipo de \textit{blending} del color, conceptualmente corresponde al \textit{Gouraud shading} de modelos poligonales.
+
+Para implementar este tipo de \textit{blending} cada punto de la nube irá asociado con una función, de modo que para cada \textit{splat} sus fragmentos irán teniendo menor peso $ \mathbf{r}$ cuanto mas alejados de su centro estén, teniendo así menor impacto en la mezcla final de color $ \mathbf{c(x, y)} $. De manera que en la reconstrucción final del \textit{framebuffer}, el color de la posición $ (x,y) $ vendrá dado por el peso promedio de todos los fragmentos $ \mathbf{i} $ que intenten cubrirlo.
+
+\begin{equation}
+\mathbf{c}(x,y) = \dfrac{\sum_{i}^{} r_{i}(x,y) \; c_{i}}{\sum_{i}^{} r_{i}(x,y)}
+\end{equation}
+
+Esta media puede ser implementada en OpenGL usando 2 pases de render. Primero, el \textit{alpha-blending} es configurado con funciones separadas de \textit{blend} para las componentes RGB y alpha \textit{EXT\_blend\_func\_separate} con
+\\
+\begin{lstlisting}[frame=single]
+glEnable(GL_BLEND);
+glBlendFuncSeparateEXT(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
+\end{lstlisting}
+
+Así los \textit{splats} irán acumulando los valores de color y peso en las componentes RGB y alpha del \textit{framebuffer} como $ ( \sum_{i}^{} r_{i} c_{i} \;,\; \sum_{i}^{} r_{i} ) $. Finalmente tendrá que normalizarse la componente \textit{RGB} de cada pixel, dividiendose por su componente \textit{alpha}. Esto puede ser conseguido enviando el resultado del anterior pase a un siguiente como una textura, renderizando un rectángulo de tamaño de la ventana y mapeando esta textura en el. Este truco conocido como \textit{render-to-texture}, envia de nuevo cada pixel a través del \textit{pipeline} de OpenGL, de modo que un simple \textit{fragment shader} puede realizar esta normalización, como la propuesta en \textit{Botsch and Kobbelt and Guennebaud and Paulin}\cite{affinely}\cite{Efficient_screen}. Esta acumulación debe de ser realizada usando \textit{buffers} con precisión de punto flotante de 16 bits, con motivo de evitar saturaciones o artefactos.
+
+Para restringir el \textit{blend} únicamente a la superposición de los \textit{splats} vecinos de la misma superficie. Es necesario un tercer pase, denominado de visibilidad. Para cada \textit{frame}, el pase de visibilidad primero renderiza la nube unicamente en el \textit{depth buffer}. Luego en el pase de \textit{blending} se renderiza la nube de nuevo, pero esta vez calculando iluminación y acumulando el valor resultante de color usando \textit{additive alpha-blending} como lo descrito anteriormente. En este pase no se debe de actualizar el \textit{z-buffer} calculado en el pase de visibilidad, pero si se añade un desplazamiento $ \epsilon $\cite{surface_splatting} a todos los valores de profundidad, lo que probocará que todos los fragmentos dentro de una distancia $ \epsilon $ sean mezclados. El pase final de normalización realiza la necesaria división por el componente \textit{alpha} como se describió anteriormente. El resultado de los tres pases de render es representado en la Figura \ref{figure_gouraud_pipeline}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/gouraud-pipeline.eps}
+	\caption{Los tres pases, \textit{visibility}, \textit{blending}, y \textit{normalization}.}
+	\label{figure_gouraud_pipeline}
+\end{figure}
+
+El \textit{pseudocode} sería el siguiente
+\begin{lstlisting}[frame=single]
+// visibility pass
+glDepthMask(GL_TRUE);
+glDisable(GL_BLEND);
+bind_visibility_shaders();
+glDrawArrays(GL_POINTS, &cloud[0], cloud.size());
+
+// blending pass
+glDepthMask(GL_FALSE);
+glEnable(GL_BLEND);
+bind_blending_shaders();
+glDrawArrays(GL_POINTS, &cloud[0], cloud.size());
+
+// normalization pass
+glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, w, h);
+bind_normalization_shaders();
+draw_rectangle();
+\end{lstlisting}
+
+
+\subsection[Phong Shading] {Phong Shading \label{ss_phong}}
+
+Cuando se comparan los resultado de las diferentes técnicas en la figura \ref{figure_blending_comparative}, \textit{Gouraud} realmente elimina las indeseadas discontinuidades de color provocadas en el \textit{Flat Shading}, pero también añade cierto emborrone a la imagen notablemente. Para renderizado de polígonos es bien conocido que \textit{Phong} es superior que \textit{Gouraud Shading}. En lugar de calcular la iluminación por cada vértice y linealmente interpolar el color resultante dentro de los triángulos, \textit{Phong} interpola las normales en los vértices, seguido de una iluminación por píxel basada en la resultante función definida a trozos.
+
+Pero ya que en el caso de las nubes de puntos falta la relación de conectividad, no es posible la interpolación de las normales de los puntos vecinales, de modo que el campo de normales deberá ser construido de otra forma.
+
+El método de \textit{Phong} de \textit{Botsch et al.}\cite{perspective} asigna explícitamente un campo de normales lineal $ \mathbf{n_{i}}(x,y) $ para cada \textit{splat} en lugar de mantener su normal asociada constante. Durante la rasterización, la normal es evaluada para cada pixel basándose en sus parametros locales \textit{(x, y)}, y el vector resultante $ \mathbf{n_{i}}(x,y)$ es usado para computar la iluminación. Ya que los valores de color resultantes siguen teniendo problemos de discontinuidad, estos son acumulados y mezclados usando el mismo sistema de 3 pases de \textit{Gouraud}. La unico que queda por conocer entonces es saber como computar el campo de normales lineal $ \mathbf{n_{i}}(x,y) $. Cada normal será representada por un punto (x,y) en el plano tangente con distancia 1, similar a las coordenadas homogeneas (Figura \ref{figure_phong_normal}). 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=7 cm]{../figures/phong.eps}
+	\caption{Los vectores $ n_{i} $ son representados como puntos homogeneos \textit{(x,y,1)} en un plano desplazado tangente.}
+	\label{figure_phong_normal}
+\end{figure}
+
+\begin{equation}
+n_{i} = \dfrac{(q + n) - p}{\|(q + n) - p\|}
+\end{equation}
+
+Donde \textbf{q} es el punto 3D del \textit{splat} calculado al igual que en el método de \textit{Perspective Correct Rasterization} (Ecuación \ref{q}), \textbf{n} es la normal del \textit{splat} y \textbf{p} es el centro de este en coordenadas de la cámara.
+
+\subsection[Deferred Shading] {Deferred Shading \label{ss_deferred}}
+
+Básicamente existen dos formas para generar interpolaciones suavizadas de vectores de normales. La primera es \textit{Phong} que como se comentó en el anterior apartado, utiliza funciones para calcular el campo de normales de un \textit{splat}. Una segunda opción pasaría por la denominada como \textit{deferred} en la que en lugar de mezclar en un misma fase color y normales, estas se calculan de forma separada.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/deferred_pipeline.eps}
+	\caption{El renderizado mediante \textit{Deferred Shading} acumula atributos como color y normales, seguido por una normalización y un shading pass.}
+	\label{figure_deferred_pipeline}
+\end{figure}
+
+Recientes generaciones de \textit{GPU} contienen todo lo necesario para implementear esta aproximación, que gracias al denominado \textit{multiple render targets} (\textit{ARB\_DRAW\_BUFFERS}) permite que en un simple pase de \textit{render} se puedan sacar diferentes resultados a diferentes \textit{buffers}, estas características habilitan la opción para poder implementar una iluminación por pixel (\textit{deferred}) en este contexto, como se demostró en \textit{Botsch et al.}\cite{deferred}
+
+Primeramente en el pase de visibildiad (ver Figura \ref{figure_deferred_pipeline}, izquierda), se hará una modificación para poder sacar en un target a parte la posición 3D del fragmento, \textbf{q} (ver. Ecuación \ref{q}) ya que será necesario para el pase final. Luego, en el pase de acumulación y blend (ver Figura \ref{figure_deferred_pipeline}, centro) se usarán 2 targets adicionales para sacar la salida referente al color y de las normales de manera separada, usando el mismo proceso de acumulación que en \textit{Gouraud}. Finalmente estos 3 \textit{buffers} serán enviados de nuevo al \textit{oipenline} de OpenGL, usando el método de \textit{render to texture} comentado previamente, con motivo de su normalización.
+
+Este último pase (ver Figura \ref{figure_deferred_pipeline}, derecha), corresponde a la fase de normalización de \textit{Gouraud} pero en el que a mayores se van a realizar los cálculos pertinentes para la iluminación. Por cada pixel, una media de la normal y el color pueden ser obtenidos, que junto a la posición obtenida en la primera fase de visualización puede ser fácilmente calcular el color final iluminado.
+
+Es importante darse de cuenta de que en este método los cálculos derivados de la iluminación son computados una única vez por pixel, en contraste con las aproximaciones que no son \textit{deferred} que incorporan este proceso en el momento de la rasterización, consiguiendo el color final del pixel a partir de la mezcla de muchos pixels de diferentes \textit{splats} iluminados previamente. Dependiendo del número de \textit{splats} superpuestos, esto puede llegar a multiplicar el numero de cálculos derivados de la iluminación.
+
+Además a esto, \textit{deferred shading} añade también una clara separación entre la fase de rasteriación y de iluminación.
 
 %
 % FIN DEL CAPÍTULO
