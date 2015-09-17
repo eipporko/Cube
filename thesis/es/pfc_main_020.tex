@@ -6,7 +6,21 @@
 	\label{nombre_referencia_al_capitulo_020}
 }
 
-En este capítulo se explicarán los fundamentos tecnológicos necesarios para la comprensión de este proyecto. Empezando por la explicación de las Nubes de puntos (ver \ref{s_nubes}), OpenGL (ver \ref{s_opengl}) y la librería PCL (ver \ref{s_pcl}).
+En este capítulo se detallan los principales fundamentos tecnológicos
+que están detrás de este trabajo. Así, el capítulo comienza
+describiendo el dominio en el que se enmarca el proyecto: el trabajo
+con nubes de puntos y las principales técnicas de adquisición para
+obtenerlas.
+A continuación, se lleva a cabo una introducción a la API
+multiplataforma para gráficos interactivos OpenGL, empleada para la
+visualización de todas las técnicas implementadas en el trabajo.
+Por último, se presenta la librería PCL, software libre que ha cogido
+bastante empuje en los últimos años en el campo de las nubes de
+puntos. La integración de nuestro visualizador con este software,
+permitiéndonos así aprovechar sus métodos para la realización de
+diferentes operaciones sobre la nube de puntos, no solo supone una
+importante ventaja en cuanto a ahorro y reutilización de código, sino
+que también otorga a este trabajo una importante proyección futura.
 
 
 %
@@ -39,8 +53,8 @@ En los Sistemas de Información Geográfica \textit{GIS} las nubes de puntos son u
 
 Para la adquisición de estas nubes de puntos, existen actualmente diferentes métodos:
 
-\begin{itemize}
-	\item \textbf{Escaner 3D} Un escáner 3D es un dispositivo que analiza un objeto o una escena para reunir datos de su forma y ocasionalmente su color. Diferenciando dos tipos de escáneres en función de si existe contacto con el objeto o no y  dividiendo estos últimos en otras dos categorías (activos y pasivos).
+\begin{description}
+	\item[Escaner 3D.] Un escáner 3D es un dispositivo que analiza un objeto o una escena para reunir datos de su forma y ocasionalmente su color. Diferenciando dos tipos de escáneres en función de si existe contacto con el objeto o no y  dividiendo estos últimos en otras dos categorías (activos y pasivos).
 	
 	\begin{itemize}
 		\item \textbf{Contacto} Los escáneres 3D examinan el objeto apoyando el elemento de medida (palpador) sobre la superficie del mismo, típicamente una punta de acero duro o zafiro. Una serie de sensores internos permiten determinar la posición espacial del palpador. Se usan en su mayoría en control dimensional en procesos de fabricación y pueden conseguir precisiones típicas de 0,01 mm. 
@@ -54,8 +68,8 @@ Para la adquisición de estas nubes de puntos, existen actualmente diferentes mét
 	\end{itemize}
 	
 	
-	\item \textbf{Fotogrametría} La fotogrametría es una técnica para determinar las propiedades geométricas de los objetos y las situaciones espaciales a partir de imágenes fotográficas. Básicamente, es una técnica de medición de coordenadas 3D, que utiliza fotografías u otros sistemas de percepción remota junto con puntos de referencia, como medio fundamental para la medición.
-\end{itemize}
+	\item[Fotogrametría.] La fotogrametría es una técnica para determinar las propiedades geométricas de los objetos y las situaciones espaciales a partir de imágenes fotográficas. Básicamente, es una técnica de medición de coordenadas 3D, que utiliza fotografías u otros sistemas de percepción remota junto con puntos de referencia, como medio fundamental para la medición.
+\end{description}
 
 
 \begin{figure}
@@ -74,7 +88,8 @@ Para la adquisición de estas nubes de puntos, existen actualmente diferentes mét
 	\label{s_opengl}
 }
 
-OpenGL (Open Graphics Library) es una libreria multiplataforma destinada a renderizado 2D y 3D. Esta API es típicamente usada para trabajar con la Unidad Gráfica de Procesado (GPU) para conseguir un renderizado acelerado mediante \textit{hardware}, aunque es posible que esta sea implementada enteramente mediante \textit{software}.
+OpenGL (Open Graphics
+Library)\footnote{\url{https://www.khronos.org/opengl}} es una librería multiplataforma destinada al renderizado interactivo 2D y 3D. Esta API es típicamente usada para trabajar con la Unidad Gráfica de Procesado (GPU) para conseguir un renderizado acelerado mediante \textit{hardware}, aunque es posible que esta sea implementada enteramente mediante \textit{software}. 
 
 % Subsección
 \subsection[Pipeline] {Pipeline}
@@ -126,7 +141,7 @@ En al figura \ref{figure_opengl_pipeline} se puede observar que en OpenGL las fa
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{../figures/integracion-transistores.eps}
+	\includegraphics[width=0.9\textwidth]{../figures/integracion-transistores.eps}
 	\caption{Evolución del número de transistores en GPU y CPU (1999 - 2010).}
 	\label{figure_evolucion_gpu}
 \end{figure}
@@ -138,12 +153,11 @@ En al figura \ref{figure_opengl_pipeline} se puede observar que en OpenGL las fa
 	PCL
 	\label{s_pcl}
 }
-\textit{Point Cloud Library} (\textit{PCL}) es una librería \textit{open-source} con algoritmia destinada a tareas de  procesamiento de nubes de puntos y geometría 3D. La librería contiene algoritmos para estimación, reconstrucción de superficies, \textit{model fitting} y segmentación. Está escrita en C++ y distribuida bajo una licencia \textit{BSD}.
+\textit{Point Cloud Library} (\textit{PCL})\footnote{\url{http://pointclouds.org}} es una librería \textit{open-source} con algoritmia destinada a tareas de  procesamiento de nubes de puntos y geometría 3D. La librería contiene algoritmos para estimación, reconstrucción de superficies, \textit{model fitting} y segmentación. Está escrita en C++ y distribuida bajo una licencia \textit{BSD}.
 
-Estos son usandos, por ejemplo, para percepción en robótica para filtrar ruido, unir nubes de puntos 3D, extraer \textit{keypoints} y calcular descriptores para reconocimiento de objetos basados en su geometría y crear superficies a partir de nubes de puntos para visualizarlas.
+La librería es usada en muchos de los campos en los que es habitual trabajar con nubes de puntos, por ejemplo, para percepción en robótica para filtrar ruido, unir nubes de puntos 3D, extraer \textit{keypoints} y calcular descriptores para reconocimiento de objetos basados en su geometría y crear superficies a partir de nubes de puntos para visualizarlas.
 
-El desarrollo de esta librería comenzó en Marzo de 2010 
-The development of the Point Cloud Library started in March 2010 en la empresa \textit{Willow Garage}. La primera version oficial de \textit{PCL} fue lanzada en Mayo de 2011.
+El desarrollo de esta librería comenzó en Marzo de 2010 en la empresa \textit{Willow Garage}. La primera version oficial de \textit{PCL} fue lanzada en Mayo de 2011.
 
 %
 % FIN DEL CAPÍTULO
