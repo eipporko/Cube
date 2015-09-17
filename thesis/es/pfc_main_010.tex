@@ -1,7 +1,7 @@
 %
 % PLANIFICACIÓN Y METODOLOGÍA
 %
-\chapter[Planificación y metodología]{
+\chapter{
 	Planificación y metodología
 	\label{nombre_referencia_al_capitulo}
 }
@@ -90,69 +90,81 @@ Las revisiones con mis dos directores fueron siempre cara a cara mientras fue po
 
 Para mantener el código accesible en todo el momento, desde el comienzo del desarrollo se utilizaron sistemas de control de versiones como \textit{Git}. Que es un sistema libre de administración de código fuente y distribución. De modo que además de servir como un sistema de \textit{backup} era fácil llevar el seguimiento del desarrollo, facilitando la creación de nuevas ramas paralelas a la versión estable, con motivo de prueba para nuevos algoritmos.
 
-A pesar de que la naturaleza investigativa de este proyecto imposibilita la buena estimación de tiempo por cada iteración, el siguiente diagrama de \textit{Gantt} viene a resumir los tiempos que llevó cada iteración.\\
+A pesar de que el evidente componente de investigación que tiene este
+proyecto, en el que se van a emplear técnicas que son ahora mismo
+estado del arte en computación gráfica, imposibilita en gran medida
+una adecuada estimación de tiempo por cada iteración, el diagrama de
+\textit{Gantt} de las {\figurename}s~\ref{figure_gantt_part1} y
+\ref{figure_gantt_part2} viene a resumir los tiempos que llevó cada
+iteración. La tabla del \tablename~\ref{tab:tareas} muestra las
+principales tareas llevadas a cabo en esas interacciones.
 
+\begin{table}
+\centering
 \begin{tabular}{l c c}
-	\hline
-	\textbf{Tarea} & \textbf{Fecha de inicio} & \textbf{Fecha de fin}\\
-	\hline \hline
+	\toprule
+	\textbf{Tarea} & \textbf{Fecha de inicio} & \textbf{Fecha de fin}\\\midrule
 	\textbf{Creación de prototipo} & \textbf{1/05/15} & \textbf{5/05/15} \\ 
 	\indent Configuración del entorno de trabajo + CMake & 1/05/15 & 1/05/15 \\ 
 	\indent Inicialización de contexto & 4/05/15 & 4/05/15 \\ 
-	\indent Test de OpenGL + Shader básico & 5/05/15 & 5/05/15 \\ 
-	\hline \textbf{Inclusión de una cámara orbital} & \textbf{6/05/15}  & \textbf{7/05/15} \\ 
+	\indent Test de OpenGL + Shader básico & 5/05/15 & 5/05/15 \\[0.15cm]
+	\textbf{Inclusión de una cámara orbital} & \textbf{6/05/15}  & \textbf{7/05/15} \\ 
 	\indent Instalación de GLM & 6/05/15 & 6/05/15 \\ 
-	\indent Implementación de la cámara & 7/05/15 & 7/05/15 \\ 
-	\hline \textbf{Sized-Fixed Point} & \textbf{8/05/15} & \textbf{11/05/15} \\
+	\indent Implementación de la cámara & 7/05/15 & 7/05/15 \\ [0.15cm]
+	\textbf{Sized-Fixed Point} & \textbf{8/05/15} & \textbf{11/05/15} \\
 	\indent Generación de buffers en la GPU & 8/05/15  & 8/05/15 \\ 
-	\indent Clase VAO + Shader Sized-Fixed Point & 11/05/15 & 11/05/15 \\  
-	\hline \textbf{Port de GLUT a GLFW} & \textbf{12/05/15} & \textbf{12/05/15} \\ 
-	\hline \textbf{Image-aligned Squares Shader} & \textbf{13/05/15} & \textbf{19/05/15} \\ 
-	\hline \textbf{Sistema de cambio de Shader} & \textbf{20/05/15} & \textbf{20/05/15} \\ 
-	\hline \textbf{Affinely Projected Point Sprites Shader} & \textbf{21/05/15}  & \textbf{25/05/15} \\ 
-	\hline \textbf{Soporte con PCL} & \textbf{26/05/15} & \textbf{27/05/15} \\
+	\indent Clase VAO + Shader Sized-Fixed Point & 11/05/15 & 11/05/15 \\ [0.15cm]
+	\textbf{Port de GLUT a GLFW} & \textbf{12/05/15} & \textbf{12/05/15} \\ [0.15cm]
+	\textbf{Image-aligned Squares Shader} & \textbf{13/05/15} & \textbf{19/05/15} \\ [0.15cm]
+	\textbf{Sistema de cambio de Shader} & \textbf{20/05/15} & \textbf{20/05/15} \\ [0.15cm]
+	\textbf{Affinely Projected Point Sprites Shader} & \textbf{21/05/15}  & \textbf{25/05/15} \\ [0.15cm]
+	\textbf{Soporte con PCL} & \textbf{26/05/15} & \textbf{27/05/15} \\
 	\indent Carga de formatos .PLY y .PCD & 26/05/15 & 26/05/15 \\ 
-	\indent Refactorización hacia estructura cloud de PCL  & 26/05/15 &  27/05/15\\ 
-	\hline \textbf{Perspectively Correct Rasterization Shader} & \textbf{28/05/15} & \textbf{10/06/15} \\ 
-	\hline \textbf{Radio del splat variable según vecindad} & \textbf{11/06/15} & \textbf{12/06/15} \\ 
-	\hline \textbf{Gouraud Shading} & \textbf{15/06/15} & \textbf{2/07/15}  \\ 
+	\indent Refactorización hacia estructura cloud de PCL  & 26/05/15 &  27/05/15\\ [0.15cm]
+	\textbf{Perspectively Correct Rasterization Shader} & \textbf{28/05/15} & \textbf{10/06/15} \\ [0.15cm]
+	\textbf{Radio del splat variable según vecindad} & \textbf{11/06/15} & \textbf{12/06/15} \\ [0.15cm]
+	\textbf{Gouraud Shading} & \textbf{15/06/15} & \textbf{2/07/15}  \\ 
 	\indent Añadir al pipeline opción a sistema MultiPass & 15/06/15 & 18/06/15 \\ 
-	\indent Gouraud Shading Shader & 19/06/15 & 2/07/15 \\ 
-	\hline \textbf{Implementación de FXAA} & \textbf{15/06/15} & \textbf{2/07/15}  \\ 
-	\hline \textbf{Gouraud Shading} & \textbf{3/07/15} & \textbf{6/07/15}  \\ 
-	\hline \textbf{Phong Shading Shader} & \textbf{7/07/15} & \textbf{13/07/15}  \\ 
-	\hline \textbf{Deferred Shading Shader} & \textbf{14/07/15} & \textbf{22/07/15}  \\
-	\hline \textbf{Luz orbital} & \textbf{23/07/15} & \textbf{23/07/15} \\
-	\hline 
-\end{tabular} 
+	\indent Gouraud Shading Shader & 19/06/15 & 2/07/15 \\ [0.1cm]
+	\textbf{Implementación de FXAA} & \textbf{15/06/15} & \textbf{2/07/15}  \\ [0.15cm]
+	\textbf{Gouraud Shading} & \textbf{3/07/15} & \textbf{6/07/15}  \\ [0.15cm]
+	\textbf{Phong Shading Shader} & \textbf{7/07/15} & \textbf{13/07/15}  \\ [0.15cm]
+	\textbf{Deferred Shading Shader} & \textbf{14/07/15} & \textbf{22/07/15}  \\[0.15cm]
+	\textbf{Luz orbital} & \textbf{23/07/15} & \textbf{23/07/15} \\
+	\bottomrule
+\end{tabular}
+\caption{Principales tareas llevadas a cabo en el proyecto.}
+\label{tab:tareas}
+\end{table}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=14cm]{../figures/gantt_part1.eps}
+        \caption{Diagrama de Gant (I).}
 	\label{figure_gantt_part1}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=6.72cm]{../figures/gantt_part2.eps}
+        \caption{Diagrama de Gant (II).}
 	\label{figure_gantt_part2}
 \end{figure}
 
 Se tiene además un presupuesto para un proyecto como este. Incluyendo únicamente costes humanos y \textit{hardware}, ya que el \textit{software} fue siempre gratuito. El precio por hora del ordenador fue calculado pensando en una amortización de 5 años fiscales para el equipo. \\
 
 \begin{table}
+\centering
 \begin{tabular}{l c c c c}
-	\hline
-	\textbf{Recurso} & \textbf{Cantidad} & \textbf{Horas} & \textbf{Coste por hora} & \textbf{Total} \\
-	\hline \hline
+	\toprule
+	\textbf{Recurso} & \textbf{Cantidad} & \textbf{Horas} & \textbf{Coste por hora} & \textbf{Total} \\\midrule
 	Software & & & & 0\officialeuro \\
 	Ordenador & 1 & 480 & 0,1372\officialeuro & 65,86\officialeuro \\
-	Analista-Programador & 1 & 480 & 15\officialeuro & 7200\officialeuro \\
-	\hline
+	Analista-Programador & 1 & 480 & 15\officialeuro & 7200\officialeuro \\\cmidrule(lr){5-5}
 	& & & & 7265,86\officialeuro \\
-	\hline
+	\bottomrule
 \end{tabular}
-\caption{Estimación de coste} 
+\caption{Estimación de coste.}
 \end{table}
 
 

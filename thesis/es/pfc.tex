@@ -9,7 +9,7 @@
 %	twoside -> escribimos a doble cara.
 %	openbib -> para que las referencias bibliogr�ficas tengan un salto de l�nea entre cada campo de la referencia.
 %
-\documentclass[a4paper,11pt,oneside]{book}
+\documentclass[a4paper,11pt]{book}
 
 % codificaci�n latin1 y s�mbolos del idioma espa�ol (�, acentos, ...)
 \usepackage[spanish]{babel}
@@ -62,8 +62,13 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhf[HR]{\thepage}
-\fancyhf[HL]{\nouppercase\rightmark}
+%\fancyhf[HR]{\thepage}
+%\fancyhf[HL]{\nouppercase\rightmark}
+\renewcommand{\chaptermark}[1]{ \markboth{\MakeUppercase{#1}}{} }
+\renewcommand{\sectionmark}[1]{ \markright{\MakeUppercase{\thesection.\ #1}}{}}
+\fancyhead[LE,RO]{\footnotesize \slshape \rightmark}
+\fancyhead[LO,RE]{\footnotesize \slshape \leftmark}
+\fancyfoot[C]{\thepage}
 
 % Package booktabs -> Para mejorar el aspecto de las tablas o cuadros.
 % http://www.ctan.org/tex-archive/macros/latex/contrib/booktabs/
@@ -76,6 +81,8 @@
 % Packages multicol y multirow, para manejar tablas de filas y columnas m�ltiples.
 \usepackage{multicol}
 \usepackage{multirow}
+
+\usepackage[hidelinks]{hyperref}
 
 % Personalizamos la separaci�n entre p�rrafos...
 \parskip=6pt
@@ -96,35 +103,46 @@
 
 \begin{document}
 
+	% FRONTMATTER: TOC, LOF, LOT y descripci�n/organizaci�n de la memoria.
+        \frontmatter
+
 	% \maketitle sirve para generar autom�tica una portada predefinida, pero para un proyecto fin de carrera
 	%	de FIC no sirvir�a porque no cumple las normas de presentaci�n. Podemos hacer dos cosas:
 	% 1. Usarla e ignorar las normas (y asumir las consecuencias que pueda tener)
 	% 2. Hacernos una portada en LaTeX que cumpla las normas (menos arriesgado)
 	%
         \include{pfc_portada}
-
-	% FRONTMATTER: TOC, LOF, LOT y descripci�n/organizaci�n de la memoria.
-        \frontmatter
-
+        \thispagestyle{empty}
+        \cleardoublepage
+ 
 	% Los proyectos de fin de carrera de FIC han de ir acompa�ados de una serie de documentos adicionales, algunos
 	% 	de ellos obligatorios (certificado, resumen, lista de palabras clave) y otros opcionales (dedicatoria
 	%	y agradecimientos).
 	%
-        \thispagestyle{empty}     % No number page, headings...
+        \thispagestyle{empty}
         \include{pfc_certificado}
-        \thispagestyle{empty}     % No number page, headings...
+        \thispagestyle{empty}
+        \cleardoublepage
 
+        \thispagestyle{plain}
         \include{pfc_resumen}
-        \thispagestyle{empty}     % No number page, headings...
+        \thispagestyle{empty}
+        \cleardoublepage
 
+        \thispagestyle{plain}
         \include{pfc_palabras_clave}
-        \thispagestyle{empty}     % No number page, headings...
+        \thispagestyle{empty}
+        \cleardoublepage
 
+        \thispagestyle{empty}
         \include{pfc_dedicatoria}
-        \thispagestyle{empty}     % No number page, headings...
+        \thispagestyle{empty}
+        \cleardoublepage
 
+        \thispagestyle{plain}
         \include{pfc_agradecimientos}
-        \thispagestyle{empty}     % No number page, headings...
+        \thispagestyle{empty}
+        \cleardoublepage
 
         \tableofcontents
         \listoffigures
