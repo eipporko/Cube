@@ -2,335 +2,315 @@
 % Memoria económica.
 %
 
-\chapter[Memoria económica]{
-	Memoria económica.
+\chapter[Shaders]{Shaders.}
+
+\section{Sized-Fixed Points}
+
+\textbf{Vertex Shader}
+\begin{lstlisting}[frame=single]
+#version 400
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform bool colorEnabled;
+
+in  vec3 in_Position;
+in  vec3 in_Color;
+in  vec3 in_Normals;
+
+out vec3 ex_Color;
+
+void main(void) {
+	gl_Position = projMatrix * viewMatrix * vec4(in_Position, 1.0);
+	gl_PointSize = 2;
+
+	vec3 color = vec3 (0.0, 0.0f, 0.0f);
+
+	//Diffuse
+	if (colorEnabled == true) {
+		vec3 lightDirection = vec3(0.0,0.0,1.0f);
+		float dotValue = max(dot(normalize(normalMatrix * in_Normals), lightDirection), 0.0);
+		ex_Color = vec3(dotValue) + color; }
+	else
+		ex_Color = in_Color;
 }
+\end{lstlisting}
 
-Para la realización de este proyecto se ha tenido que hacer una pequeña, según se mire, inversión económica para la adquisición de diversos materiales
-y componentes. Gracias a la colaboración de MEGOM Betanzos SL y el Instituto de Formación Profesional ``As Mariñas'' (Betanzos), se pudo eliminar el
-coste de mano de obra y herramientas.
-\par
+\textbf{Fragment Shader}
+\begin{lstlisting}[frame=single]
+#version 400
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
 
-Algunos de los gastos aquí mencionados, solo se realizan una vez: es el caso del programador del microcontrolador, o de la licencia del compilador. Otros
-elementos se venden en cantidades mayores a las necesitadas. Por todo ello, la fabricación de sucesivas bases de robot móvil, serían más baratas, siempre
-y cuando pudiésemos seguir evitando el gasto en herramientas y mano de obra.
-\par
+in  vec3 ex_Color;
+out vec4 out_Color;
 
-La relación de componentes empleados se ha dividido en cuatro secciones:
-\begin{enumerate}
-	\item{Material de la etapa mecánica, necesario para construir la parte mecánica de la base de robot móvil.}
-	\item{Material empleado para la programación del mc.}
-	\item{Material electrónico empleado en el modelo de LEGO.}
-	\item{Material electrónico empleado en la construcción de la base de robot móvil.}
-\end{enumerate}
+void main(void) {	
+	out_Color = vec4(ex_Color,1.0);
+}
+\end{lstlisting}
+\vfill
 
-A continuación se muestran diferentes tablas con la relación de material empleado en este proyecto así como su coste (sin IVA), adquiriéndolo en 
-las cantidades indicadas.
+\section{Image-aligned Squares}
+\textbf{Vertex Shader}
+\begin{lstlisting}[frame=single]
+#version 400
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float userRadiusFactor; //Splat's radii
+uniform bool colorEnabled;
+uniform bool automaticRadiusEnabled;
 
-\begin{table}[h]
-	\textsf{
-   \begin{center}
-      \begin{tabular}{|l|c|r|}
-			\hline
-				\multicolumn{3}{|l|}{\textbf{Material y coste empleado en la etapa mecánica.}}\\
-			\hline
-			\hline
-				\scriptsize{CONCEPTO}	&	
-				\scriptsize{CANTIDAD} &
-				\scriptsize{COSTE UNITARIO}	\\	
-         \hline
-			\hline
-				\scriptsize{Chasis de aluminio}	&	
-				\scriptsize{1} &
-				\scriptsize{61,33 \euro}	\\	
-         \hline
-				\scriptsize{Rueda de soporte móvil 75 mm}	&	
-				\scriptsize{1} &
-				\scriptsize{8,66 \euro}	\\	
-         \hline
-				\scriptsize{Lámina de vidrio plástico 13x18 cm}	&	
-				\scriptsize{3} &
-				\scriptsize{0,82 \euro}	\\	
-         \hline
-				\scriptsize{Perfil (1 m) de aluminio 15x15x1,5 mm}	&	
-				\scriptsize{1} &
-				\scriptsize{1,77 \euro}	\\	
-         \hline
-				\scriptsize{Pletina aluminio (1 m) 15x2,5 mm}	&	
-				\scriptsize{1} &
-				\scriptsize{1,77 \euro}	\\	
-         \hline
-				\scriptsize{Varilla acero 3x1mx20 mm}	&	
-				\scriptsize{1} &
-				\scriptsize{25,00 \euro}	\\	
-         \hline
-				\scriptsize{Tubo recto (1 m) aluminio 40x20x1,5 mm}	&	
-				\scriptsize{1} &
-				\scriptsize{5,99 \euro}	\\	
-         \hline
-				\scriptsize{2xMotores Matsushita GMX-6MP013A}	&	
-				\scriptsize{1} &
-				\scriptsize{92,90 \euro}	\\	
-         \hline
-				\scriptsize{Poleas de 60 dientes y correas}	&	
-				\scriptsize{1} &
-				\scriptsize{69,69 \euro}	\\	
-         \hline
-				\scriptsize{Ruedas}	&	
-				\scriptsize{1} &
-				\scriptsize{42 \euro}	\\	
-			\hline
-				\scriptsize{6 Rodamientos IGUS}	&	
-				\scriptsize{1} &
-				\scriptsize{27,50 \euro}	\\	
-			\hline
-				 \multicolumn{1}{c}{\ } & \multicolumn{1}{c}{\scriptsize{\textbf{TOTAL:}}} & \multicolumn{1}{r}{\scriptsize{373,30 \euro}} \\	
-      \end{tabular}
-   \end{center}
-   \caption[Relación de componentes empleados en la etapa mecánica y coste]{
-	   \small{
-			Relación de componentes empleados en la etapa mecánica y coste.
-		}
-      \label{memoria_economica_mecanica}
-   }
+in float in_Radius;
+in  vec3 in_Position;
+in  vec3 in_Color;
+in 	vec3 in_Normals;
+
+out float ex_Radius;
+out vec3 ex_Color;
+
+vec4 ccPosition; //position in Camera Coordinates
+
+void main(void) {
+	if (automaticRadiusEnabled == true)
+		ex_Radius = in_Radius * userRadiusFactor;
+	else
+		ex_Radius = userRadiusFactor;
+
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
+
+	vec3 color = vec3 (0.0, 0.0f, 0.0f);
+
+	//Diffuse
+	if (colorEnabled == true) {
+		vec3 lightDirection = vec3(0.0,0.0,1.0f);
+		float dotValue = max(dot(normalize(normalMatrix * in_Normals), lightDirection), 0.0);
+		ex_Color = vec3(dotValue) + color; }
+	else
+		ex_Color = in_Color;
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting}[frame=single]
+#version 400
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+
+in  vec3 ex_Color;
+out vec4 out_Color;
+
+void main(void)
+{	
+	out_Color = vec4(ex_Color,1.0);
+}
+\end{lstlisting}
+\vfill
+
+
+\section{Affinely Projected Point Sprites}
+\textbf{Vertex Shader}
+\begin{lstlisting}[frame=single]
+#version 400
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float userRadiusFactor; //Splat's radii
+uniform bool colorEnabled;
+uniform bool automaticRadiusEnabled;
+
+in float in_Radius;
+in  vec3 in_Position;
+in  vec3 in_Color;
+in 	vec3 in_Normals;
+
+out float ex_Radius;
+out vec3 ex_Color;
+out vec3 ex_Normals;
+out float ex_Pz; //z in Camera Coordinates
+
+vec4 ccPosition; //position in Camera Coordinates
+
+void main(void) {
+	ex_Normals = normalize(normalMatrix * in_Normals);
+
+	if (abs(ex_Normals.z) <= 0.1)
+		ex_Normals.z = 0.1;
+
+	if (automaticRadiusEnabled == true)
+		ex_Radius = in_Radius * userRadiusFactor;
+	else
+		ex_Radius = userRadiusFactor;
+
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2*ex_Radius * (n / ccPosition.z) * (h / (t-b));
+
+	//BackFace Culling
+	if (dot (ccPosition.xyz, ex_Normals) > 0)
+		gl_Position.w = 0;
+
+	vec3 color = vec3 (0.0, 0.0f, 0.0f);
+
+	//Diffuse
+	if (colorEnabled == true) {
+		vec3 lightDirection = vec3(0.0,0.0,1.0f);
+		float dotValue = max(dot(normalize(normalMatrix * in_Normals), lightDirection), 0.0);
+		ex_Color = vec3(dotValue) + color; }
+	else
+		ex_Color = in_Color;
+
+	ex_Pz = ccPosition.z;
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 400
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+
+in  vec3 ex_Color;
+in 	vec3 ex_Normals;
+in float ex_Pz;
+
+out vec4 out_Color;
+
+vec3 test;
+float zBuffer;
+
+void main(void) {
+	test.x = gl_PointCoord.x - 0.5;
+	test.y = gl_PointCoord.y - 0.5;
+	test.z = -(ex_Normals.x/ex_Normals.z) * test.x - (ex_Normals.y/ex_Normals.z) * test.y;
+	if (length(test) > 0.5)
+		discard;
+
+	zBuffer = (ex_Pz + test.z * 0.1);
+	gl_FragDepth = ((1.0 / zBuffer) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+	
+	out_Color = vec4(ex_Color,1.0);
+}
+\end{lstlisting}
+\vfill
+
+\section{Perspective Correct Rasterization}
+
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 400
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float userRadiusFactor; //Splat's radii
+uniform bool automaticRadiusEnabled;
+
+in float in_Radius;
+in  vec3 in_Position;
+in  vec3 in_Color;
+in 	vec3 in_Normals;
+
+out vec3 ex_Color;
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+
+
+void main(void) {
+	normals = normalize(normalMatrix * in_Normals);
+
+	if (automaticRadiusEnabled == true)
+		ex_Radius = in_Radius * userRadiusFactor;
+	else
+		ex_Radius = userRadiusFactor;
+
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
+
+	//BackFace Culling
+	if (dot (ccPosition.xyz, normals) > 0)
+		gl_Position.w = 0;
+
+	ex_Color = in_Color;
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 400
+uniform mat4 viewMatrix;
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+uniform bool colorEnabled;
+uniform int lightCount;
+uniform vec3 lightPosition[16];
+uniform vec3 lightColor[16];
+uniform float lightIntensity[16];
+
+in float ex_Radius;
+in  vec3 ex_Color;
+in 	vec3 ex_UxV;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+out vec4 out_Color;
+
+void main(void) {
+
+	vec3 qn;
+	qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+	qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+	qn.z = -n;
+
+	float denom = dot (qn, normals);
+
+	if (denom == 0.0)
+		discard;
+
+	float timef = dot (ccPosition.xyz, normals ) / denom;
+
+	vec3 q = qn * timef;
+	vec3 testq = q;
+	
+	vec3 dist = (q - ccPosition.xyz);
+
+	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+		discard;
+
+	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+
+	vec3 color = ex_Color;
+	if (colorEnabled == true)
+		color = vec3(0,0,0);
+
+	//Diffuse
+	vec3 dotValue = vec3(0,0,0);
+	for (int i = 0; i < lightCount; i++) {
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition[i], 1.0f)).xyz;
+		vec3 lithToQ = normalize(ccLightPosition - testq);
+		dotValue += vec3(max(dot(normals, lithToQ), 0.0)) * lightIntensity[i] * lightColor[i];
 	}
-\end{table}
 
-\begin{table}[h]
-	\textsf{
-   \begin{center}
-      \begin{tabular}{|l|c|r|}
-			\hline
-				\multicolumn{3}{|l|}{\textbf{Electrónica empleada en el modelo de LEGO.}}\\
-			\hline
-			\hline
-				\scriptsize{CONCEPTO}	&	
-				\scriptsize{CANTIDAD} &
-				\scriptsize{COSTE UNITARIO}	\\
-			\hline
-			\hline
-				\scriptsize{Regulador de tensión 7809CT 9V, 1A}	&	
-				\scriptsize{1} &
-				\scriptsize{0,67 \euro}	\\	
-         \hline
-				\scriptsize{Potenciómetro 10 K$\omega$}	&	
-				\scriptsize{2} &
-				\scriptsize{0,15 \euro}	\\	
-         \hline
-				\scriptsize{Microcontrolador PIC16F876-04SP}	&	
-				\scriptsize{1} &
-				\scriptsize{10,66 \euro}	\\	
-         \hline
-				\scriptsize{Cristal de cuarzo de 10 Mhz}	&	
-				\scriptsize{1} &
-				\scriptsize{1,87 \euro}	\\	
-         \hline
-				\scriptsize{leds 3mm (rojo, verde y amarillo)}	&	
-				\scriptsize{9} &
-				\scriptsize{0,12 \euro}	\\	
-         \hline
-				\scriptsize{CI MAX232 dual RS-232}	&	
-				\scriptsize{1} &
-				\scriptsize{1,87 \euro}	\\	
-         \hline
-				\scriptsize{Pulsador CI}	&	
-				\scriptsize{1} &
-				\scriptsize{0,14 \euro}	\\	
-         \hline
-				\scriptsize{Condensadores cerámicos 0,1 $\mu$F}	&	
-				\scriptsize{8} &
-				\scriptsize{0,11 \euro}	\\	
-         \hline
-				\scriptsize{CI L293B}	&	
-				\scriptsize{2} &
-				\scriptsize{3,24 \euro}	\\	
-         \hline
-				\scriptsize{Kit puentes placa board}	&	
-				\scriptsize{1} &
-				\scriptsize{2,90 \euro}	\\	
-         \hline
-				\scriptsize{Regulador de tensión 7805CT 5V, 1A}	&	
-				\scriptsize{1} &
-				\scriptsize{0,65 \euro}	\\	
-         \hline
-				\scriptsize{Diodos 1N4148}	&	
-				\scriptsize{10} &
-				\scriptsize{0,05 \euro}	\\	
-         \hline
-				\scriptsize{Placas de pruebas Ariston}	&	
-				\scriptsize{2} &
-				\scriptsize{8,15 \euro}	\\	
-         \hline
-				\scriptsize{Crital de cuarzo 4 Mhz}	&	
-				\scriptsize{2} &
-				\scriptsize{1,90 \euro}	\\
-         \hline
-				\scriptsize{Resistencias varias 1/4 W}	&	
-				\scriptsize{20} &
-				\scriptsize{0,02 \euro}	\\	
-         \hline
-				 \multicolumn{1}{c}{\ } & \multicolumn{1}{c}{\scriptsize{\textbf{TOTAL:}}} & \multicolumn{1}{r}{\scriptsize{48,50 \euro}} \\	
-      \end{tabular}
-   \end{center}
-   \caption[Relación de componentes electrónicos empleados en el modelo de LEGO y coste]{
-	   \small{
-			Relación de componentes electrónicos empleados en el modelo de LEGO y coste.
-		}
-      \label{memoria_economica_electronica_lego}
-   }
-	}
-\end{table}
-
-\begin{table}[h]
-	\textsf{
-   \begin{center}
-      \begin{tabular}{|l|c|r|}
-			\hline
-				\multicolumn{3}{|l|}{\textbf{Material y coste empleado en la programación del mc.}}\\
-			\hline
-			\hline
-				\scriptsize{CONCEPTO}	&	
-				\scriptsize{CANTIDAD} &
-				\scriptsize{COSTE UNITARIO}	\\
-         \hline
-			\hline
-				\scriptsize{Programador ICPROG}	&	
-				\scriptsize{1} &
-				\scriptsize{60,00 \euro}	\\	
-			\hline
-				\scriptsize{Licencia y compilador C2C}	&	
-				\scriptsize{1} &
-				\scriptsize{60,00 \euro}	\\	
-			\hline
-				\scriptsize{Licnencia y compilador CCS C Compiler}	&	
-				\scriptsize{1} &
-				\scriptsize{175,00 \euro}	\\	
-         \hline
-				 \multicolumn{1}{c}{\ } & \multicolumn{1}{c}{\scriptsize{\textbf{TOTAL:}}} & \multicolumn{1}{r}{\scriptsize{295,00 \euro}} \\
-      \end{tabular}
-   \end{center}
-   \caption[Relación de componentes empleados en la programación y coste]{
-	   \small{
-			Relación de componentes empleados en la programación y coste.
-		}
-      \label{memoria_economica_software}
-   }
-	}
-\end{table}
-
-\begin{table}[h]
-	\textsf{
-   \begin{center}
-      \begin{tabular}{|l|c|r|}
-			\hline
-				\multicolumn{3}{|l|}{\textbf{Electrónica de la base de RMA.}}\\
-			\hline
-			\hline
-				\scriptsize{CONCEPTO}	&	
-				\scriptsize{CANTIDAD} &
-				\scriptsize{COSTE UNITARIO}	\\
-         \hline
-			\hline
-				\scriptsize{PIC16F876}	&	
-				\scriptsize{4} &
-				\scriptsize{10,66 \euro}	\\	
-         \hline
-				\scriptsize{Regulador de tensión 5V 1A 7805CT}	&	
-				\scriptsize{1} &
-				\scriptsize{0,65 \euro}	\\	
-         \hline
-				\scriptsize{CI MAX232 Dual RS232}	&	
-				\scriptsize{1} &
-				\scriptsize{1,87 \euro}	\\	
-         \hline
-				\scriptsize{CI L298}	&	
-				\scriptsize{10} &
-				\scriptsize{4,96 \euro}	\\	
-         \hline
-				\scriptsize{Condensadores electrolíticos radiales 470uF/50V}	&	
-				\scriptsize{6} &
-				\scriptsize{0,23 \euro}	\\	
-         \hline
-				\scriptsize{Disipador de calor}	&	
-				\scriptsize{4} &
-				\scriptsize{0,24 \euro}	\\	
-         \hline
-				\scriptsize{Condensador cerámico multicapa}	&	
-				\scriptsize{10} &
-				\scriptsize{0,07 \euro}	\\	
-         \hline
-				\scriptsize{Potenciómetro 10k$\Omega$}	&	
-				\scriptsize{4} &
-				\scriptsize{0,15 \euro}	\\	
-         \hline
-				\scriptsize{Kit de puentes placa board}	&	
-				\scriptsize{1} &
-				\scriptsize{2,90 \euro}	\\	
-         \hline
-				\scriptsize{Fusibles 4A}	&	
-				\scriptsize{10} &
-				\scriptsize{0,05 \euro}	\\	
-         \hline
-				\scriptsize{Portafusibles aéreos de baquelita}	&	
-				\scriptsize{4} &
-				\scriptsize{0,47 \euro}	\\	
-         \hline
-				\scriptsize{Interruptor bipolar verde}	&	
-				\scriptsize{2} &
-				\scriptsize{2,24 \euro}	\\	
-         \hline
-				\scriptsize{Terminal enchufable}	&	
-				\scriptsize{10} &
-				\scriptsize{0,03 \euro}	\\	
-         \hline
-				\scriptsize{Funda para terminal}	&	
-				\scriptsize{10} &
-				\scriptsize{0,02 \euro}	\\	
-         \hline
-				\scriptsize{Regleta recta de pines macho}	&	
-				\scriptsize{3} &
-				\scriptsize{0,99 \euro}	\\	
-         \hline
-				\scriptsize{Cristal de cuarzo de 11059200 Hz}	&	
-				\scriptsize{1} &
-				\scriptsize{1,87 \euro}	\\	
-         \hline
-				\scriptsize{Cable unipolar flexible 1m}	&	
-				\scriptsize{6} &
-				\scriptsize{0,18 \euro}	\\	
-         \hline
-				\scriptsize{Resistencias varias 1/4 W}	&	
-				\scriptsize{20} &
-				\scriptsize{0,02 \euro}	\\	
-         \hline
-				\scriptsize{CI L298}	&	
-				\scriptsize{10} &
-				\scriptsize{4,96 \euro}	\\	
-         \hline
-				\scriptsize{Diodos 1N5822}	&	
-				\scriptsize{10} &
-				\scriptsize{1,20 \euro}	\\	
-         \hline
-				\scriptsize{Diodos 1N4148}	&	
-				\scriptsize{10} &
-				\scriptsize{0,03 \euro}	\\	
-         \hline
-				\scriptsize{Elementos varios: diodos, zócalos, ...}	&	
-				\scriptsize{1} &
-				\scriptsize{2,35 \euro}	\\	
-         \hline
-				\scriptsize{Placas d pruebas Ariston}	&	
-				\scriptsize{5} &
-				\scriptsize{8,15 \euro}	\\	
-         \hline
-				 \multicolumn{1}{c}{\ } & \multicolumn{1}{c}{\scriptsize{\textbf{TOTAL:}}} & \multicolumn{1}{r}{\scriptsize{219,98 \euro}} \\
-      \end{tabular}
-   \end{center}
-   \caption[Relación de componentes empleados en este proyecto y coste]{
-	   \small{
-			Relación de componentes empleados en este proyecto y coste.
-		}
-      \label{memoria_electronica}
-   }
-	}
-\end{table}
+	out_Color = vec4(dotValue + color, 1.0f);
+}
+\end{lstlisting}
