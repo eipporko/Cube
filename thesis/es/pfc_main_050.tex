@@ -61,7 +61,7 @@ Todos los pixels, generados de un punto, tienen el mismo \textit{depth value} lo
 
 \subsection[Affinely Projected Point Sprites] {Affinely Projected Point Sprites \label{ss_affinely}}
 
-Una mejor aproximación para representar superfices afines a nubes de puntos, es con discos orientados según un vector normal \textbf{n}, este método fue presentado en \textit{Bosch and Kobbelt} \cite{affinely} .
+Una mejor aproximación para representar superfices afines a nubes de puntos, es con discos orientados según un vector normal \textbf{n}, este método fue presentado en \textit{Bosch and Kobbelt}~\cite{affinely} .
 
 Para ello se tendría que ajustar el tamaño del punto en el \textit{vertex shader} de la misma forma que en el paso anterior \ref{ss_image-aligned_squares}. Pero añadiendo a mayores en el \textit{fragment shader} alguna manera de determinar si este se corresponde con un fragmento de la proyección de un disco orientado con centro en la posición \textbf{p}, de radio \textbf{r} y con la normal \textbf{n}. 
 
@@ -109,7 +109,7 @@ En comparación con la propuesta de \textit{Image-aligned Squares}, este método o
 
 \subsection[Perspective Correct Rasterization]{Perspective Correct Rasterization \label{ss_perspective_correct}}
 
-El método de \textit{Affinely Projected Point Sprites} (\ref{ss_affinely}) causaba errores debido a la proyección paralela que en esta se asumía. Puesto que la proyección puede o no ser paralela, se tendrá que usar una aproximación mas precisa. Esta técnica fué la propuesta por \textit{Bosch et al.} \cite{perspective} . 
+El método de \textit{Affinely Projected Point Sprites} (\ref{ss_affinely}) causaba errores debido a la proyección paralela que en esta se asumía. Puesto que la proyección puede o no ser paralela, se tendrá que usar una aproximación mas precisa. Esta técnica fue la propuesta por \textit{Bosch et al.}~\cite{perspective} . 
 
 La idea principal de este procedimiento parte en determinar el punto 3D correspondiente al pixel 2D mediante un \textit{ray casting} local.
 
@@ -188,9 +188,19 @@ glEnable(GL_BLEND);
 glBlendFuncSeparateEXT(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
 \end{lstlisting}
 
-Así los \textit{splats} irán acumulando los valores de color y peso en las componentes RGB y alpha del \textit{framebuffer} como $ ( \sum_{i}^{} r_{i} c_{i} \;,\; \sum_{i}^{} r_{i} ) $. Finalmente tendrá que normalizarse la componente \textit{RGB} de cada pixel, dividiendose por su componente \textit{alpha}. Esto puede ser conseguido enviando el resultado del anterior pase a un siguiente como una textura, renderizando un rectángulo de tamaño de la ventana y mapeando esta textura en el. Este truco conocido como \textit{render-to-texture}, envia de nuevo cada pixel a través del \textit{pipeline} de OpenGL, de modo que un simple \textit{fragment shader} puede realizar esta normalización, como la propuesta en \textit{Botsch and Kobbelt and Guennebaud and Paulin}\cite{affinely}\cite{Efficient_screen}. Esta acumulación debe de ser realizada usando \textit{buffers} con precisión de punto flotante de 16 bits, con motivo de evitar saturaciones o artefactos.
+Así los \textit{splats} irán acumulando los valores de color y peso en
+las componentes RGB y alpha del \textit{framebuffer} como $ (
+\sum_{i}^{} r_{i} c_{i} \;,\; \sum_{i}^{} r_{i} ) $. Finalmente tendrá
+que normalizarse la componente \textit{RGB} de cada pixel,
+dividiendose por su componente \textit{alpha}. Esto puede ser
+conseguido enviando el resultado del anterior pase a un siguiente como
+una textura, renderizando un rectángulo de tamaño de la ventana y
+mapeando esta textura en el. Este truco conocido como
+\textit{render-to-texture}, envia de nuevo cada pixel a través del
+\textit{pipeline} de OpenGL, de modo que un simple \textit{fragment
+  shader} puede realizar esta normalización, como la propuesta en \textit{Botsch and Kobbelt}~\cite{affinely} y en \textit{Guennebaud and Paulin}~\cite{Efficient_screen}. Esta acumulación debe de ser realizada usando \textit{buffers} con precisión de punto flotante de 16 bits, con motivo de evitar saturaciones o artefactos.
 
-Para restringir el \textit{blend} únicamente a la superposición de los \textit{splats} vecinos de la misma superficie. Es necesario un tercer pase, denominado de visibilidad. Para cada \textit{frame}, el pase de visibilidad primero renderiza la nube unicamente en el \textit{depth buffer}. Luego en el pase de \textit{blending} se renderiza la nube de nuevo, pero esta vez calculando iluminación y acumulando el valor resultante de color usando \textit{additive alpha-blending} como lo descrito anteriormente. En este pase no se debe de actualizar el \textit{z-buffer} calculado en el pase de visibilidad, pero si se añade un desplazamiento $ \epsilon $\cite{surface_splatting} a todos los valores de profundidad, lo que probocará que todos los fragmentos dentro de una distancia $ \epsilon $ sean mezclados. El pase final de normalización realiza la necesaria división por el componente \textit{alpha} como se describió anteriormente. El resultado de los tres pases de render es representado en la Figura \ref{figure_gouraud_pipeline}.
+Para restringir el \textit{blend} únicamente a la superposición de los \textit{splats} vecinos de la misma superficie. Es necesario un tercer pase, denominado de visibilidad. Para cada \textit{frame}, el pase de visibilidad primero renderiza la nube unicamente en el \textit{depth buffer}. Luego en el pase de \textit{blending} se renderiza la nube de nuevo, pero esta vez calculando iluminación y acumulando el valor resultante de color usando \textit{additive alpha-blending} como lo descrito anteriormente. En este pase no se debe de actualizar el \textit{z-buffer} calculado en el pase de visibilidad, pero sí se añade un desplazamiento $\epsilon$ a todos los valores de profundidad~\cite{surface_splatting}, lo que provocará que todos los fragmentos dentro de una distancia $\epsilon$ sean mezclados. El pase final de normalización realiza la necesaria división por el componente \textit{alpha} como se describió anteriormente. El resultado de los tres pases de render es representado en la Figura \ref{figure_gouraud_pipeline}.
 
 \begin{figure}
 	\centering
@@ -226,12 +236,12 @@ Cuando se comparan los resultado de las diferentes técnicas en la figura \ref{fi
 
 Pero ya que en el caso de las nubes de puntos falta la relación de conectividad, no es posible la interpolación de las normales de los puntos vecinales, de modo que el campo de normales deberá ser construido de otra forma.
 
-El método de \textit{Phong} de \textit{Botsch et al.}\cite{perspective} asigna explícitamente un campo de normales lineal $ \mathbf{n_{i}}(x,y) $ para cada \textit{splat} en lugar de mantener su normal asociada constante. Durante la rasterización, la normal es evaluada para cada pixel basándose en sus parametros locales \textit{(x, y)}, y el vector resultante $ \mathbf{n_{i}}(x,y)$ es usado para computar la iluminación. Ya que los valores de color resultantes siguen teniendo problemos de discontinuidad, estos son acumulados y mezclados usando el mismo sistema de 3 pases de \textit{Gouraud}. La unico que queda por conocer entonces es saber como computar el campo de normales lineal $ \mathbf{n_{i}}(x,y) $. Cada normal será representada por un punto (x,y) en el plano tangente con distancia 1, similar a las coordenadas homogeneas (Figura \ref{figure_phong_normal}). 
+El método de \textit{Phong} de \textit{Botsch et al.}~\cite{perspective} asigna explícitamente un campo de normales lineal $ \mathbf{n_{i}}(x,y) $ para cada \textit{splat} en lugar de mantener su normal asociada constante. Durante la rasterización, la normal es evaluada para cada pixel basándose en sus parametros locales \textit{(x, y)}, y el vector resultante $ \mathbf{n_{i}}(x,y)$ es usado para computar la iluminación. Ya que los valores de color resultantes siguen teniendo problemas de discontinuidad, estos son acumulados y mezclados usando el mismo sistema de 3 pases de \textit{Gouraud}. La unico que queda por conocer entonces es saber como computar el campo de normales lineal $ \mathbf{n_{i}}(x,y) $. Cada normal será representada por un punto (x,y) en el plano tangente con distancia 1, similar a las coordenadas homogéneas (Figura \ref{figure_phong_normal}). 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=7 cm]{../figures/phong.eps}
-	\caption{Los vectores $ n_{i} $ son representados como puntos homogeneos \textit{(x,y,1)} en un plano desplazado tangente.}
+	\caption{Los vectores $ n_{i} $ son representados como puntos homogéneos \textit{(x,y,1)} en un plano desplazado tangente.}
 	\label{figure_phong_normal}
 \end{figure}
 
@@ -252,7 +262,7 @@ Básicamente existen dos formas para generar interpolaciones suavizadas de vector
 	\label{figure_deferred_pipeline}
 \end{figure}
 
-Recientes generaciones de \textit{GPU} contienen todo lo necesario para implementear esta aproximación, que gracias al denominado \textit{multiple render targets} (\textit{ARB\_DRAW\_BUFFERS}) permite que en un simple pase de \textit{render} se puedan sacar diferentes resultados a diferentes \textit{buffers}, estas características habilitan la opción para poder implementar una iluminación por pixel (\textit{deferred}) en este contexto, como se demostró en \textit{Botsch et al.}\cite{deferred}
+Recientes generaciones de \textit{GPU} contienen todo lo necesario para implementear esta aproximación, que gracias al denominado \textit{multiple render targets} (\textit{ARB\_DRAW\_BUFFERS}) permite que en un simple pase de \textit{render} se puedan sacar diferentes resultados a diferentes \textit{buffers}, estas características habilitan la opción para poder implementar una iluminación por pixel (\textit{deferred}) en este contexto, como se demostró en \textit{Botsch et al.}~\cite{deferred}
 
 Primeramente en el pase de visibildiad (ver Figura \ref{figure_deferred_pipeline}, izquierda), se hará una modificación para poder sacar en un target a parte la posición 3D del fragmento, \textbf{q} (ver. Ecuación \ref{q}) ya que será necesario para el pase final. Luego, en el pase de acumulación y blend (ver Figura \ref{figure_deferred_pipeline}, centro) se usarán 2 targets adicionales para sacar la salida referente al color y de las normales de manera separada, usando el mismo proceso de acumulación que en \textit{Gouraud}. Finalmente estos 3 \textit{buffers} serán enviados de nuevo al \textit{oipenline} de OpenGL, usando el método de \textit{render to texture} comentado previamente, con motivo de su normalización.
 

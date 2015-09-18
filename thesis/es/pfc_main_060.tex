@@ -14,15 +14,14 @@ Se dispuso del mismo equipo (ver Tabla. \ref{computer_specifications}) para la o
 \begin{table}
 	\centering
 	\begin{tabular}{l r}
-		\hline
-		\textbf{Equipo de Test} \\
-		\hline \hline
+		\toprule
+		\textbf{Equipo de Test} \\\midrule
 		CPU: & Intel Core i7-4930K \\
 		Tarjeta Gráfica: & NVIDIA GTX 780Ti \\
 		RAM: & 16 GB DDR3 a 2133 MHz \\
 		HDD: & WD Caviar Black HDD \\
 		SO: & Windows 7 \\
-		\hline
+		\bottomrule
 	\end{tabular}
 	\caption {Resumen de las características del equipo de Test.}
 	\label{computer_specifications}
@@ -31,16 +30,15 @@ Se dispuso del mismo equipo (ver Tabla. \ref{computer_specifications}) para la o
 \begin{table}
 	\centering
 	\begin{tabular}{l r}
-		\hline
-		\textbf{Modelo} & \textbf{Número de puntos}\\
-		\hline \hline
+		\toprule
+		\textbf{Modelo} & \textbf{Número de puntos}\\\midrule
 		Suzanne & 473672\\
 		Head (Ten24) & 1223693 \\
 		Dorna & 2585907 \\
 		Dragon & 8628877 \\
 		Happy Budha & 26519484 \\
 		Lucy & 43982232 \\
-		\hline
+		\bottomrule
 	\end{tabular}
 	\caption {Los modelos utilizados en el test.}
 	\label{models_specifications}
@@ -130,7 +128,7 @@ Comparando al acabado visual de los algoritmos (ver Figura \ref{figure_blending_
 	\label{figure_blending_graph}
 \end{figure}
 
-\subsection[Comparación de los sistemas de blend con puntos de luz] {Comparación de los sistemas de blend con puntos de luz}
+\subsection{Comparación de los sistemas de blending con puntos de luz}
 
 Para esta prueba, los seis modelos fueron renderizados con los cuatro algoritmos de \textit{blending} sin antialiasing. Bajo la influencia de diferentes conjuntos de luces radiales. Contando estos conjuntos de un numero de luces variable de 0, 1, 3, 5, 7 o 9 luces. (ver. Figura \ref{figure_blend_vs_light})
 
