@@ -38,7 +38,6 @@ uniform int w; 	 //Width of the viewport
 
 in float ex_Radius;
 in  vec3 ex_Color;
-in 	vec3 ex_UxV;
 in  vec3 normals;
 in 	vec4 ccPosition;
 
