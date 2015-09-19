@@ -79,6 +79,38 @@ Para la adquisición de estas nubes de puntos, existen actualmente diferentes mét
 	\label{figure_leica}
 \end{figure}
 
+\subsection{Visualización}
+En el mercado existen varios programas para la visualización y procesamiento de estos datos, los más conocidos pueden ser \textit{CloudCompare}\footnote{\url{http://www.danielgm.net/cc/}} y \textit{MeshLab}\footnote{http://meshlab.sourceforge.net/}.
+
+\subsubsection{CloudCompare}
+Originalmente creado durante una colaboración entre Telecom ParisTech y la division R\&D de EDF, el proyecto comenzó como tesis de doctoramiento de Daniel Girardey-Montaut en la detección del cambio en información geométrica 3d. \cite{cloudcompare} al mismo tiempo, su principal objetivo era la detección del cambio rápidamente en nubes de puntos de alta densidad adquiridas mediantes escáneres 3D en instalaciones industriales (como plantas de energía). Hoy en día es un proyecto independiente de \textit{software} \textit{open source} y libre 
+
+\textit{CloudCompare} provee de un conjunto de herramientas para la edición manual y renderizado de nubes de puntos y mayas triangulares. Además también ofrece diversos algoritmos de procesado avanzado. Está disponible para plataformas \textit{Windows}, \textit{Linux}, y \textit{Mac OS X} tanto arquitecturas de 32 como de 64 bits. Es desarrollado en C++ con \textit{Qt}\footnote{\url{http://www.qt.io/developers/}}.
+
+Con todo esto, la visualización de las nubes de puntos es muy básica
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/cloudcompare.png}
+	\caption{Captura de pantalla de CloudCompare.}
+	\label{figure_cloudcompare}
+\end{figure}
+
+
+\subsubsection{MeshLab}
+Desarrollado por el centro de investigación INSTI - CNR, \textit{MeshLab} es un \textit{software} de procesamiento avanzado de malla 3D el cual es bien conocido en la mayor de los campos de desarrollo 3D y el manejo de datos.
+
+Está enfocado al procesamiento y gestión de grandes nubes de puntos resultado de escaneo tridimensional y ofrece conjuntos de herramientas para la edición, limpieza, rendering y relleno de este tipo de datos.
+
+Es multiplataforma, \textit{open source} y libre, bajo la licencia de uso \textit{GNU General Public License (GPL)}. versión 2 o posterior, y es usado tanto como aplicación como librería para dar soporte otro \textit{software}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/meshlab.png}
+	\caption{Captura de pantalla de MeshLab.}
+	\label{figure_meshlab}
+\end{figure}
+
 
 %
 % SECCION - OpenGL

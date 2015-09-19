@@ -62,7 +62,9 @@ La idea de tener un \textit{framebuffer} propio donde renderizar de manera separ
 
 La clase \textbf{Shader}, vendría a dar la solución al manejo de los \textit{vertex} y \textit{fragment shaders} en el visualizador, ofreciendo métodos para compilar y enviar estos programas a \textit{GPU}.
 
-El objetivo de la clase \textbf{VAO} será la de almacenar los modelos que se carguen. Estos almacenaran los datos de la nube (posición, color, normal y radios) además de encargarse de reservar la memoria en la tarjeta gráfica y enviar la información para su procesado por el \textit{pipeline}.
+La clase \textbf{Models} será la encargada de almacenar los modelos que se carguen. Estos almacenarán los datos de la nube (posición, color, normal y radios).
+
+El objetivo de la clase \textbf{VAO} será la de enviar la información de la nube de puntos al \textit{pipeline} y encargarse de reservar la memoria en la tarjeta gráfica.
 
 La clase \text{Camera} viene a ser la implementación de todo lo explicado en la sección \ref{camera_model}, ofreciendo las matrices de transformación pertinentes y que serán necesarias para el render. En este caso el funcionamiento de la cámara es orbital, rotando alrededor de origen de coordenadas, pudiendo acercar o alejar la vista.
 
