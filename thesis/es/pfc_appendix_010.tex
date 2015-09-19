@@ -4,18 +4,16 @@
 
 \chapter[Shaders]{Shaders.}
 
-\section{Sized-Fixed Points}
+\section{Sized-Fixed Points \label{sized-fixed}}
 
 \textbf{Vertex Shader}
 \begin{lstlisting}[frame=single]
 #version 400
 uniform mat4 viewMatrix, projMatrix;
 uniform mat3 normalMatrix;
-uniform bool colorEnabled;
 
 in  vec3 in_Position;
 in  vec3 in_Color;
-in  vec3 in_Normals;
 
 out vec3 ex_Color;
 
@@ -25,22 +23,13 @@ void main(void) {
 
 	vec3 color = vec3 (0.0, 0.0f, 0.0f);
 
-	//Diffuse
-	if (colorEnabled == true) {
-		vec3 lightDirection = vec3(0.0,0.0,1.0f);
-		float dotValue = max(dot(normalize(normalMatrix * in_Normals), lightDirection), 0.0);
-		ex_Color = vec3(dotValue) + color; }
-	else
-		ex_Color = in_Color;
+	ex_Color = in_Color;
 }
 \end{lstlisting}
 
 \textbf{Fragment Shader}
 \begin{lstlisting}[frame=single]
 #version 400
-uniform float n; //Near parameter of the viewing frustum
-uniform float f; //Far parameter of the viewing frustum
-
 in  vec3 ex_Color;
 out vec4 out_Color;
 
@@ -50,7 +39,7 @@ void main(void) {
 \end{lstlisting}
 \vfill
 
-\section{Image-aligned Squares}
+\section{Image-aligned Squares \label{image-aligned}}
 \textbf{Vertex Shader}
 \begin{lstlisting}[frame=single]
 #version 400
@@ -60,14 +49,10 @@ uniform int h; //Height of the viewport
 uniform float n; //Near parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
 uniform float b; //Bottom parameter of the viewing frustum
-uniform float userRadiusFactor; //Splat's radii
-uniform bool colorEnabled;
-uniform bool automaticRadiusEnabled;
 
 in float in_Radius;
 in  vec3 in_Position;
 in  vec3 in_Color;
-in 	vec3 in_Normals;
 
 out float ex_Radius;
 out vec3 ex_Color;
@@ -75,10 +60,8 @@ out vec3 ex_Color;
 vec4 ccPosition; //position in Camera Coordinates
 
 void main(void) {
-	if (automaticRadiusEnabled == true)
-		ex_Radius = in_Radius * userRadiusFactor;
-	else
-		ex_Radius = userRadiusFactor;
+
+	ex_Radius = in_Radius;
 
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
 	gl_Position = projMatrix * ccPosition;
@@ -86,13 +69,7 @@ void main(void) {
 
 	vec3 color = vec3 (0.0, 0.0f, 0.0f);
 
-	//Diffuse
-	if (colorEnabled == true) {
-		vec3 lightDirection = vec3(0.0,0.0,1.0f);
-		float dotValue = max(dot(normalize(normalMatrix * in_Normals), lightDirection), 0.0);
-		ex_Color = vec3(dotValue) + color; }
-	else
-		ex_Color = in_Color;
+	ex_Color = in_Color;
 }
 \end{lstlisting}
 
@@ -113,7 +90,7 @@ void main(void)
 \vfill
 
 
-\section{Affinely Projected Point Sprites}
+\section{Affinely Projected Point Sprites \label{affinely}}
 \textbf{Vertex Shader}
 \begin{lstlisting}[frame=single]
 #version 400
@@ -123,9 +100,6 @@ uniform int h; //Height of the viewport
 uniform float n; //Near parameter of the viewing frustum
 uniform float t; //Top parameter of the viewing frustum
 uniform float b; //Bottom parameter of the viewing frustum
-uniform float userRadiusFactor; //Splat's radii
-uniform bool colorEnabled;
-uniform bool automaticRadiusEnabled;
 
 in float in_Radius;
 in  vec3 in_Position;
@@ -145,10 +119,7 @@ void main(void) {
 	if (abs(ex_Normals.z) <= 0.1)
 		ex_Normals.z = 0.1;
 
-	if (automaticRadiusEnabled == true)
-		ex_Radius = in_Radius * userRadiusFactor;
-	else
-		ex_Radius = userRadiusFactor;
+	ex_Radius = in_Radius;
 
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
 	gl_Position = projMatrix * ccPosition;
@@ -160,13 +131,7 @@ void main(void) {
 
 	vec3 color = vec3 (0.0, 0.0f, 0.0f);
 
-	//Diffuse
-	if (colorEnabled == true) {
-		vec3 lightDirection = vec3(0.0,0.0,1.0f);
-		float dotValue = max(dot(normalize(normalMatrix * in_Normals), lightDirection), 0.0);
-		ex_Color = vec3(dotValue) + color; }
-	else
-		ex_Color = in_Color;
+	ex_Color = in_Color;
 
 	ex_Pz = ccPosition.z;
 }
@@ -202,7 +167,7 @@ void main(void) {
 \end{lstlisting}
 \vfill
 
-\section{Perspective Correct Rasterization}
+\section{Perspective Correct Rasterization \label{perspective}}
 
 \textbf{Vertex Shader}
 \begin{lstlisting} [frame=single]
@@ -232,10 +197,7 @@ out vec3 normals;
 void main(void) {
 	normals = normalize(normalMatrix * in_Normals);
 
-	if (automaticRadiusEnabled == true)
-		ex_Radius = in_Radius * userRadiusFactor;
-	else
-		ex_Radius = userRadiusFactor;
+	ex_Radius = in_Radius;
 
 	ccPosition = viewMatrix * vec4(in_Position, 1.0);
 	gl_Position = projMatrix * ccPosition;
@@ -248,6 +210,398 @@ void main(void) {
 	ex_Color = in_Color;
 }
 \end{lstlisting}
+\newpage
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 400
+uniform mat4 viewMatrix;
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+uniform int lightCount;
+uniform vec3 lightPosition[16];
+uniform vec3 lightColor[16];
+uniform float lightIntensity[16];
+
+in float ex_Radius;
+in  vec3 ex_Color;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+out vec4 out_Color;
+
+void main(void) {
+
+	vec3 qn;
+	qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+	qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+	qn.z = -n;
+
+	float denom = dot (qn, normals);
+
+	if (denom == 0.0)
+		discard;
+
+	float timef = dot (ccPosition.xyz, normals ) / denom;
+
+	vec3 q = qn * timef;
+	vec3 testq = q;
+	
+	vec3 dist = (q - ccPosition.xyz);
+
+	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+		discard;
+
+	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+
+	out_Color = vec4(ex_Color, 1.0f);
+}
+\end{lstlisting}
+\newpage
+
+\section{Gouraud \label{gouraud}}
+\subsection{Visibility Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+
+in  vec3 in_Position;
+in 	vec3 in_Normals;
+in  float in_Radius;
+
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+
+void main(void) {
+
+	ex_Radius = in_Radius;
+
+	normals = normalize(normalMatrix * in_Normals);
+
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
+}
+\end{lstlisting}
+\newpage
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+in float ex_Radius;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+void main(void) {
+
+	vec3 qn;
+	qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+	qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+	qn.z = -n;
+
+	float denom = dot (qn, normals);
+
+	if (denom == 0.0)
+		discard;
+
+	float timef = dot (ccPosition.xyz, normals ) / denom;
+
+	vec3 q = qn * timef;
+	
+	vec3 dist = (q - ccPosition.xyz);
+
+	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+		discard;
+
+	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+
+}
+\end{lstlisting}
+\newpage
+
+\subsection{Blending Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+
+in float in_Radius;
+in  vec3 in_Position;
+in  vec3 in_Color;
+in 	vec3 in_Normals;
+
+out vec3 ex_Color;
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+void main(void) {
+	normals = normalize(normalMatrix * in_Normals);
+
+	ex_Radius = in_Radius;
+
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2*ex_Radius * (n / ccPosition.z) * (h / (t-b));
+
+	//Backface Culling
+	if (dot (ccPosition.xyz, normals) > 0)
+		gl_Position.w = 0;
+
+	ex_Color = in_Color;
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix;
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+uniform int lightCount;
+uniform vec3 lightPosition[16];
+uniform vec3 lightColor[16];
+uniform float lightIntensity[16];
+
+in float ex_Radius;
+in  vec3 ex_Color;
+in 	vec3 ex_UxV;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+layout (location = 0) out vec4 out_Color;
+
+void main(void) {
+
+	vec3 qn;
+	qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+	qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+	qn.z = -n;
+
+	float denom = dot (qn, normals);
+
+	if (denom == 0.0)
+		discard;
+
+	float timef = dot (ccPosition.xyz, normals ) / denom;
+
+	vec3 q = qn * timef;
+	vec3 testq = q;
+
+	vec3 dist = (q - ccPosition.xyz);
+
+	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+		discard;
+
+	vec3 epsilon = normalize(qn)/40.0f;
+	q = q - epsilon;
+
+	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+	float weight = (1.0f - length(dist)/ex_Radius);
+
+	vec3 color = ex_Color;
+
+	//Diffuse
+	vec3 dotValue = vec3(0,0,0);
+	for (int i = 0; i < lightCount; i++) {
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition[i], 1.0f)).xyz;
+		vec3 lithToQ = normalize(ccLightPosition - testq);
+		dotValue += vec3(max(dot(normals, lithToQ), 0.0)) * lightIntensity[i] * lightColor[i];
+	}
+
+	out_Color = vec4(dotValue + color, 1.0f);
+}
+\end{lstlisting}
+\newpage
+
+\subsection{Normalization Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+in  vec3 in_Position;
+in 	vec3 in_Color;
+
+out vec4 out_Color;
+
+void main(void)
+{
+	gl_Position = vec4(in_Position, 1.0);
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform sampler2DRect blendTexture;
+
+out vec4 out_Color;
+
+void main(void) {
+	vec4 textureColor = texture(blendTexture, gl_FragCoord.xy);
+
+	if (textureColor.a <= 0.0f)
+		discard;
+
+	out_Color = vec4(textureColor.rgb/textureColor.a, 1.0f);
+}
+\end{lstlisting}
+\newpage
+
+\section{Phong \label{phong}}
+\subsection{Visibility Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+
+in  vec3 in_Position;
+in 	vec3 in_Normals;
+in  float in_Radius;
+
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+
+void main(void) {
+
+ex_Radius = in_Radius;
+
+normals = normalize(normalMatrix * in_Normals);
+
+ccPosition = viewMatrix * vec4(in_Position, 1.0);
+gl_Position = projMatrix * ccPosition;
+gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
+}
+\end{lstlisting}
+\newpage
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+in float ex_Radius;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+void main(void) {
+
+vec3 qn;
+qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+qn.z = -n;
+
+float denom = dot (qn, normals);
+
+if (denom == 0.0)
+discard;
+
+float timef = dot (ccPosition.xyz, normals ) / denom;
+
+vec3 q = qn * timef;
+
+vec3 dist = (q - ccPosition.xyz);
+
+if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+discard;
+
+gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+
+}
+\end{lstlisting}
+\newpage
+
+\subsection{Blending Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 400
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+
+in float in_Radius;
+in  vec3 in_Position;
+in  vec3 in_Color;
+in 	vec3 in_Normals;
+
+out vec3 ex_Color;
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+void main(void) {
+	normals = normalize(normalMatrix * in_Normals);
+
+	ex_Radius = in_Radius;
+
+	//p. 277
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
+
+	//BackFace Culling
+	if (dot (ccPosition.xyz, normals) > 0)
+		gl_Position.w = 0;
+
+	ex_Color = in_Color;
+}
+\end{lstlisting}
+\newpage
 
 \textbf{Fragment Shader}
 \begin{lstlisting} [frame=single]
@@ -291,24 +645,302 @@ void main(void) {
 
 	vec3 q = qn * timef;
 	vec3 testq = q;
-	
+
 	vec3 dist = (q - ccPosition.xyz);
 
 	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
 		discard;
 
+	vec3 epsilon = normalize(qn)/40.0f;
+	q = q - epsilon;
+
 	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
 
-	vec3 color = ex_Color;
-	if (colorEnabled == true)
-		color = vec3(0,0,0);
+	//Phong
+	float weight = (1.0f - length(dist)/ex_Radius);
+	vec3 phongNormal = normalize((q + normals) - ccPosition.xyz);
 
+	vec3 color = ex_Color;
 	//Diffuse
 	vec3 dotValue = vec3(0,0,0);
 	for (int i = 0; i < lightCount; i++) {
 		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition[i], 1.0f)).xyz;
 		vec3 lithToQ = normalize(ccLightPosition - testq);
-		dotValue += vec3(max(dot(normals, lithToQ), 0.0)) * lightIntensity[i] * lightColor[i];
+	dotValue += vec3(max(dot(normals, lithToQ), 0.0)) * lightIntensity[i] * lightColor[i];
+	}
+
+	out_Color = vec4(dotValue + color, 1.0f * weight);
+
+}
+\end{lstlisting}
+\newpage
+
+\subsection{Normalization Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+in  vec3 in_Position;
+in 	vec3 in_Color;
+
+out vec4 out_Color;
+
+void main(void)
+{
+gl_Position = vec4(in_Position, 1.0);
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform sampler2DRect blendTexture;
+
+out vec4 out_Color;
+
+void main(void) {
+vec4 textureColor = texture(blendTexture, gl_FragCoord.xy);
+
+if (textureColor.a <= 0.0f)
+discard;
+
+out_Color = vec4(textureColor.rgb/textureColor.a, 1.0f);
+}
+\end{lstlisting}
+\newpage
+
+\section{Deferred \label{deferred}}
+\subsection{Visibility Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+
+in  vec3 in_Position;
+in 	vec3 in_Normals;
+in  float in_Radius;
+
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+
+void main(void) {
+
+ex_Radius = in_Radius;
+
+normals = normalize(normalMatrix * in_Normals);
+
+ccPosition = viewMatrix * vec4(in_Position, 1.0);
+gl_Position = projMatrix * ccPosition;
+gl_PointSize = 2 * ex_Radius * (n / ccPosition.z) * (h / (t-b));
+}
+\end{lstlisting}
+\newpage
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+in float ex_Radius;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+layout (location = 1) out vec3 out_Position;
+
+void main(void) {
+
+vec3 qn;
+qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+qn.z = -n;
+
+float denom = dot (qn, normals);
+
+if (denom == 0.0)
+discard;
+
+float timef = dot (ccPosition.xyz, normals ) / denom;
+
+vec3 q = qn * timef;
+
+vec3 dist = (q - ccPosition.xyz);
+
+if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+discard;
+
+out_Position = q;
+gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+
+}
+\end{lstlisting}
+\newpage
+
+\subsection{Blending Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix, projMatrix;
+uniform mat3 normalMatrix;
+uniform int h; //Height of the viewport
+uniform float n; //Near parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+
+in float in_Radius;
+in  vec3 in_Position;
+in  vec3 in_Color;
+in 	vec3 in_Normals;
+
+out vec3 ex_Color;
+out float ex_Radius;
+
+out vec4 ccPosition; //position in Camera Coordinates
+out vec3 normals;
+
+void main(void) {
+	normals = normalize(normalMatrix * in_Normals);
+
+	ex_Radius = in_Radius;
+
+	ccPosition = viewMatrix * vec4(in_Position, 1.0);
+	gl_Position = projMatrix * ccPosition;
+	gl_PointSize = 2*ex_Radius * (n / ccPosition.z) * (h / (t-b));
+
+	//Backface Culling
+	if (dot (ccPosition.xyz, normals) > 0)
+		gl_Position.w = 0;
+
+	ex_Color = in_Color;
+}
+\end{lstlisting}
+\newpage
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+in float ex_Radius;
+in  vec3 ex_Color;
+in  vec3 normals;
+in 	vec4 ccPosition;
+
+layout (location = 0) out vec4 out_Color;
+layout (location = 1) out vec4 out_Normals;
+
+void main(void) {
+
+	vec3 qn;
+	qn.x = (gl_FragCoord.x ) *  ((r - l)/w ) - ( (r - l)/2.0 );
+	qn.y = (gl_FragCoord.y ) *  ((b - t)/h ) - ( (b - t)/2.0 );
+	qn.z = -n;
+
+	float denom = dot (qn, normals);
+
+	if (denom == 0.0)
+		discard;
+
+	float timef = dot (ccPosition.xyz, normals ) / denom;
+
+	vec3 q = qn * timef;
+
+	vec3 dist = (q - ccPosition.xyz);
+
+	if ((dist.x * dist.x) + (dist.y * dist.y) + (dist.z * dist.z) > pow(ex_Radius, 2))
+		discard;
+
+	vec3 epsilon = normalize(qn)/40.0f;
+	q = q - epsilon;
+
+	gl_FragDepth = ((1.0 / q.z) * ( (f * n) / (f - n) ) + ( f / (f - n) ));
+	float weight = (1.0f - length(dist)/ex_Radius);
+
+	out_Color = vec4(ex_Color.rgb, 1.0f * weight); 
+	out_Normals = vec4(normals, 1.0f * weight);
+}
+\end{lstlisting}
+\newpage
+
+\subsection{Normalization Pass}
+\textbf{Vertex Shader}
+\begin{lstlisting} [frame=single]
+#version 400
+in  vec3 in_Position;
+in 	vec3 in_Color;
+
+out vec4 out_Color;
+
+void main(void) {
+	gl_Position = vec4(in_Position, 1.0);
+}
+\end{lstlisting}
+
+\textbf{Fragment Shader}
+\begin{lstlisting} [frame=single]
+#version 410
+uniform mat4 viewMatrix;
+uniform float n; //Near parameter of the viewing frustum
+uniform float f; //Far parameter of the viewing frustum
+uniform float t; //Top parameter of the viewing frustum
+uniform float b; //Bottom parameter of the viewing frustum
+uniform float r; //Right parameter of the viewing frustum
+uniform float l; //Left parameter of the viewing frustum
+uniform int h; 	 //Height of the viewport
+uniform int w; 	 //Width of the viewport
+
+uniform int lightCount;
+uniform vec3 lightPosition[16];
+uniform vec3 lightColor[16];
+uniform float lightIntensity[16];
+
+uniform sampler2DRect blendTexture;
+uniform sampler2DRect normalTexture;
+uniform sampler2DRect positionTexture;
+
+out vec4 out_Color;
+
+void main(void)
+{
+	vec4 textureColor = texture(blendTexture, gl_FragCoord.xy);
+
+	if (textureColor.a <= 0.0f)
+		discard;
+
+	vec4 textureNormal = texture(normalTexture, gl_FragCoord.xy);
+
+	vec4 normalizedColor = vec4(textureColor.rgb/textureColor.a, 1.0f);
+	vec4 normalizedNormal = vec4(textureNormal.xyz/textureNormal.w, 1.0f);
+	vec3 q = texture(positionTexture, gl_FragCoord.xy).xyz;
+
+	vec3 color = normalizedColor.rgb;
+
+	//Lightning with the resultant normalized textures
+	vec3 dotValue = vec3(0,0,0);
+	for (int i = 0; i < lightCount; i++) {
+		vec3 ccLightPosition = (viewMatrix * vec4(lightPosition[i], 1.0f)).xyz;
+		vec3 ligthToQ = normalize(ccLightPosition - q);
+		dotValue += vec3(max(dot(normalize(normalizedNormal.xyz), ligthToQ), 0.0)) * lightIntensity[i] * lightColor[i];;
 	}
 
 	out_Color = vec4(dotValue + color, 1.0f);

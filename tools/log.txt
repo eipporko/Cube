@@ -1,0 +1,150 @@
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 640x480
+0.0155086
+0.016127
+0.0161254
+0.0161042
+0.0160216
+0.016112
+0.016098
+0.016114
+0.0160898
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 645x482
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 656x487
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 675x495
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 700x506
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 767x535
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 806x552
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 854x572
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 947x611
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 997x632
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1047x654
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1133x691
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1172x707
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1257x743
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1271x749
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1280x752
+0.0155618
+0.01607
+0.0161668
+0.0161161
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 6000 Points | 0 Lights | 1280x752
+0.0159986
+0.0162009
+0.0160962
+0.0160891
+0.0160914
+0.0161066
+0.0161425
+0.0161379
+0.016115
+0.016095
+0.0161581
+0.0160925
+0.0161014
+0.016371
+0.0158127
+0.0161526
+0.0170216
+CUBE | Sized-Fixed Points | Flat Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+0.038958
+0.0367348
+0.0373034
+0.0292713
+0.0284223
+0.0324
+0.0343804
+0.0336381
+0.0331087
+0.0331457
+0.0331354
+0.027914
+0.0255761
+0.0350916
+0.0365338
+0.0364127
+0.0350043
+0.0308624
+0.0311886
+CUBE | Square Size - Corrected by Depth | Flat Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+0.0383979
+0.0317084
+0.0333848
+0.0349354
+0.0353398
+0.0311383
+CUBE | Affinely Projected Point Sprites | Flat Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+0.157368
+0.178021
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+0.265209
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 1 Lights | 1280x752
+0.362271
+0.372818
+0.372821
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 1 Lights | 1280x752
+0.372863
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 3 Lights | 1280x752
+0.606402
+0.627708
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 5 Lights | 1280x752
+0.882717
+0.905629
+0.905558
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 7 Lights | 1280x752
+1.16926
+1.19325
+1.19326
+1.19322
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 9 Lights | 1280x752
+1.4418
+1.4644
+1.46439
+1.46438
+CUBE | Perspective Correct Rasterization | Flat Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 1 Lights | 1280x752
+0.693591
+0.693659
+0.693728
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 1 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 3 Lights | 1280x752
+0.708867
+0.710181
+0.710163
+0.710163
+0.710188
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 5 Lights | 1280x752
+0.729115
+0.730691
+0.73066
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 7 Lights | 1280x752
+0.749758
+0.75148
+0.75149
+0.751432
+0.751572
+0.751542
+0.751589
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 9 Lights | 1280x752
+0.770588
+0.772296
+0.772339
+0.772353
+CUBE | Perspective Correct Rasterization | Gouraud Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Phong Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 0 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 1 Lights | 1280x752
+0.694954
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 1 Lights | 1280x752
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 3 Lights | 1280x752
+0.69573
+0.695959
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 5 Lights | 1280x752
+0.696596
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 7 Lights | 1280x752
+0.69741
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 9 Lights | 1280x752
+0.698235
+0.698315
+0.698399
+CUBE | Perspective Correct Rasterization | Deferred Shading | RGB | 1223693 Points | 0 Lights | 1280x752
