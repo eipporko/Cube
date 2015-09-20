@@ -12,16 +12,47 @@ Este capítulo se presenta como un resumen a los diferentes métodos de render bas
 %
 % SECCION - Técnicas de rasterización
 %
+\section[Primitivas en nubes de puntos]{
+	Primitivas en nubes de puntos
+	\label{s_primitivas}
+}
+
+\subsection{Surfel}
+
+Los puntos de una nube son el resultado del muestreo de la superficie que representan, cada punto corresponde a un elemento de superficie describiendo la superficie de una pequeña vecindad. El \textit{surfel} (ver Figura \ref{figure_surfel}) es una primitiva diseñada para el renderizado de puntos y podría ser descrita únicamente mediante su posición y color o añadiendo otros parámetros como pueden ser la normal, radio, etc. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=7 cm]{../figures/surfel.eps}
+	\caption{Representación de un \textit{surfel} de una esfera.}
+	\label{figure_surfel}
+\end{figure}
+
+\subsection{Splat}
+
+Se podría ver la necesidad de trabajar con \textit{splats} que tuvieran asociado una máscara que modifique el canal \textit{alpha} (ver Figura \ref{figure_splat}), normalmente debido a que la muestra suele tener más relevancia en el centro del \textit{splat} debido a que el punto es la representación de un elemento diferencial de superficie. Este tipo de primitiva es conocida como \textit{splat}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width= 7 cm]{../figures/splat.eps}
+	\caption{Construcción de un \textit{splat}.}
+	\label{figure_splat}
+\end{figure}
+
+
+%
+% SECCION - Técnicas de rasterización
+%
 \section[Técnicas de rasterización]{
 	Técnicas de rasterización
 	\label{s_rasterizacion}
 }
 
-El primer paso en el render de nubes de puntos, es determinar según la proyección de los splats que píxeles en el framebuffer serán cubiertos por ellos. Puesto que no existe soporte el las librerías actuales para representar este tipo de primitivas, los splats tendrán que ser representados por otras como puntos o triángulos. De entre esas dos opciones, se  considera como más eficiente los puntos por delante de los triángulos, ya que por cada splat unicamente hay que almacenar la posición de un vértice en lugar de tres. Finalmente para renderizar la nube, habrá que dibujar el \textit{VBO}, pasándole el tipo \textit{GL\_POINTS}
+El primer paso en el render de nubes de puntos, es determinar según la proyección de los \textit{surfels} que píxeles en el framebuffer serán cubiertos por ellos. Puesto que no existe soporte el las librerías actuales para representar este tipo de primitivas, los \textit{surfels} tendrán que ser representados por otras como puntos o triángulos. De entre esas dos opciones, se  considera como más eficiente los puntos por delante de los triángulos, ya que por cada \textit{surfel} unicamente hay que almacenar la posición de un vértice en lugar de tres. Finalmente para renderizar la nube, habrá que dibujar el \textit{VBO}, pasándole el tipo \textit{GL\_POINTS}
 \\
 \lstset{language=C, breaklines=true, basicstyle=\footnotesize}
 \begin{lstlisting}[frame=single]
-glDrawArrays(GL_POINTS, &splats[0], splats.size());
+glDrawArrays(GL_POINTS, &surfels[0], surfels.size());
 \end{lstlisting}
 
 \subsection[Sized-Fixed Points] {Sized-Fixed Points \label{ss_sized}}
@@ -50,7 +81,7 @@ En el anterior paso, el tamaño de la representación que cada punto tomaba en el 
 
 De esta manera, si en lugar de entender el tamaño del punto como los pixeles que va a ocupar en la imagen final, se interpreta como una medida dentro del modelo, que podría ser el radio \textbf{r} del splat, al representarse, estos puntos tendrían que ser coherentes con su proyección.
 
-Así que el tamaño en el \textit{screen-space} del punto OpenGL proyectado, tiene que ser ajustado en el \textit{vertex shader}. El tamaño \cite{perspcorrect} se aproxima haciendo el escorzo \textit{(perspective foreshort)} del radio $ r $ del splat usando el \textit{depth value} del centro \textbf{p} que ha de estar en coordenadas de la cámara.
+Así que el tamaño en el \textit{screen-space} del punto OpenGL proyectado, tiene que ser ajustado en el \textit{vertex shader}. El tamaño \cite{perspcorrect} se aproxima haciendo el escorzo \textit{(perspective foreshort)} del radio $ r $ del \textit{surfel} usando el \textit{depth value} del centro \textbf{p} que ha de estar en coordenadas de la cámara.
 
 \begin{eqnarray}
 gl\_PointSize = 2r \cdot \dfrac{n}{p_{z}} \cdot \dfrac{g}{t - b'}
@@ -94,7 +125,7 @@ if (length(test) > 0.5)
     discard;
 \end{lstlisting}
 
-Uno de los inconvenientes usando Image-aligned Squares \ref{ss_image-aligned_squares} era que el valor de profundidad era constante por splat. Pero $ \delta z $ puede ser usado también para corregir esto. Partiendo de un valor de profundidad en espacio de la cámara $ z' = p_{z} + \delta z $ y el frustum el valor de profundidad del $ zbuffer(x,y) $ puede ser modificado
+Uno de los inconvenientes usando Image-aligned Squares \ref{ss_image-aligned_squares} era que el valor de profundidad era constante por \textit{surfel}. Pero $ \delta z $ puede ser usado también para corregir esto. Partiendo de un valor de profundidad en espacio de la cámara $ z' = p_{z} + \delta z $ y el frustum el valor de profundidad del $ zbuffer(x,y) $ puede ser modificado
 
 \begin{equation}
 zbuffer(x,y) = \dfrac{1}{z'} \cdot \dfrac{fn}{f - n} + \dfrac{f}{f - n}
@@ -138,7 +169,7 @@ q_{n} =
 
 Donde \textit{x/y} son las coordenadas relativas a la ventana \textit{gl\_FragCoord.xy}, \textit{b/t/l/r} son los parámetros \textit{bottom/top/left/right} del \textit{viewing frustum}, y \textit{w/h} denotan la \textit{altura/anchura} del \textit{viewport} (ver Figura \ref{figure_perspective_correct}).
 
-Se proyectará un rayo desde el origen (el ojo de la cámara) a traves de {$ \mathbf{q_{n}} $} y la intersección con el plano del \textit{splat} \textbf{p} dará como resultado el punto \textbf{q}. En caso de que $ q_{n} \cdot n = 0 $ se determinará que el el ángulo el por lo que se podrá descartar el \textit{splat}. 
+Se proyectará un rayo desde el origen (el ojo de la cámara) a traves de {$ \mathbf{q_{n}} $} y la intersección con el plano del \textit{surfel} \textbf{p} dará como resultado el punto \textbf{q}. En caso de que $ q_{n} \cdot n = 0 $ se determinará que el el ángulo el por lo que se podrá descartar el \textit{surfel}. 
 
 \begin{equation}
 q = q_{n} * \dfrac{p \cdot n}{q_{n} \cdot n}
@@ -164,12 +195,12 @@ Ver Apéndice Shaders \ref{perspective}
 	\label{s_blending}
 }
 
-Luego de determinar los pixels que son cubiertos por la proyección de los \textit{splats} en el anterior paso de rasterización, el siguiente implica iluminación y en general el acabado estético de la superficie \textit{shading}.
+Luego de determinar los pixels que son cubiertos por la proyección de los \textit{surfels} en el anterior paso de rasterización, el siguiente implica iluminación y en general el acabado estético de la superficie \textit{shading}.
 
 % Subsección
 \subsection[Flat Shading] {Flat Shading \label{ss_flat}}
 
-Puesto que cada punto tiene asociado un vector normal \textbf{n}, para unas ciertas propiedades de material y reflectancia una iluminación local puede ser evaluada por \textit{splat}. Como resultado se obtendrá una constante de color $ \mathbf{c_{i}} $ para cada splat, similar al \textit{flat shading} en modelos poligonales. Ya que los puntos tienden a intersecar unos con otros, las representaciones mediante \textit{flat shading} conllevan a discontinuidades en el color.
+Puesto que cada punto tiene asociado un vector normal \textbf{n}, para unas ciertas propiedades de material y reflectancia una iluminación local puede ser evaluada por \textit{surfel}. Como resultado se obtendrá una constante de color $ \mathbf{c_{i}} $ para cada \textit{surfel}, similar al \textit{flat shading} en modelos poligonales. Ya que los puntos tienden a intersecar unos con otros, las representaciones mediante \textit{flat shading} conllevan a discontinuidades en el color.
 
 \subsection[Gouraud Shading] {Gouraud Shading \label{ss_gouraud}}
 
@@ -180,9 +211,9 @@ Puesto que cada punto tiene asociado un vector normal \textbf{n}, para unas cier
 	\label{figure_blending_comparative}
 \end{figure}
 
-Para conseguir un render mas fino, las discontinuidades en el color provocadas por el \textit{shading} pueden ser emborronadas mediante \textit{blending} de los valores de color $ \mathbf{c_{i}} $ de los puntos que se están superponiendo. Puesto que los cálculos de iluminación todavía son computados por \textit{splat}, este tipo de \textit{blending} del color, conceptualmente corresponde al \textit{Gouraud shading} de modelos poligonales.
+Para conseguir un render mas fino, las discontinuidades en el color provocadas por el \textit{shading} pueden ser emborronadas mediante \textit{blending} de los valores de color $ \mathbf{c_{i}} $ de los puntos que se están superponiendo. Puesto que los cálculos de iluminación todavía son computados por \textit{surfel}, este tipo de \textit{blending} del color, conceptualmente corresponde al \textit{Gouraud shading} de modelos poligonales.
 
-Para implementar este tipo de \textit{blending} cada punto de la nube irá asociado con una función, de modo que para cada \textit{splat} sus fragmentos irán teniendo menor peso $ \mathbf{r}$ cuanto mas alejados de su centro estén, teniendo así menor impacto en la mezcla final de color $ \mathbf{c(x, y)} $. De manera que en la reconstrucción final del \textit{framebuffer}, el color de la posición $ (x,y) $ vendrá dado por el peso promedio de todos los fragmentos $ \mathbf{i} $ que intenten cubrirlo.
+Para implementar este tipo de \textit{blending} cada punto de la nube irá asociado con una función, de modo que para cada \textit{surfel} sus fragmentos irán teniendo menor peso $ \mathbf{r}$ cuanto mas alejados de su centro estén dando como lugar a un \textit{splat}, teniendo así menor impacto en la mezcla final de color $ \mathbf{c(x, y)} $. De manera que en la reconstrucción final del \textit{framebuffer}, el color de la posición $ (x,y) $ vendrá dado por el peso promedio de todos los fragmentos $ \mathbf{i} $ que intenten cubrirlo.
 
 \begin{equation}
 \mathbf{c}(x,y) = \dfrac{\sum_{i}^{} r_{i}(x,y) \; c_{i}}{\sum_{i}^{} r_{i}(x,y)}
