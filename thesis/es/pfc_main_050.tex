@@ -296,13 +296,6 @@ Ver Apéndice Shaders \ref{phong}
 
 Básicamente existen dos formas para generar interpolaciones suavizadas de vectores de normales. La primera es \textit{Phong} que como se comentó en el anterior apartado, utiliza funciones para calcular el campo de normales de un \textit{splat}. Una segunda opción pasaría por la denominada como \textit{deferred} en la que en lugar de mezclar en un misma fase color y normales, estas se calculan de forma separada.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\textwidth]{../figures/deferred_pipeline.eps}
-	\caption{El renderizado mediante \textit{Deferred Shading} acumula atributos como color y normales, seguido por una normalización y un shading pass.}
-	\label{figure_deferred_pipeline}
-\end{figure}
-
 Recientes generaciones de \textit{GPU} contienen todo lo necesario para implementear esta aproximación, que gracias al denominado \textit{multiple render targets} (\textit{ARB\_DRAW\_BUFFERS}) permite que en un simple pase de \textit{render} se puedan sacar diferentes resultados a diferentes \textit{buffers}, estas características habilitan la opción para poder implementar una iluminación por pixel (\textit{deferred}) en este contexto, como se demostró en \textit{Botsch et al.}~\cite{deferred}
 
 Primeramente en el pase de visibilidad (ver Figura \ref{figure_deferred_pipeline}, izquierda), se hará una modificación para poder sacar en un target a parte la posición 3D del fragmento, \textbf{q} (ver. Ecuación \ref{q}) ya que será necesario para el pase final. Luego, en el pase de acumulación y blend (ver Figura \ref{figure_deferred_pipeline}, centro) se usarán 2 targets adicionales para sacar la salida referente al color y de las normales de manera separada, usando el mismo proceso de acumulación que en \textit{Gouraud}. Finalmente estos 3 \textit{buffers} serán enviados de nuevo al \textit{pipeline} de OpenGL, usando el método de \textit{render to texture} comentado previamente, con motivo de su normalización.
@@ -312,6 +305,13 @@ Este último pase (ver Figura \ref{figure_deferred_pipeline}, derecha), correspon
 Es importante darse de cuenta de que en este método los cálculos derivados de la iluminación son computados una única vez por pixel, en contraste con las aproximaciones que no son \textit{deferred} que incorporan este proceso en el momento de la rasterización, consiguiendo el color final del pixel a partir de la mezcla de muchos pixels de diferentes \textit{splats} iluminados previamente. Dependiendo del número de \textit{splats} superpuestos, esto puede llegar a multiplicar el numero de cálculos derivados de la iluminación.
 
 Además a esto, \textit{deferred shading} añade también una clara separación entre la fase de rasteriación y de iluminación.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/deferred_pipeline.eps}
+	\caption{El renderizado mediante \textit{Deferred Shading} acumula atributos como color y normales, seguido por una normalización y un shading pass.}
+	\label{figure_deferred_pipeline}
+\end{figure}
 
 Ver Apéndice Shaders \ref{deferred}
 
