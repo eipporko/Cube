@@ -238,13 +238,13 @@ mapeando esta textura en el. Este truco conocido como
 \textit{pipeline} de OpenGL, de modo que un simple \textit{fragment
   shader} puede realizar esta normalización, como la propuesta en \textit{Botsch and Kobbelt}~\cite{affinely} y en \textit{Guennebaud and Paulin}~\cite{Efficient_screen}. Esta acumulación debe de ser realizada usando \textit{buffers} con precisión de punto flotante de 16 bits, con motivo de evitar saturaciones o artefactos.
 
-Para restringir el \textit{blend} únicamente a la superposición de los \textit{splats} vecinos de la misma superficie. Es necesario un tercer pase, denominado de visibilidad. Para cada \textit{frame}, el pase de visibilidad primero renderiza la nube unicamente en el \textit{depth buffer}. Luego en el pase de \textit{blending} se renderiza la nube de nuevo, pero esta vez calculando iluminación y acumulando el valor resultante de color usando \textit{additive alpha-blending} como lo descrito anteriormente. En este pase no se debe de actualizar el \textit{z-buffer} calculado en el pase de visibilidad, pero sí se añade un desplazamiento $\epsilon$ a todos los valores de profundidad~\cite{surface_splatting}, lo que provocará que todos los fragmentos dentro de una distancia $\epsilon$ sean mezclados. El pase final de normalización realiza la necesaria división por el componente \textit{alpha} como se describió anteriormente. El resultado de los tres pases de render es representado en la Figura \ref{figure_gouraud_pipeline}.
+Para restringir el \textit{blend} únicamente a la superposición de los \textit{splats} vecinos de la misma superficie. Es necesario un tercer pase, denominado de visibilidad. Para cada \textit{frame}, el pase de visibilidad primero renderiza la nube unicamente en el \textit{depth buffer}. Luego en el pase de \textit{blending} se renderiza la nube de nuevo, pero esta vez calculando iluminación y acumulando el valor resultante de color usando \textit{additive alpha-blending} como lo descrito anteriormente. En este pase no se debe de actualizar el \textit{z-buffer} calculado en el pase de visibilidad, pero sí se añade un desplazamiento $\epsilon$ (ver Figura \ref{figure_epsilondepth}) a todos los valores de profundidad~\cite{surface_splatting}, lo que provocará que todos los fragmentos dentro de una distancia $\epsilon$ sean mezclados. El pase final de normalización realiza la necesaria división por el componente \textit{alpha} como se describió anteriormente. El resultado de los tres pases de render es representado en la Figura \ref{figure_gouraud_pipeline}.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{../figures/gouraud-pipeline.eps}
-	\caption{Los tres pases, \textit{visibility}, \textit{blending}, y \textit{normalization}.}
-	\label{figure_gouraud_pipeline}
+	\includegraphics[width=10 cm]{../figures/epsilondepth.eps}
+	\caption{Correción del \textit{depth buffer} con un valor $\epsilon$.}
+	\label{figure_epsilondepth}
 \end{figure}
 
 El \textit{pseudocode} sería el siguiente
@@ -266,6 +266,13 @@ glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, w, h);
 bind_normalization_shaders();
 draw_rectangle();
 \end{lstlisting}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{../figures/gouraud-pipeline.eps}
+	\caption{Los tres pases, \textit{visibility}, \textit{blending}, y \textit{normalization}.}
+	\label{figure_gouraud_pipeline}
+\end{figure}
 
 Ver Apéndice Shaders \ref{gouraud}
 
