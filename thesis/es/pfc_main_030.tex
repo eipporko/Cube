@@ -99,7 +99,7 @@ Para ilustrar como las transformaciones son representadas por una matriz $4 \tim
 1& 0 & 0 & \Delta x\\ 
 0& 1 & 0 & \Delta y\\ 
 0& 0 & 1 & \Delta z\\ 
-0& 0 &0  & 0
+0& 0 &0  & 1
 \end{pmatrix}\end{equation}
 
 Esta transformación es aplicada al punto $P=(x,y,z)$ de la siguiente forma:
@@ -107,7 +107,7 @@ Esta transformación es aplicada al punto $P=(x,y,z)$ de la siguiente forma:
 1& 0 & 0 & \Delta x\\ 
 0& 1 & 0 & \Delta y\\ 
 0& 0 & 1 & \Delta z\\ 
-0& 0 & 0 & 0
+0& 0 & 0 & 1
 \end{pmatrix} \begin{pmatrix}
 x\\
 y\\
@@ -145,9 +145,7 @@ El primer parámetro que el modelo de la cámara soporta es la \textbf{posición}. 
 El siguiente parámetro soportado es el de la rotación. Este parámetro es un punto en el mundo hacia donde la cámara estará mirando.
 También necesitamos saber cómo orientar la cámara a lo largo de la dirección de visión implícita por los dos primeros parámetros .
 
-También es necesario conocer como está orientada la cámara con respecto a la dirección en la que se está mirando implicado por los 2 primeros parámetros. El parámetro \textit{up vector} nos da esa orientación.
-
-Podremos ver como estos parámetros están organizados en el espacio de la cámara en .
+También es necesario conocer como está orientada la cámara con respecto a la dirección en la que se está mirando implicado por los 2 primeros parámetros. El parámetro \textit{vector up} nos da esa orientación.
 
 Otros parámetros importantes en el modelo de la cámara son los planos de \textit{clipping}, que nos darán el rango a lo largo del eje \textit{z} que dejará que los objetos dentro de el sean renderizados. \textbf{Near} establece la posición del plano cercano y \textbf{far} indica la posición del plano de \textit{clipping} lejano.
 
@@ -155,7 +153,7 @@ El último parámetro que la cámara soporta es el \textbf{campo de visión}. El áng
 
 Los planos de \textit{clipping} y los ángulos de visión define el \textit{viewing volume} en el modelo, también conocido como \textit{viewing frustum}. 
 
-El usuario también tiene la opción de usar entre una cámara con proyección \textbf{perspectiva} o \textbf{ortográfica} dependiendo de las necesidades. En arquitectura por ejemplo se suele preferir una cámara ortográfica, mientras que un usuario normal suele preferir una en perspectiva puetso que el campo de visión da un resultado más natural. (ver Figura \ref{figure_diferencia_camara})
+El usuario también tiene la opción de usar entre una cámara con proyección \textbf{perspectiva} o \textbf{ortográfica} dependiendo de las necesidades. En arquitectura por ejemplo se suele preferir una cámara ortográfica, mientras que un usuario normal suele preferir una en perspectiva puesto que el campo de visión da un resultado más natural. (ver Figura \ref{figure_diferencia_camara})
 
 \begin{figure} [H]
 	\centering
@@ -168,7 +166,7 @@ La proyección ortográfica es mas comunmente utilizada en ingeniería puesto que l
 
 \subsection{Funcionamiento interno de la cámara}
 
-Una vez que se tienen los parámetros que se necesitan para localizar la cámara en escena, usaremos una transformación \textit{mirar a} para este propósito. Usando esta transformación como matriz de vista nos dará una transformación entre coordenadas del mundo y la cámara como se mencionó anteriormente. La matriz es construida usando la posición ($p$), orientación ($o$) y up vector ($u$).
+Una vez que se tienen los parámetros que se necesitan para localizar la cámara en escena, usaremos una transformación \textit{mirar a} para este propósito. Usando esta transformación como matriz de vista nos dará una transformación entre coordenadas del mundo y la cámara como se mencionó anteriormente. La matriz es construida usando la posición ($p$), orientación ($o$) y \textit{vector up}($u$).
 
 Primero, un vector dirección $f$ es construido:
 \begin{equation}f = \frac{p - o}{\left \| p - o \right \|}\end{equation}
@@ -187,7 +185,7 @@ r_{z} & u'_{z} & f_{z} & 0\\
 0 & 0 & 0 & 1
 \end{bmatrix}\end{equation}
 
-Por último, para transformar objetos en el marco de la cámara; no sólo todo tiene que ser orientada correctamente, sino que también tiene que ser traducido desde el origen hasta la posición de la cámara. Esto se logra mediante la concatenación de la matriz de rotación $ R $ con la matriz correspondiente:
+Por último, para transformar objetos en el marco de la cámara; no sólo todo tiene que ser orientada correctamente, sino que también tiene que ser trasladado desde el origen hasta la posición de la cámara. Esto se logra mediante la concatenación de la matriz de rotación $ R $ con la matriz correspondiente:
 \begin{equation}\label{view}V = \begin{bmatrix}
 r_{x} & u'_{x} & f_{x} & -p_{x}\\ 
 r_{y} & u'_{y} & f_{y} & -p_{y}\\ 
@@ -199,7 +197,7 @@ La ecuación \ref{view} es la resultante  matriz \textit{mirar a} \textbf{\textit
 
 La siguiente fase dependerá del tipo de cámara que el usuario elija, ortogonal o perspectiva. En función de esta elección una matriz de proyección será escogida.
 
-Si es escogida una cámara perspectiva, tendremos que tener en cuenta el efecto del escorzo mencionado anteriormente. Esta proyección no conserva distancias, ángulos, y paralelismo entre lineas.\emph{x} e \emph{y} serán modificadas de acuerdo al correspondiente valor de \textit{z}, que establece como de cerca a la cámara está un punto. Para obtener este efecto, una matriz perspectiva será utilizada. Una matriz comunmente utilizada es la matriz \textit{frustum}. En ella el espacio homogéneo obtiene la forma de una pirámide truncada. Los parámetros usados para la construcción de esta matriz serían el \textbf{izquidara} ($l$), \textbf{derecha} ($r$), \textbf{arriba} ($t$), \textbf{abajo} ($b$), plano \textbf{near} ($n$) y \textbf{far} ($f$) del \textit{frustum}.
+Si es escogida una cámara perspectiva, tendremos que tener en cuenta el efecto del escorzo mencionado anteriormente. Esta proyección no conserva distancias, ángulos, y paralelismo entre lineas.\emph{x} e \emph{y} serán modificadas de acuerdo al correspondiente valor de \textit{z}, que establece como de cerca a la cámara está un punto. Para obtener este efecto, una matriz perspectiva será utilizada. Una matriz comunmente utilizada es la matriz \textit{frustum}. En ella el espacio homogéneo obtiene la forma de una pirámide truncada. Los parámetros usados para la construcción de esta matriz serían el \textbf{izquierda} ($l$), \textbf{derecha} ($r$), \textbf{arriba} ($t$), \textbf{abajo} ($b$), plano \textbf{near} ($n$) y \textbf{far} ($f$) del \textit{frustum}.
 
 $t$ es obtenida de la siguiente forma usando los parámetros de la cámara del \textbf{campo de visión} ($fov$) y el plano \textit{near} ($n$):
 \begin{equation}t = n \cdot tan(fov / 2) \end{equation} 

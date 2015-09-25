@@ -84,10 +84,10 @@ De esta manera, si en lugar de entender el tamaño del punto como los píxeles que
 Así que el tamaño en el \textit{screen-space} del punto OpenGL proyectado, tiene que ser ajustado en el \textit{vertex shader}. El tamaño \cite{perspcorrect} se aproxima haciendo el escorzo \textit{(perspective foreshort)} del radio $ r $ del \textit{surfel} usando el \textit{depth value} del centro \textbf{p} que ha de estar en coordenadas de la cámara.
 
 \begin{eqnarray}
-gl\_PointSize = 2r \cdot \dfrac{n}{p_{z}} \cdot \dfrac{g}{t - b'}
+gl\_PointSize = 2r \cdot \dfrac{n}{p_{z}} \cdot \dfrac{h}{t - b'}
 \end{eqnarray}
 
-Donde $ n $, $ t $ y $ b $ son los parámetros \textit{near/top/bottom} del \textit{view frustum} y $ h $ denota la altura (en píxeles) del \textit{viewport}. En esta fórmula el término $ n/z $ corresponde a la proyección en el plano \textit{near}, mientras que $ f/(t- b) $ escala el resultado desde el plano \textit{near} a coordenadas de la imagen.
+Donde $ n $, $ t $ y $ b $ son los parámetros \textit{near/top/bottom} del \textit{view frustum} y $ h $ denota la altura (en píxeles) del \textit{viewport}. En esta fórmula el término $ n/z $ corresponde a la proyección en el plano \textit{near}, mientras que $ h/(t- b) $ escala el resultado desde el plano \textit{near} a coordenadas de la imagen.
 
 Todos los píxeles, generados de un punto, tienen el mismo \textit{depth value} lo que imposibilita hacer uso de las técnicas blending en zonas que visualmente se estén superponiendo. (ver sección \ref{s_blending})
 
@@ -169,7 +169,7 @@ q_{n} =
 
 Donde \textit{x/y} son las coordenadas relativas a la ventana \textit{gl\_FragCoord.xy}, \textit{b/t/l/r} son los parámetros \textit{bottom/top/left/right} del \textit{viewing frustum}, y \textit{w/h} denotan la \textit{altura/anchura} del \textit{viewport} (ver Figura \ref{figure_perspective_correct}).
 
-Se proyectará un rayo desde el origen (el ojo de la cámara) a través de {$ \mathbf{q_{n}} $} y la intersección con el plano del \textit{surfel} \textbf{p} dará como resultado el punto \textbf{q}. En caso de que $ q_{n} \cdot n = 0 $ se determinará que el el ángulo el por lo que se podrá descartar el \textit{surfel}. 
+Se proyectará un rayo desde el origen (el ojo de la cámara) a través de {$ \mathbf{q_{n}} $} y la intersección con el plano del \textit{surfel} \textbf{p} dará como resultado el punto \textbf{q}. En caso de que $ q_{n} \cdot n = 0 $ se determinará que el ángulo del \textit{splat} es perpendicular con respecto de la cámara así que se podrá descartar. 
 
 \begin{equation}
 q = q_{n} * \dfrac{p \cdot n}{q_{n} \cdot n}
