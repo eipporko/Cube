@@ -48,25 +48,25 @@ class Camera;
 class Globals {
 private:
     Globals();
-    
+
 public:
     //Splat's radii
     static float userRadiusFactor;
     static float backupUserRadiusFactor;
-    
+
     //Light
     static vector<vector<Light*> > sceneLightsList;
     static int sceneLightsArrIndex;
-    
+
     //Window
     static string title;
-    
+
     static Camera* mainCamera;
-    
+
     //Mouse
     static double lastMouseX, lastMouseY; //last mouse position pressed;
     static bool leftBtnPress;
-    
+
     //Shaders
     static Shader* fxaaFilter;
     static GLuint textureID;    //texture for renderToTexture in fxaa
@@ -74,20 +74,20 @@ public:
     static unsigned int actualShader;
     static unsigned int actualMultipass;
     static vector<Shader> listOfShaders;
-    
+
     //Flags
     static bool MultipassEnabled;
     static bool FXAA;
     static bool colorEnabled;
     static bool automaticRadiusEnabled;
-    
+
     //Models
     static vector<VAO> models;
     static unsigned int actualVAO;
     static VAO* displayVAO;     //Pointer to the VAO to be rendered in display func
-    
+
     static void init();
-    
+
 };
 
 

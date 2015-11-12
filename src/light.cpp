@@ -39,14 +39,14 @@ Light::Light(glm::vec3 position, glm::vec3 color, float intensity) {
     this->position = position;
     this->color = color;
     this->intensity = intensity;
-    
+
     lights.push_back(this);
  }
 
 Light::~Light()
 {
     auto iter = find(lights.begin(), lights.end(), this);
-    
+
     if (iter != lights.end())
         lights.erase(iter);
 }
@@ -60,28 +60,28 @@ void Light::pushToGPU()  {
 
 
 void Light::resetAll() {
-    for (int i = 0; i < lights.size(); i++)
+    for (unsigned int i = 0; i < lights.size(); i++)
         lights[i]->position = lights[i]->initialPosition;
 }
 
 
 void Light::pushToGPU(vector<Light*> listOfLights) {
-    
+
     int counter = 0;
-    for (int i = 0; i < listOfLights.size()*3 ; i = i+3){
+    for (unsigned int i = 0; i < listOfLights.size()*3 ; i = i+3){
         lightPosition[i] = listOfLights[counter]->position.x;
         lightPosition[i+1] = listOfLights[counter]->position.y;
         lightPosition[i+2] = listOfLights[counter]->position.z;
-        
+
         lightColor[i] = listOfLights[counter]->color.r;
         lightColor[i+1] = listOfLights[counter]->color.g;
         lightColor[i+2] = listOfLights[counter]->color.b;
-        
+
         lightIntensity[counter] = listOfLights[counter]->intensity;
-        
+
         counter++;
     }
-    
+
     lightCount = listOfLights.size();
-    
+
 }

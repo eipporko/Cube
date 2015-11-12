@@ -7,11 +7,12 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake
 )
 
+find_package(X11 REQUIRED)
 #########################################################
 # FIND GLFW
 #########################################################
 find_package(GLFW)
-include_directories(${GLFW_INCLUDE_DIR})
+include_directories(${GLFW_INCLUDE_DIRS})
 #########################################################
 # FIND GLM
 #########################################################
@@ -47,9 +48,9 @@ add_definitions(${PCL_DEFINITIONS})
 
 
 
+
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -std=gnu++0x")
 endif()
 
 add_subdirectory(src)
-

@@ -33,14 +33,14 @@
 #include <glm/glm.hpp>
 
 class Camera {
-    
+
 private:
     float initialFovy;
     glm::vec3 initialPosition;
     glm::vec3 initialUpVector;
     float initialNearClipping;
     float initialFarClipping;
-    
+
     float fovy;
     glm::vec3 position;
     glm::vec3 lookVector;
@@ -50,7 +50,7 @@ private:
     float farClipping;
     float rotationXAxis;
     float rotationYAxis;
-    
+
 public:
     static Camera* activeCamera;
     static glm::mat4 projMatrix, viewMatrix;
@@ -58,9 +58,9 @@ public:
     static int h, w;
     static float n, f;
     static float top, bottom, right, left;
-    
+
     Camera(glm::vec3 cameraPosition);
-    
+
     //Getter & Setter
     void moveDistance(float amount);
     glm::vec3 getPosition() {return this->position; };
@@ -69,7 +69,7 @@ public:
     void reset();
     void rotate(float amountX, float amountY);
     void update(int width, int height);
-    
+
 };
 
 #endif

@@ -64,30 +64,30 @@ private:
     typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
     vector<float> radius;
     CloudType::Ptr cloud;
-    
+
     vector<float> getRadius();
     glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
-    
+
 public:
-    
+
     //Constructors
     VAO() { initialized = false; };
     VAO(int numOfVertices, int numOfTriangles, vector<glm::vec3>vertices, vector<glm::vec3>colors, vector<glm::vec3>normals, GLenum mode);
     VAO(CloudType::Ptr cloud);
-    
+
     ~VAO() {}; //delete cloud };
-    
+
     //Getters & Setters
     GLuint getVAOid() { return vaoID; };
     GLenum getMode() { return mode; };
     CloudType::Ptr getCloud() {return cloud; };
-    
+
     bool isValid () { return initialized; };
     void pushToGPU();
-    
+
     void sampleMesh(int samplesPerTriangle);
     void sampleSphere(int numOfSamples);
-    
+
 };
 
 #endif

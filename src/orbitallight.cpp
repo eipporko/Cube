@@ -27,6 +27,8 @@
 
 #include "orbitallight.h"
 
+#define GLM_FORCE_RADIANS
+
 #include <glm/gtx/rotate_vector.hpp>
 
 void OrbitalLight::update(){

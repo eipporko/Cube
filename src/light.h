@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include <glm/glm.hpp>
 
@@ -53,33 +54,33 @@ protected:
     glm::vec3 position;
     glm::vec3 color;
     float intensity;
-    
+
 public:
     static float lightPosition[MAX_LIGHTS*3];
     static float lightColor[MAX_LIGHTS*3];
     static float lightIntensity[MAX_LIGHTS];
     static int lightCount;
-    
+
     Light(glm::vec3 position, glm::vec3 color, float intensity);
-    
+
     ~Light();
-    
+
     //Getters & Setters
     void setPosition(glm::vec3 newPosition) { this->position = newPosition; };
     void setIntensity(float intensity) { this->intensity = intensity; };
     void setColor(glm::vec3 color) { this->color = color; };
-    
+
     virtual void update() {};
     void pushToGPU();
-    
+
     static int maxLights() {return MAX_LIGHTS; };
-    
+
     static void resetAll();
-    
+
     static void pushAllToGPU() { pushToGPU(lights); };
-    
+
     static void pushToGPU(vector<Light*> listOfLights);
-    
+
 };
 
 #endif /* defined(__CUBE__light__) */

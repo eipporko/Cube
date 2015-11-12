@@ -54,7 +54,7 @@ char* loadFile(string fname, GLint &fSize)
 	ifstream::pos_type size;
 	char * memblock;
 	string text;
-    
+
 	// file read based on example in cplusplus.com tutorial
 	ifstream file (fname, ios::in|ios::binary|ios::ate);
 	if (file.is_open())
@@ -82,55 +82,55 @@ VAO loadCloud(string pathFile)
 {
     typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudType;
     CloudType::Ptr cloud (new CloudType);
-    
-    VAO VAO;
-    
+
+    VAO vao;
+
     //Open PCD or PLY files
     if (ends_with(pathFile, ".pcd"))
     {
         if (pcl::io::loadPCDFile (pathFile, *cloud) == -1) //* load the file
         {
             PCL_ERROR ("Couldn't read PCD file. \n");
-            return VAO;
+            return vao;
         }
     }
     else
         if (ends_with(pathFile, ".ply")) {
-            
+
             if (pcl::io::loadPLYFile (pathFile, *cloud) == -1) //* load the file
             {
                 PCL_ERROR ("Couldn't read PLY file. \n");
-                return VAO;
+                return vao;
             }
         }
-    
+
     cout << endl << "Removing NaN Points ..." << endl;
     std::vector<int> indices;
     int pointsBefore = cloud->size();
     pcl::removeNaNFromPointCloud(*cloud, *cloud, indices);
 
-    
+
     if (pointsBefore - cloud->size() > 0)
         cout << "-> Deleted " << (pointsBefore - cloud->size()) << " NaN Points." << endl;
 
     cout << "Points: " << cloud->size() << endl;
-    
+
     if (cloud->is_dense) {
-        
+
         //Move to origin
         cout << endl << "Centering Cloud to origin ..." << endl;
         CloudType::Ptr centeredCloud (new CloudType);
         Eigen::Vector4f centroid;
         pcl::compute3DCentroid (*cloud, centroid);
         pcl::demeanPointCloud<pcl::PointXYZRGBNormal> (*cloud, centroid, *cloud);
-        
+
         //Get MaxDistance for Scaling
         cout << endl << "Scaling ..." << endl;
         Eigen::Vector4f farestPoint;
         pcl::compute3DCentroid(*cloud, centroid);
         pcl::getMaxDistance(*cloud, centroid, farestPoint);
         float maxDistance = max( max( abs(farestPoint.x()), abs(farestPoint.y()) ) , abs(farestPoint.z()) );
-        
+
         //Compute Normals if it's needed
         cout << endl << "Analizing scene normals ..." << endl;
 
@@ -143,7 +143,7 @@ VAO loadCloud(string pathFile)
                 break;
             }
         }
-        
+
         if (isNeededNormalsEstimation) {
             cout << "-> Estimating scene normals ..." << endl;
             pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBNormal> ());
@@ -153,24 +153,24 @@ VAO loadCloud(string pathFile)
             NEmop.setKSearch(20);
             NEmop.compute(*cloud);
         }
-        
 
-        
+
+
         //Pushing data cloud to VAO structure
         for (size_t i = 0; i < cloud->points.size (); ++i) {
             cloud->points[i].x = cloud->points[i].x/maxDistance;
             cloud->points[i].y = cloud->points[i].y/maxDistance;
             cloud->points[i].z = cloud->points[i].z/maxDistance;
         }
-        
-        return VAO::VAO(cloud);
-    
+
+        return VAO(cloud);
+
     }
     else
     {
         PCL_ERROR( "Points are invalid\n" );
     }
-        
-    return VAO;
+
+    return vao;
 
 }
