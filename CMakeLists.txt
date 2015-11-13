@@ -7,12 +7,12 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake
 )
 
-find_package(X11 REQUIRED)
+
 #########################################################
 # FIND GLFW
 #########################################################
-find_package(GLFW)
-include_directories(${GLFW_INCLUDE_DIRS})
+find_package(GLFW REQUIRED)
+include_directories(${GLFW_INCLUDE_DIR})
 #########################################################
 # FIND GLM
 #########################################################
