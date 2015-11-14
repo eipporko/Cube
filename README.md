@@ -150,3 +150,35 @@ If you have a multi-processor/core system then you can use make -j <numcores> to
 ### Mac Os X
 If you want to create Xcode project files, you only have to run `cmake . -G Xcode`.
 This approach is highly recommended to do it from an out-of-source build directory. *- explained in 'How to build' step*
+
+## Analysis Tools
+
+When cube is in debug mode, at the end of each session saves information in a log file. For analysis purposes Cube bring tools for make easier to understand the log, building graphs which compares the different rendering times achieved.
+
+### Dependencies
+
+#### Ubuntu 14.04 LTS
+
+  ```
+  sudo apt-get install python-setuptools
+  sudo apt-get install python-scitools
+
+  git clone git://github.com/pudo/dataset.git
+  cd dataset/
+  sudo python setup.py install
+  ```
+
+### How to work with
+```
+$ python cubeGraphGen.py
+
+CUBE GRAPH GENERATOR
+
+USAGE: cubeGraphGen.py [options] logFile
+
+OPTIONS:
+    -h        Display available options
+    --help    Display available options
+    -v        Run in verbose mode
+May the Force be with you :)
+```
