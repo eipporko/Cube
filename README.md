@@ -42,7 +42,7 @@ In order to build Cube, you need to have:
 Mac Os users should install the following components:
 * Apple's [Xcode](https://developer.apple.com/technologies/tools/) Developer Tools (version 5.0.1 or later)
 * Apple's Command Line Developer Tools are found at the [Apple Developer](https://developer.apple.com/downloads/) site, or they can be installed from within Xcode.
-* [Macports](http://www.macports.org/). Once Macports is installed, run `sudo port selfupdate` to update macports repositories. Then run `sudo port install glew` and `sudo port install glm` for install the dependencies.
+* [Homebrew](http://brew.sh/). Once Homebrew is installed, run `brew update` to update brew repositories. Then run `brew install glew` and `brew install glm` for install the dependencies.
 * To compile and install [GLFW](http://www.glfw.org/) libs, you can clone the official [repository](https://github.com/glfw/glfw) and follow the [guide](http://www.glfw.org/docs/latest/compile.html) in the GLFW documentation.
 
   ```
@@ -55,10 +55,12 @@ Mac Os users should install the following components:
 * To compile and install [PCL](http://pointclouds.org/) libs, you can clone the official [repository](https://github.com/PointCloudLibrary/pcl) and follow the [guide](http://pointclouds.org/documentation/tutorials/compiling_pcl_macosx.php). Make sure you have installed Boost, Eigen, FLANN and Visualization ToolKit (VTK) dependencies.
 
   ```
-  sudo port install boost
-  sudo port install eigen3
-  sudo port install flann
-  sudo port install vtk5 +qt4_mac
+  brew tap homebrew/science
+  brew install boost
+  brew install eigen
+  brew install flann
+  brew install vtk 
+  brew install qt
 
   git clone https://github.com/PointCloudLibrary/pcl.git
   cd pcl
