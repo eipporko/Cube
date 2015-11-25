@@ -53,7 +53,8 @@ class VAO
 {
 
 private:
-    GLuint vaoID, vboID;
+    GLuint vaoID;
+    vector<GLuint> vboID;
     bool initialized;
     int numOfVertices;
     int numOfTriangles;
@@ -67,6 +68,12 @@ private:
 
     vector<float> getRadius();
     glm::vec3 pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
+    
+    
+    int numOfVertexByVBO(int numOfVBO);
+    int maxNumOfVertexByVBO();
+    int numOfVBORequired(int numOfVertex);
+    int getFreeVideoMemory();
 
 public:
 
@@ -84,6 +91,7 @@ public:
 
     bool isValid () { return initialized; };
     void pushToGPU();
+    void draw();
 
     void sampleMesh(int samplesPerTriangle);
     void sampleSphere(int numOfSamples);

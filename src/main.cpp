@@ -452,7 +452,7 @@ void display(GLFWwindow* window)
             glClearColor(86.f/255.f,136.f/255.f,199.f/255.f,1.0f);
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glDepthFunc(GL_LEQUAL);
-            glDrawArrays(Globals::displayVAO->getMode(), 0, Globals::displayVAO->getCloud()->points.size());
+            Globals::displayVAO->draw();
         }
         else {
             glDepthMask(GL_TRUE);
@@ -473,7 +473,7 @@ void display(GLFWwindow* window)
                         glDepthMask(GL_TRUE);
                         GLenum attach[2] = {GL_NONE, GL_COLOR_ATTACHMENT3};
                         glDrawBuffers(2, attach);
-                        glDrawArrays(Globals::displayVAO->getMode(), 0, Globals::displayVAO->getCloud()->points.size());
+                        Globals::displayVAO->draw();
                         break;
                     }
                     case shader::BLENDING:
@@ -485,7 +485,7 @@ void display(GLFWwindow* window)
                         glDrawBuffers(2, attach);
                         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                         glClear(GL_COLOR_BUFFER_BIT);
-                        glDrawArrays(Globals::displayVAO->getMode(), 0, Globals::displayVAO->getCloud()->points.size());
+                        Globals::displayVAO->draw();
                         break;
                     }
                     case shader::NORMALIZATION:

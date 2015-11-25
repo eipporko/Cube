@@ -29,6 +29,8 @@
 
 #include <pcl/kdtree/kdtree_flann.h>
 
+#define MAX_VBO_SIZE (1024*1024*3)
+
 
 VAO::VAO(int numOfVertices, int numOfTriangles, vector<glm::vec3>vertices, vector<glm::vec3>colors, vector<glm::vec3>normals, GLenum mode)
 {
@@ -111,6 +113,47 @@ glm::vec3 VAO::pickPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 }
 
 
+int VAO::getFreeVideoMemory()
+{
+    int availableKB[]={-1,-1,-1,-1};
+    if(GLEW_NVX_gpu_memory_info)
+    {
+        glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX,&availableKB[0]);
+        printf("NVidia card\n");
+    }
+
+    if(GLEW_ATI_meminfo)
+    {
+        glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI,availableKB);
+        printf("ATI card\n");
+    }
+    return availableKB[0];
+}
+
+
+
+int VAO::numOfVertexByVBO(int numOfVBO)
+{
+    if (cloud->size() - (maxNumOfVertexByVBO() * numOfVBO) >= maxNumOfVertexByVBO())
+        return maxNumOfVertexByVBO();
+    else
+        return cloud->size() - (maxNumOfVertexByVBO() * numOfVBO);
+}
+
+
+int VAO::maxNumOfVertexByVBO()
+{
+    return floor(MAX_VBO_SIZE/(sizeof(vaoVertex)*1.0f));
+}
+
+
+
+int VAO::numOfVBORequired(int numOfVertex)
+{
+    return ceil((numOfVertex*1.0f)/maxNumOfVertexByVBO());
+}
+
+
 
 void VAO::pushToGPU()
 {
@@ -130,16 +173,15 @@ void VAO::pushToGPU()
         // Bind our Vertex Array Object as the current used object
         glBindVertexArray(vaoID);
 
-        // Reserve a name for the buffer object.
-        glGenBuffers(1, &vboID);
-
-        // Bind it to the GL_ARRAY_BUFFER target.
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-
         // Read cloud and get 3 vectors (vertices, colors and normals)
         if (cloud != NULL) {
 
             vector<float> radius = getRadius();
+            
+            int numberOfVBO = numOfVBORequired(cloud->size());
+            
+            cout << sizeof(vaoVertex)*cloud->size() << " bytes." << endl;
+            cout << numberOfVBO << " VBO needed" << endl;
 
             for (unsigned int i = 0; i < cloud->size(); i++) {
                 vaoVertex vertice;
@@ -158,30 +200,29 @@ void VAO::pushToGPU()
 
                 vboData.push_back(vertice);
             }
+
+            // Reserve a name for the buffer object.
+            vboID.resize(numberOfVBO);
+            glGenBuffers(numberOfVBO, &vboID[0]);
+            
+            for (int i=0; i < numberOfVBO; i++) {
+                // Bind it to the GL_ARRAY_BUFFER target.
+                glBindBuffer(GL_ARRAY_BUFFER, vboID[i]);
+                
+                int numberOfVertex = numOfVertexByVBO(i);
+                
+                glBufferData(GL_ARRAY_BUFFER,
+                             sizeof(vaoVertex)*numberOfVertex,
+                             &vboData[maxNumOfVertexByVBO()*i],
+                             GL_STATIC_DRAW);
+            }
+            
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
+            glEnableVertexAttribArray(3);
+            
         }
-
-        // Allocate space for it (sizeof(vertices) + sizeof(colors)).
-        glBufferData(GL_ARRAY_BUFFER,
-                     sizeof(vaoVertex)*vboData.size(),
-                     NULL,
-                     GL_STATIC_DRAW);
-
-        // Put "vertices" at offset zero in the buffer.
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        0,
-                        sizeof(vaoVertex)*vboData.size(),
-                        &vboData[0]);
-
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(0));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)) );
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)*2) );
-        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)*3) );
-
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
 
     }
     else
@@ -190,6 +231,27 @@ void VAO::pushToGPU()
 
     }
 }
+
+
+
+void VAO::draw() {
+    
+    for (int i=0; i < vboID.size(); i++) {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[i]);
+        
+        int nBufferSize = 0;
+        glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &nBufferSize);
+        int originalVertexArraySize = ( nBufferSize / sizeof(vaoVertex) );
+        
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(0));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)) );
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)*2) );
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vaoVertex), BUFFER_OFFSET(sizeof(glm::vec3)*3) );
+        
+        glDrawArrays(mode, 0, originalVertexArraySize);
+    }
+}
+
 
 
 void VAO::sampleMesh(int samplesPerTriangle) {
