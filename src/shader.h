@@ -62,6 +62,7 @@ private:
 public:
     
     static Shader* shaderInUse;
+    static vector<Shader> listOfShaders;
     
     //variables
     GLint program;   //Shader program

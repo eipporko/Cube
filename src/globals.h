@@ -80,6 +80,7 @@ public:
     static bool FXAA;
     static bool colorEnabled;
     static bool automaticRadiusEnabled;
+    static bool debug;
 
     //Models
     static vector<VAO> models;

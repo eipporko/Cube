@@ -32,6 +32,8 @@
 
 #include <glm/glm.hpp>
 
+class CameraCallback;
+
 class Camera {
 
 private:
@@ -50,6 +52,8 @@ private:
     float farClipping;
     float rotationXAxis;
     float rotationYAxis;
+    
+    CameraCallback* callback = NULL;
 
 public:
     static Camera* activeCamera;
@@ -63,13 +67,29 @@ public:
 
     //Getter & Setter
     void moveDistance(float amount);
+    void setDistance(float distance);
     glm::vec3 getPosition() {return this->position; };
 
     void setActive() { activeCamera = this; };
+    void setUpdateCallback(CameraCallback* callback);
     void reset();
     void rotate(float amountX, float amountY);
+    void updateView(int width, int height);
     void update(int width, int height);
 
+};
+
+
+class CameraCallback {
+    
+protected:
+    Camera* cameraAttached = NULL;
+    
+public:
+    void setCamera(Camera* cam) { cameraAttached = cam; };
+    Camera* getCamera() {return cameraAttached; };
+    virtual void operation() {};
+    
 };
 
 #endif

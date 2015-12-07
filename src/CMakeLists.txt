@@ -7,13 +7,13 @@ PROJECT(CUBE)
 #########################################################
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_executable(cube main.cpp globals.h globals.cpp file.h file.cpp vao.h vao.cpp shader.h shader.cpp light.h light.cpp orbitallight.h orbitallight.cpp staticlight.h staticlight.cpp camera.h camera.cpp cameralight.h cameralight.cpp)
+add_executable(cube main.cpp globals.h globals.cpp file.h file.cpp vao.h vao.cpp shader.h shader.cpp light.h light.cpp orbitallight.h orbitallight.cpp staticlight.h staticlight.cpp camera.h camera.cpp cameralight.h cameralight.cpp debugcameracallback.h debugcameracallback.cpp)
 
 ########################################################
 # Linking & stuff
 #########################################################
 
-# create the progra
+# create the program
 target_link_libraries(cube ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
 
 if(CMAKE_GENERATOR STREQUAL Xcode)

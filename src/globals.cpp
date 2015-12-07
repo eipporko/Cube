@@ -54,6 +54,7 @@ bool Globals::MultipassEnabled;
 bool Globals::FXAA;
 bool Globals::colorEnabled;
 bool Globals::automaticRadiusEnabled;
+bool Globals::debug;
 vector<VAO> Globals::models;
 unsigned int Globals::actualVAO;
 VAO* Globals::displayVAO;
@@ -209,6 +210,7 @@ void Globals::init() {
     FXAA = false;
     colorEnabled = false;
     automaticRadiusEnabled = false;
+    debug = false;
     
     //Models
     actualVAO = 0;

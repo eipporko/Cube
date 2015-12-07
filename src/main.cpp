@@ -49,6 +49,7 @@
 #include "shader.h"
 #include "orbitallight.h"
 #include "camera.h"
+#include "debugcameracallback.h"
 
 #define DEBUG
 #define ITERATIONS 25
@@ -179,7 +180,7 @@ void reshapeCallback(GLFWwindow * window, int w, int h)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
 
     if (Camera::activeCamera != NULL)
-        Camera::activeCamera->update(w, h);
+        Camera::activeCamera->updateView(w, h);
 
     #ifdef DEBUG
     writeTitleLog();
@@ -209,7 +210,7 @@ void scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 
     if (Camera::activeCamera != NULL) {
         Camera::activeCamera->moveDistance( - yoffset );
-        Camera::activeCamera->update(w,h);
+        Camera::activeCamera->updateView(w,h);
     }
 }
 
@@ -222,7 +223,7 @@ void mousePosCallback(GLFWwindow * window, double x, double y)
         glfwGetWindowSize(window, &w, &h);
         if (Camera::activeCamera != NULL) {
             Camera::activeCamera->rotate((Globals::lastMouseX - x) * CAMERA_RPP, -(Globals::lastMouseY - y) * CAMERA_RPP);
-            Camera::activeCamera->update(w, h);
+            Camera::activeCamera->updateView(w, h);
         }
     }
 
@@ -245,11 +246,29 @@ void mouseCallback(GLFWwindow * window, int btn, int action, int mods)
 
 
 
+void disableMouseCallbacks(GLFWwindow * window)
+{
+    glfwSetScrollCallback(window, NULL);
+    glfwSetMouseButtonCallback(window, NULL);
+    glfwSetCursorPosCallback(window, NULL);
+}
+
+
+
+void enableMouseCallbacks(GLFWwindow * window)
+{
+    glfwSetScrollCallback(window, scrollCallback);
+    glfwSetMouseButtonCallback(window, mouseCallback);
+    glfwSetCursorPosCallback(window, mousePosCallback);
+}
+
+
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
 
     if (key == GLFW_KEY_UP) {
         Globals::userRadiusFactor += 0.001f;
@@ -284,6 +303,22 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         writeTitleLog();
         #endif
 
+    }
+    
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+        
+        if (!Globals::debug) {
+            Camera::activeCamera->reset();
+            disableMouseCallbacks(window);
+            Camera::activeCamera->setUpdateCallback(new DebugCameraCallback() );
+        }
+        else {
+            enableMouseCallbacks(window);
+            Camera::activeCamera->setUpdateCallback(NULL);
+        }
+        
+        Globals::debug = !Globals::debug;
+        
     }
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
@@ -366,7 +401,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         glfwGetWindowSize(window, &w, &h);
         if (Camera::activeCamera != NULL) {
             Camera::activeCamera->reset();
-            Camera::activeCamera->update(w, h);
+            Camera::activeCamera->updateView(w, h);
         }
     }
 
@@ -727,7 +762,7 @@ int main(int argc, char **argv)
     glfwGetWindowSize(window, &w, &h);
 
     if (Camera::activeCamera != NULL)
-        Camera::activeCamera->update(w, h);
+        Camera::activeCamera->updateView(w, h);
 
     cubeMesh.sampleMesh(500);
     Globals::models.push_back(cubeMesh);
@@ -759,16 +794,20 @@ int main(int argc, char **argv)
     /*glfw Callbacks*/
     glfwSetKeyCallback(window, keyboardCallback);
     glfwSetWindowSizeCallback(window, reshapeCallback);
-    glfwSetScrollCallback(window, scrollCallback);
-    glfwSetMouseButtonCallback(window, mouseCallback);
-    glfwSetCursorPosCallback(window, mousePosCallback);
+    enableMouseCallbacks(window);
     reshapeCallback(window, WINDOW_WIDTH, WINDOW_HEIGHT); //callback forced
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         updateLightPosition();
-
+        
+        if (Camera::activeCamera != NULL) {
+            int w, h;
+            glfwGetWindowSize(window, &w, &h);
+            Camera::activeCamera->update(w, h);
+        }
+        
         /* Render here */
         display(window);
 

@@ -64,6 +64,11 @@ void Camera::moveDistance(float amount) {
 };
 
 
+void Camera::setDistance(float distance) {
+    this->distanceToOrigin = distance;
+};
+
+
 void Camera::reset() {
     this->fovy = this->initialFovy;
     this->distanceToOrigin = glm::length(this->initialPosition);
@@ -74,6 +79,13 @@ void Camera::reset() {
     this->rotationXAxis = 0;
     this->rotationYAxis = 0;
 };
+
+
+void Camera::setUpdateCallback(CameraCallback* callback) {
+    this->callback = callback;
+    if (callback != NULL)
+        callback->setCamera(this);
+}
 
 
 void Camera::rotate(float amountX, float amountY) {
@@ -87,7 +99,7 @@ void Camera::rotate(float amountX, float amountY) {
 };
 
 
-void Camera::update(int width, int height) {
+void Camera::updateView(int width, int height) {
     
     this->position = this->lookVector * distanceToOrigin;
     
@@ -118,5 +130,12 @@ void Camera::update(int width, int height) {
     Camera::right = realTop * ratio;
 };
 
+
+void Camera::update(int width, int height) {
+    if (callback != NULL) {
+        callback->operation();
+        updateView(width, height);
+    }
+}
 
 
