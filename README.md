@@ -135,7 +135,7 @@ temporary files created by CMake won't clutter the Cube source directory, and al
 independent build targets by creating multiple build directories. In adirectory alongside the Cube use:
 
 ```
-git clone https://github.com/eipporko/Cube.git
+git clone --recursive https://github.com/eipporko/Cube.git
 cd Cube
 mkdir build
 cd build
