@@ -29,7 +29,7 @@
 #define __CUBE__camera__
 
 #include <stdio.h>
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
 class CameraCallback;
@@ -52,7 +52,7 @@ private:
     float farClipping;
     float rotationXAxis;
     float rotationYAxis;
-    
+
     CameraCallback* callback = NULL;
 
 public:
@@ -81,15 +81,15 @@ public:
 
 
 class CameraCallback {
-    
+
 protected:
     Camera* cameraAttached = NULL;
-    
+
 public:
     void setCamera(Camera* cam) { cameraAttached = cam; };
     Camera* getCamera() {return cameraAttached; };
     virtual void operation() {};
-    
+
 };
 
 #endif
