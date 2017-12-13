@@ -27,7 +27,7 @@
 
 #ifndef __CUBE__light__
 #define __CUBE__light__
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <iostream>
 #include <vector>
 #include <algorithm>
