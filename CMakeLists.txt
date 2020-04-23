@@ -31,6 +31,7 @@ endif(NOT GLEW_FOUND)
 #########################################################
 # FIND OPENGL
 #########################################################
+set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
 link_directories(${OpenGL_LIBRARY_DIRS})
@@ -45,12 +46,15 @@ find_package(PCL 1.3 REQUIRED COMPONENTS common io features segmentation)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
-
-
-
+#########################################################
+# FIND BOOST (used by PCL)
+#########################################################
+find_package(Boost REQUIRED COMPONENTS system)
+link_directories(${BOOST_LIBRARY_DIRS})
+add_definitions(${BOOST_DEFINITIONS})
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-Wall -std=gnu++0x")
+    set(CMAKE_CXX_FLAGS "-Wall -std=gnu++14")
 endif()
 
 add_subdirectory(src)
