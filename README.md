@@ -1,4 +1,6 @@
-# Cube [![Build Status](https://travis-ci.org/eipporko/Cube.svg?branch=master)](https://travis-ci.org/eipporko/Cube)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/eipporko)
+
+# Cube
 
 Test it and you could see an awesome colored cube in your screen.
 Using an incredible 3D technology which will allow you to navigate around the cube!.
